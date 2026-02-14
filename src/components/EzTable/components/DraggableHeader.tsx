@@ -136,7 +136,7 @@ export const DraggableHeader = memo(({ header, density, onAutoFit, columnPinning
                         meta?.dir === 'rtl' ? "ml-2" : "mr-2",
                         align === 'center' && (meta?.dir === 'rtl' ? "absolute left-1 top-1/2 -translate-y-1/2 ml-0" : "absolute right-1 top-1/2 -translate-y-1/2 mr-0")
                     )}>
-                        <EzExcelFilter column={header.column} />
+                        <EzExcelFilter column={header.column} table={header.getContext().table as any} />
                     </div>
                 )}
             </div>

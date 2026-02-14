@@ -326,7 +326,8 @@ export const useEzTable = <TData extends object>(
         slots: props.slots,
         slotProps: props.slotProps,
         localization: props.localization,
-        dir
+        dir,
+        containerRef: parentRef
     }), [
         updateData,
         editingRows,
@@ -346,7 +347,8 @@ export const useEzTable = <TData extends object>(
         props.icons,
         props.slots,
         props.slotProps,
-        props.localization
+        props.localization,
+        parentRef
     ]);
 
     table.options.meta = tableMeta;

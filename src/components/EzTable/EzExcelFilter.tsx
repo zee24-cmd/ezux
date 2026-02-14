@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { Column } from '@tanstack/react-table';
+import { Column, Table } from '@tanstack/react-table';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -18,10 +18,13 @@ import { AdvancedColumnFilter } from './components/AdvancedColumnFilter';
 
 interface EzExcelFilterProps<TData, TValue> {
     column: Column<TData, TValue>;
+    table: Table<TData>;
 }
 
-export function EzExcelFilter<TData, TValue>({ column }: EzExcelFilterProps<TData, TValue>) {
+export function EzExcelFilter<TData, TValue>({ column, table }: EzExcelFilterProps<TData, TValue>) {
     const [isOpen, setIsOpen] = useState(false);
+    const meta = table.options.meta as any;
+    const containerRef = meta?.containerRef;
 
     return (
         <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -31,7 +34,9 @@ export function EzExcelFilter<TData, TValue>({ column }: EzExcelFilterProps<TDat
                         "ml-1 cursor-pointer p-1 rounded hover:bg-muted transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
                         column.getIsFiltered() ? "bg-primary/10" : ""
                     )}
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                    }}
                 >
                     <ListFilter className={cn(
                         "w-4 h-4",
@@ -39,8 +44,13 @@ export function EzExcelFilter<TData, TValue>({ column }: EzExcelFilterProps<TDat
                     )} />
                 </div>
             </PopoverTrigger>
-            <PopoverContent className="w-[280px] p-0" align="start">
-                {isOpen && <FilterContent column={column} setIsOpen={setIsOpen} filterValue={column.getFilterValue()} />}
+            <PopoverContent
+                className="w-[280px] p-0"
+                align="start"
+                container={containerRef?.current}
+                collisionBoundary={containerRef?.current}
+            >
+                {isOpen && <FilterContent column={column} table={table} setIsOpen={setIsOpen} filterValue={column.getFilterValue()} />}
             </PopoverContent>
         </Popover>
     );
@@ -50,13 +60,22 @@ const DATE_COLUMN_TYPES = ['date', 'datetime'] as const;
 const BOOLEAN_COLUMN_TYPES = ['boolean'] as const;
 const SELECT_COLUMN_TYPES = ['select'] as const;
 
-const FilterContent = React.memo(({ column, setIsOpen, filterValue }: { column: Column<any, any>; setIsOpen: (o: boolean) => void; filterValue: any }) => {
+const FilterContent = React.memo(({ column, table, setIsOpen, filterValue }: { column: Column<any, any>; table: Table<any>; setIsOpen: (o: boolean) => void; filterValue: any }) => {
     const [view, setView] = useState<'list' | 'filters'>('list');
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [uniqueValues, setUniqueValues] = useState<Map<any, number>>(new Map());
     const [allAvailableValues, setAllAvailableValues] = useState<any[]>([]);
+
+    const meta = table.options.meta as any;
+    const containerRef = meta?.containerRef;
+
+    // Use containerRef if available, otherwise fallback to the ID we added
+    const containerElement = containerRef?.current || (typeof document !== 'undefined' ? document.getElementById('ez-table-default') : null);
+
+    const containerHeight = containerElement?.clientHeight ?? 500;
+    const dynamicMaxHeight = Math.min(500, containerHeight > 100 ? containerHeight - 40 : 500);
 
     useEffect(() => {
         const searchTimer = setTimeout(() => setDebouncedSearch(search), 200);
@@ -85,8 +104,8 @@ const FilterContent = React.memo(({ column, setIsOpen, filterValue }: { column: 
     );
 
     const columnType = useMemo(() => {
-        const meta = column.columnDef.meta as any;
-        if (meta?.columnType) return meta.columnType;
+        const metaCol = column.columnDef.meta as any;
+        if (metaCol?.columnType) return metaCol.columnType;
         if (allAvailableValues.length === 0) return 'text';
         return detectColumnType(allAvailableValues);
     }, [column.columnDef.meta, allAvailableValues]);
@@ -174,7 +193,7 @@ const FilterContent = React.memo(({ column, setIsOpen, filterValue }: { column: 
     }
 
     return (
-        <div className="flex flex-col max-h-[500px]">
+        <div className="flex flex-col min-h-0 overflow-hidden" style={{ maxHeight: `${dynamicMaxHeight}px` }}>
             {view === 'filters' ? (
                 <div className="flex flex-col animate-in fade-in slide-in-from-right-2 duration-200">
                     <div className="p-3 border-b flex items-center space-x-2 bg-muted/30">
@@ -183,13 +202,14 @@ const FilterContent = React.memo(({ column, setIsOpen, filterValue }: { column: 
                         </Button>
                         <span className="font-semibold text-sm capitalize">{columnType} Filters</span>
                     </div>
-                    <AdvancedColumnFilter
-                        columnType={columnType}
-                        columnId={column.id}
-                        value={isAdvanced ? currentFilter : undefined}
-                        onChange={handleAdvancedChange}
-                    />
-                    <div className="flex-1" />
+                    <div className="flex-1 overflow-y-auto min-h-0">
+                        <AdvancedColumnFilter
+                            columnType={columnType}
+                            columnId={column.id}
+                            value={isAdvanced ? currentFilter : undefined}
+                            onChange={handleAdvancedChange}
+                        />
+                    </div>
                     <FilterActionButtons
                         onClear={handleClear}
                         onApply={applyFilter}

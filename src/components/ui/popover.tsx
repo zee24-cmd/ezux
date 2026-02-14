@@ -11,13 +11,16 @@ export const Popover = DropdownMenu
 export const PopoverTrigger = DropdownMenuTrigger
 export const PopoverContent = React.forwardRef<
     React.ElementRef<typeof DropdownMenuContent>,
-    React.ComponentPropsWithoutRef<typeof DropdownMenuContent>
->(({ className, align = "center", sideOffset = 4, ...props }, ref) => (
+    React.ComponentPropsWithoutRef<typeof DropdownMenuContent> & {
+        container?: HTMLElement | null
+    }
+>(({ className, align = "center", sideOffset = 4, container, ...props }, ref) => (
     <DropdownMenuContent
         ref={ref}
         align={align}
         sideOffset={sideOffset}
         className={className}
+        container={container}
         {...props}
     />
 ))

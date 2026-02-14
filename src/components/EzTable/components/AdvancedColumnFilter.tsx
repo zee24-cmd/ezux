@@ -126,7 +126,20 @@ export const AdvancedColumnFilter: React.FC<AdvancedColumnFilterProps> = ({
         });
     };
 
-    const renderValueInput = (rule: any, setRule: (r: any) => void) => {
+    const renderValueInput = (rule: any, setRule: (r: any) => void, isRule2: boolean) => {
+        const handleValueChange = (newVal: any) => {
+            const newR = { ...rule, value: newVal };
+            setRule(newR);
+            const nextActive2 = useSecondRule || isRule2;
+            if (isRule2 && !useSecondRule) setUseSecondRule(true);
+            updateFilter(
+                isRule2 ? localRule1 : newR,
+                isRule2 ? newR : localRule2,
+                localLogic,
+                nextActive2
+            );
+        };
+
         if (rule.operator === 'between') {
             const val = Array.isArray(rule.value) ? rule.value : [rule.value ?? '', ''];
             return (
@@ -134,24 +147,14 @@ export const AdvancedColumnFilter: React.FC<AdvancedColumnFilterProps> = ({
                     <Input
                         type={inputType}
                         value={val[0]}
-                        onChange={(e) => {
-                            const newVal = [e.target.value, val[1]];
-                            const newR = { ...rule, value: newVal };
-                            setRule(newR);
-                            updateFilter(rule === localRule1 ? newR : localRule1, rule === localRule1 ? localRule2 : newR, localLogic, useSecondRule);
-                        }}
+                        onChange={(e) => handleValueChange([e.target.value, val[1]])}
                         className="h-8 shadow-none flex-1"
                         placeholder="From..."
                     />
                     <Input
                         type={inputType}
                         value={val[1]}
-                        onChange={(e) => {
-                            const newVal = [val[0], e.target.value];
-                            const newR = { ...rule, value: newVal };
-                            setRule(newR);
-                            updateFilter(rule === localRule1 ? newR : localRule1, rule === localRule1 ? localRule2 : newR, localLogic, useSecondRule);
-                        }}
+                        onChange={(e) => handleValueChange([val[0], e.target.value])}
                         className="h-8 shadow-none flex-1"
                         placeholder="To..."
                     />
@@ -163,11 +166,7 @@ export const AdvancedColumnFilter: React.FC<AdvancedColumnFilterProps> = ({
             <Input
                 type={inputType}
                 value={rule.value ?? ''}
-                onChange={(e) => {
-                    const newR = { ...rule, value: e.target.value };
-                    setRule(newR);
-                    updateFilter(rule === localRule1 ? newR : localRule1, rule === localRule1 ? localRule2 : newR, localLogic, useSecondRule);
-                }}
+                onChange={(e) => handleValueChange(e.target.value)}
                 className="h-8 shadow-none"
                 placeholder="Enter value..."
             />
@@ -191,7 +190,7 @@ export const AdvancedColumnFilter: React.FC<AdvancedColumnFilterProps> = ({
                         placeholder="Select operator"
                         className="h-8 shadow-none"
                     />
-                    {renderValueInput(localRule1, setLocalRule1)}
+                    {renderValueInput(localRule1, setLocalRule1, false)}
                 </div>
             </div>
 
@@ -231,7 +230,7 @@ export const AdvancedColumnFilter: React.FC<AdvancedColumnFilterProps> = ({
                         placeholder="Select operator"
                         className="h-8 shadow-none"
                     />
-                    {renderValueInput(localRule2, setLocalRule2)}
+                    {renderValueInput(localRule2, setLocalRule2, true)}
                 </div>
             </div>
 

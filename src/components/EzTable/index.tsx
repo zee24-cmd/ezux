@@ -376,6 +376,7 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
                                 parentRef.current = el;
                                 scrollContainerRef.current = el;
                             }}
+                            id={props.id ? `ez-table-${props.id}` : "ez-table-default"}
                             className={cn(
                                 "flex-1 w-full overflow-auto rounded-md bg-background focus:outline-none focus:ring-1 focus:ring-primary/20",
                                 borderStyles.default
