@@ -1,0 +1,93 @@
+You are an expert full-stack developer and architect. You have access to four product documents describing the ezScheduler React component, located in:
+
+/Users/zed/Documents/ezux/docs/scheduler
+
+The files are:
+
+1. docs/scheduler/ezScheduler_API_Component_Props_Methods_Events.md
+2. docs/scheduler/ezScheduler_API_Models_Interfaces_Types.md
+3. docs/scheduler/ezScheduler_API_Templates_Services.md
+4. docs/scheduler/ezScheduler_Glossary_Domain_Dictionary.md
+
+The project has a shared folder at `/Users/zed/Documents/ezux/src/shared` containing reusable components, hooks, services, state, types, utils, and theme. **All code must reuse existing shared assets where possible to avoid redundancy**.
+
+Your task is to redevelop/refactor the complete ezScheduler product with full TypeScript 5.9 + React 19.2 compliance, IoC pattern, TanStack-first architecture, and Playwright testing, in a phased manner, reusing the shared folder wherever applicable.
+
+---
+
+## Phase Instructions
+
+### Phase 1 – Core Component & Rendering
+
+* Implement `ezScheduler` root component with props and methods defined in File 1.
+* Ensure full rendering of Day, Week, WorkWeek, Month, Timeline, Agenda, and Year views.
+* Integrate resource grouping, time slots, and event rendering.
+* Follow IoC pattern: all services should be injected via EzServiceRegistry.
+* Reuse existing components and hooks from the shared folder wherever possible.
+* Create basic Playwright tests to verify component renders without errors.
+
+### Phase 2 – Models, State, & Event Management
+
+* Implement all models and interfaces from File 2 (EventSettingsModel, FieldModel, ViewsModel, WorkHoursModel, ResourceModel, GroupModel, etc.).
+* Integrate TanStack Store for local state and TanStack Query for remote events.
+* Implement full CRUD services using SchedulerService and RecurrenceEngine.
+* Ensure slot validation, recurrence generation, and conflict detection.
+* Reuse existing services, types, and state containers from the shared folder wherever possible.
+* Create Playwright tests for event creation, update, deletion, recurrence, and conflict scenarios.
+
+### Phase 3 – Templates & Customization
+
+* Implement all templates from File 3 (cell, date header, resource header, quick info, tooltip, editor).
+* Ensure templates consume the respective models and props.
+* Implement theme compliance using shared `/theme` tokens.
+* Reuse shared UI components wherever possible.
+* Playwright tests should validate template rendering and custom editor behavior.
+
+### Phase 4 – Export, Import & Integration
+
+* Implement Excel export, ICS import/export, and Print services.
+* Integrate RecurrenceEditor for rule generation and recurrence management.
+* Reuse shared utilities for date, timezone, and recurrence handling.
+* Create Playwright tests for export/import flows and calendar sync.
+
+### Phase 5 – Advanced Features & Performance
+
+* Implement virtual scrolling, multi-resource federation, multi-scheduler support, drag & drop, resize, and inline editing.
+* Enforce performance budgets from PRD: initial render <120ms, drag feedback <16ms/frame, etc.
+* Playwright tests should cover multi-resource drag/drop, timeline virtualization, and recurrence expansion.
+* Reuse shared hooks and performance utilities wherever possible.
+
+### Phase 6 – Security, Multi-Tenant & Audit
+
+* Implement role-based access (Viewer, Editor, Manager, Admin) and tenant isolation.
+* Integrate audit events for Create, Update, Delete, ConflictResolved, Exported, Imported, Printed.
+* Playwright tests should verify RBAC enforcement and tenant-scoped operations.
+* Reuse shared state and services for access control and auditing.
+
+### Phase 7 – Regression & QA
+
+* Generate full Playwright test suite covering all features and lifecycle transitions.
+* Include drag & drop latency, virtual scroll stress, recurrence expansion, multi-resource load tests.
+* Ensure no redundant code is introduced; fully leverage the shared folder.
+
+---
+
+## General Requirements
+
+* Use TypeScript 5.9, React 19.2, TanStack-first patterns (Router, Query, Form, Table, DB).
+* Follow IoC / EzServiceRegistry for all services.
+* Use Shadcn UI components and Lucide Icons.
+* All code should reference the four PRD documents for correctness.
+* Reuse components, hooks, services, types, state, utils, and theme from the shared folder wherever possible.
+* Code and tests must be modular, reusable, and fully typed.
+* For each phase, provide a summary of implemented features and Playwright test coverage.
+
+---
+
+### Task for Google Gemini
+
+1. Read all four files.
+2. Generate code for each phase sequentially, respecting dependencies.
+3. Provide Playwright tests alongside component code for each phase.
+4. Ensure no duplication, all shared components/hooks/services are reused.
+5. Output should be phase-wise modular code, ready to integrate in /Users/zed/Documents/ezux/src/scheduler.
