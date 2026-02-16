@@ -8,8 +8,7 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuTrigger,
-    DropdownMenuLabel,
-    DropdownMenuSeparator
+    DropdownMenuLabel
 } from '../ui/dropdown-menu';
 
 /**
@@ -30,15 +29,13 @@ export const EzThemeColorChanger: React.FC<{ className?: string }> = ({ classNam
         });
     }, [themeService]);
 
-    const colors: { name: ThemeColor; label: string; colorClass: string }[] = [
-        { name: 'Zinc', label: 'Zinc', colorClass: 'bg-zinc-900 dark:bg-zinc-100' },
-        { name: 'Blue', label: 'Blue', colorClass: 'bg-blue-600' },
-        { name: 'Green', label: 'Green', colorClass: 'bg-green-600' },
-        { name: 'Orange', label: 'Orange', colorClass: 'bg-orange-500' },
-        { name: 'Rose', label: 'Rose', colorClass: 'bg-rose-500' },
+    const colors: { name: ThemeColor; label: string; colorValue: string }[] = [
+        { name: 'Zinc', label: 'Zinc', colorValue: 'oklch(0.25 0 0)' },
+        { name: 'Blue', label: 'Blue', colorValue: 'oklch(0.55 0.18 260)' },
+        { name: 'Green', label: 'Green', colorValue: 'oklch(0.60 0.18 150)' },
+        { name: 'Orange', label: 'Orange', colorValue: 'oklch(0.65 0.18 70)' },
+        { name: 'Rose', label: 'Rose', colorValue: 'oklch(0.60 0.18 350)' },
     ];
-
-    const radiuses = [0, 0.3, 0.5, 0.75, 1.0];
 
     return (
         <DropdownMenu>
@@ -48,46 +45,30 @@ export const EzThemeColorChanger: React.FC<{ className?: string }> = ({ classNam
                     <span className="sr-only" style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', border: 0 }}>Change theme</span>
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[280px]">
+            <DropdownMenuContent align="end" className="w-[200px]">
                 <div className="p-4 space-y-4">
                     <div>
-                        <DropdownMenuLabel className="px-0 pt-0">Color</DropdownMenuLabel>
-                        <div className="grid grid-cols-3 gap-2 py-2">
+                        <DropdownMenuLabel className="px-0 pt-0 text-xs font-bold uppercase tracking-wider text-muted-foreground/70">Theme Color</DropdownMenuLabel>
+                        <div className="grid grid-cols-1 gap-1.5 py-2">
                             {colors.map((color) => (
                                 <Button
                                     key={color.name}
-                                    variant="outline"
+                                    variant="ghost"
                                     size="sm"
                                     onClick={() => themeService.setThemeColor(color.name)}
                                     className={cn(
-                                        "flex flex-col items-center justify-center h-14 w-full p-0 rounded-md border-2",
-                                        state.themeColor === color.name ? "border-primary" : "border-transparent"
+                                        "flex items-center justify-start h-10 w-full px-3 rounded-lg border border-transparent transition-all duration-200",
+                                        state.themeColor === color.name ? "bg-primary/10 border-primary/20 text-primary" : "hover:bg-muted"
                                     )}
                                 >
-                                    <span className={cn("h-4 w-4 rounded-full shadow-sm mb-1", color.colorClass)} />
-                                    <span className="text-[10px] font-medium">{color.label}</span>
-                                </Button>
-                            ))}
-                        </div>
-                    </div>
-
-                    <DropdownMenuSeparator />
-
-                    <div>
-                        <DropdownMenuLabel className="px-0">Radius</DropdownMenuLabel>
-                        <div className="grid grid-cols-5 gap-2 py-2">
-                            {radiuses.map((r) => (
-                                <Button
-                                    key={r}
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => themeService.setRadius(r)}
-                                    className={cn(
-                                        "h-8 px-0 text-xs font-medium",
-                                        state.radius === r ? "border-primary bg-primary/5" : "border-transparent"
+                                    <span
+                                        className="h-4 w-4 rounded-full shadow-sm mr-3 border border-black/5 dark:border-white/10"
+                                        style={{ backgroundColor: color.colorValue }}
+                                    />
+                                    <span className="text-sm font-semibold">{color.label}</span>
+                                    {state.themeColor === color.name && (
+                                        <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary" />
                                     )}
-                                >
-                                    {r}
                                 </Button>
                             ))}
                         </div>

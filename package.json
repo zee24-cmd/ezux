@@ -1,6 +1,6 @@
 {
     "name": "ezux",
-    "version": "1.0.1",
+    "version": "1.0.7",
     "description": "A comprehensive, type-safe TanStack First Advance component library designed for modern enterprise applications.",
     "keywords": [
         "react",
@@ -28,6 +28,10 @@
     ],
     "main": "./dist/ezux.umd.js",
     "module": "./dist/ezux.es.js",
+    "workspaces": [
+        "packages/*",
+        "apps/*"
+    ],
     "scripts": {
         "dev": "vite",
         "build": "tsc && vite build",
@@ -60,28 +64,29 @@
     },
     "dependencies": {
         "@dnd-kit/core": "^6.3.1",
-        "@types/dompurify": "^3.0.5",
+        "@types/dompurify": "^3.2.0",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "cmdk": "^1.1.1",
-        "country-flag-icons": "^1.6.8",
+        "country-flag-icons": "^1.6.13",
         "date-fns": "^4.1.0",
-        "lucide-react": "^0.563.0",
-        "tailwind-merge": "^3.4.0",
+        "lucide-react": "^0.564.0",
+        "tailwind-merge": "^3.4.1",
         "tailwindcss-animate": "^1.0.7"
     },
     "devDependencies": {
+        "@changesets/cli": "^2.29.8",
         "@tailwindcss/postcss": "^4.1.18",
         "@testing-library/jest-dom": "^6.9.1",
         "@testing-library/react": "^16.3.2",
         "@testing-library/user-event": "^14.6.1",
-        "@types/node": "^25.2.2",
-        "@types/react": "^19.2.13",
+        "@types/node": "^25.2.3",
+        "@types/react": "^19.2.14",
         "@types/react-dom": "^19.2.3",
         "@vitejs/plugin-react": "^5.1.4",
         "autoprefixer": "^10.4.24",
         "dompurify": "^3.3.1",
-        "happy-dom": "^20.6.0",
+        "happy-dom": "^20.6.1",
         "postcss": "^8.5.6",
         "rrule": "^2.8.1",
         "tailwindcss": "^4.1.18",
