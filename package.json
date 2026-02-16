@@ -17,7 +17,7 @@
     "homepage": "https://ezux.dev",
     "repository": {
         "type": "git",
-        "url": "https://github.com/zee24-cmd/ezux"
+        "url": "git+https://github.com/zee24-cmd/ezux.git"
     },
     "author": "Zeeshan Sayed",
     "license": "MIT",
