@@ -1,5 +1,5 @@
 import React from 'react';
-import { SchedulerEvent, EzSchedulerComponents } from '../EzScheduler.types';
+import { SchedulerEvent } from '../EzScheduler.types';
 import { format, isSameDay } from 'date-fns';
 import { cn } from '../../../lib/utils';
 import { EzContextMenu } from '../../../shared/components/EzContextMenu';
@@ -23,11 +23,6 @@ interface AgendaViewProps {
      * @group Events 
      */
     onEventClick?: (event: SchedulerEvent) => void;
-    /** 
-     * Custom components for injection.
-     * @group Properties 
-     */
-    components?: EzSchedulerComponents;
 }
 
 /**
@@ -38,9 +33,7 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
     daysInView,
     visibleEvents,
     onEventClick,
-    components
 }) => {
-    const CustomEvent = components?.event;
 
     return (
         <div
@@ -97,7 +90,7 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="font-semibold truncate">
-                                                    {CustomEvent ? <CustomEvent event={event} /> : event.title}
+                                                    {event.title}
                                                 </div>
                                                 {event.description && <div className="text-xs text-muted-foreground truncate">{event.description}</div>}
                                             </div>

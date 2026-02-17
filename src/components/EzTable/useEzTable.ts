@@ -450,13 +450,6 @@ export const useEzTable = <TData extends object>(
         /** Edit settings. @group Properties */
         editSettings: props.editSettings,
 
-        // Templates
-        /** Row template for customization. @group Components */
-        rowTemplate: props.rowTemplate,
-        /** Template for empty record state. @group Components */
-        emptyRecordTemplate: props.emptyRecordTemplate,
-        /** Template for loading state. @group Components */
-        loadingTemplate: props.loadingTemplate,
 
         // Common Events
         /** Row click handler. @group Events */

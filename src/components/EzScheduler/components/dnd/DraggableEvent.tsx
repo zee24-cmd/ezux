@@ -2,16 +2,18 @@ import React from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { cn } from '../../../../lib/utils';
-import { SchedulerEvent, EzSchedulerComponents } from '../../EzScheduler.types';
+import { SchedulerEvent } from '../../EzScheduler.types';
 import { format, addMinutes } from 'date-fns';
 import { EzContextMenu } from '../../../../shared/components/EzContextMenu';
 import { X } from 'lucide-react';
 import { TooltipWrapper } from '../../../../shared/components/TooltipWrapper';
 
 interface DraggableEventProps {
+    slots?: any;
+    slotProps?: any;
     event: SchedulerEvent;
     style?: React.CSSProperties;
-    components?: EzSchedulerComponents;
+
     onClick?: (event: SchedulerEvent) => void;
     onDoubleClick?: (event: SchedulerEvent) => void;
     onDelete?: (eventId: string) => void;
@@ -52,7 +54,7 @@ export const DraggableEvent = ({
         disabled: isRestricted
     });
 
-    const currentPixelsPerSlot = pixelsPerSlot || (orientation === 'vertical' ? 64 : 80);
+    const effectivePixelsPerSlot = pixelsPerSlot || (orientation === 'vertical' ? 64 : 80);
 
     const { attributes: resizeBottomAttrs, listeners: resizeBottomListeners, setNodeRef: setResizeBottomRef, transform: resizeBottomTransform, isDragging: isResizingBottom } = useDraggable({
         id: `resize-bottom-${event.id}`,
@@ -60,7 +62,7 @@ export const DraggableEvent = ({
             type: 'resize-bottom',
             eventId: event.id,
             orientation,
-            pixelsPerSlot: currentPixelsPerSlot
+            pixelsPerSlot: effectivePixelsPerSlot
         },
         disabled: !resizable || isRestricted
     });
@@ -71,7 +73,7 @@ export const DraggableEvent = ({
             type: 'resize-top',
             eventId: event.id,
             orientation,
-            pixelsPerSlot: currentPixelsPerSlot
+            pixelsPerSlot: effectivePixelsPerSlot
         },
         disabled: !resizable || isRestricted
     });
@@ -79,7 +81,7 @@ export const DraggableEvent = ({
     const isResizing = isResizingBottom || isResizingTop;
 
     // Calculation logic for real-time preview
-    const pixelsPerMinute = currentPixelsPerSlot / slotDuration;
+    const pixelsPerMinute = effectivePixelsPerSlot / slotDuration;
 
     let displayStart = new Date(event.start);
     let displayEnd = new Date(event.end);
@@ -103,7 +105,7 @@ export const DraggableEvent = ({
     const eventColor = style?.borderColor || event.color || 'hsl(var(--primary))';
 
     const blockedStyle: React.CSSProperties = isExplicitBlock ? {
-        backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.05) 10px, rgba(0,0,0,0.05) 20px)`,
+        backgroundImage: `repeating - linear - gradient(45deg, transparent, transparent 10px, rgba(0, 0, 0, 0.05) 10px, rgba(0, 0, 0, 0.05) 20px)`,
         backgroundColor: 'rgba(0,0,0,0.02)',
         color: 'gray',
         borderLeftWidth: '4px',

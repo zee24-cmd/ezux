@@ -339,22 +339,33 @@ export interface EzKanbanProps extends SharedBaseProps {
    * @group Extensibility 
    */
   plugins?: KanbanPlugin[];
-  /** 
-   * Custom renderers for various board elements.
-   * @group Extensibility 
+
+  /**
+   * Slots for modular composition.
+   * @group Extensibility
    */
-  customRenderers?: {
-    card?: (card: KanbanCard, defaultContent: React.JSX.Element) => React.JSX.Element;
-    cardContent?: (card: KanbanCard) => React.JSX.Element;
-    column?: (column: KanbanColumn) => React.JSX.Element;
-    cardEditor?: (props: {
-      isOpen: boolean;
-      card?: Partial<KanbanCard>;
-      onClose: () => void;
-      onSave: (card: Partial<KanbanCard>) => void;
-      onDelete?: (cardId: string) => void;
-      columns: KanbanColumn[];
-    }) => React.ReactNode;
+  slots?: {
+    toolbar?: React.ComponentType<any>;
+    board?: React.ComponentType<any>;
+    column?: React.ComponentType<any>;
+    card?: React.ComponentType<any>;
+    cardContent?: React.ComponentType<any>;
+    swimlane?: React.ComponentType<any>;
+    cardEditor?: React.ComponentType<any>;
+  };
+
+  /**
+   * Props for slots.
+   * @group Extensibility
+   */
+  slotProps?: {
+    toolbar?: any;
+    board?: any;
+    column?: any;
+    card?: any;
+    cardContent?: any;
+    swimlane?: any;
+    cardEditor?: any;
   };
 
   // Events & Callbacks

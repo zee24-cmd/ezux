@@ -49,35 +49,25 @@ export const SelectCell: React.FC<SelectCellProps> = ({
     });
 
     const getStatusColors = (color?: string) => {
-        switch (color) {
-            case 'success':
-                return {
-                    container: 'bg-emerald-100 text-emerald-950 border-emerald-300 dark:bg-emerald-500/90 dark:text-emerald-50 dark:border-emerald-400/50',
-                    dot: 'bg-emerald-600 dark:bg-emerald-200'
-                };
-            case 'danger':
-            case 'destructive':
-                return {
-                    container: 'bg-rose-100 text-rose-950 border-rose-300 dark:bg-rose-500/90 dark:text-rose-50 dark:border-rose-400/50',
-                    dot: 'bg-rose-600 dark:bg-rose-200'
-                };
-            case 'warning':
-                return {
-                    container: 'bg-amber-100 text-amber-950 border-amber-300 dark:bg-amber-500/90 dark:text-amber-50 dark:border-amber-400/50',
-                    dot: 'bg-amber-600 dark:bg-amber-200'
-                };
-            case 'primary':
-            case 'info':
-                return {
-                    container: 'bg-blue-100 text-blue-950 border-blue-300 dark:bg-blue-500/90 dark:text-blue-50 dark:border-blue-400/50',
-                    dot: 'bg-blue-600 dark:bg-blue-200'
-                };
-            default:
-                return {
-                    container: 'bg-slate-100 text-slate-950 border-slate-300 dark:bg-slate-500/90 dark:text-slate-50 dark:border-slate-400/50',
-                    dot: 'bg-slate-600 dark:bg-slate-200'
-                };
-        }
+        const type = color === 'success' ? 'success' :
+            (color === 'danger' || color === 'destructive') ? 'error' :
+                color === 'warning' ? 'warning' :
+                    (color === 'primary' || color === 'info') ? 'info' :
+                        'neutral';
+
+        const isNeutral = type === 'neutral';
+
+        return {
+            container: {
+                backgroundColor: isNeutral ? 'transparent' : `var(--ez-status-${type}-bg)`,
+                color: isNeutral ? `var(--ez-status-${type}-bg)` : `var(--ez-status-${type}-text)`,
+                borderColor: `var(--ez-status-${type}-border)`
+            },
+            dot: {
+                backgroundColor: `var(--ez-status-${type}-dot)`
+            },
+            isColored: !isNeutral
+        };
     };
 
     return (
@@ -87,12 +77,10 @@ export const SelectCell: React.FC<SelectCellProps> = ({
                 return (
                     <div
                         key={`${option.value}-${index}`}
-                        className={cn(
-                            "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border transition-all duration-300 shadow-sm",
-                            styles.container
-                        )}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border transition-all duration-300 shadow-sm"
+                        style={styles.container}
                     >
-                        <span className={cn("w-1.5 h-1.5 rounded-full", styles.dot)} />
+                        <span className="w-1.5 h-1.5 rounded-full" style={styles.dot} />
                         {table?.options.meta?.enableSearchHighlighting ? (
                             <HighlightText
                                 text={option.label}

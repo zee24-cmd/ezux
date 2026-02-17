@@ -19,8 +19,10 @@ import {
 import { useImperativeAPI, useDndHandlers, useDialogState, useFieldValidation, useInitCoreServices } from '../../shared/hooks';
 const EzGroupingPanel = React.lazy(() => import('./EzGroupingPanel').then(m => ({ default: m.EzGroupingPanel })));
 const EzTableEditDialog = React.lazy(() => import('./EzTableEditDialog').then(m => ({ default: m.EzTableEditDialog })));
-import { EzTableToolbar } from './EzTableToolbar';
-import { EzTableFooter } from './EzTableFooter';
+
+// Modular: Lazy load default implementations to allow tree-shaking if slots are used
+const EzTableToolbar = React.lazy(() => import('./EzTableToolbar').then(m => ({ default: m.EzTableToolbar })));
+const EzTableFooter = React.lazy(() => import('./EzTableFooter').then(m => ({ default: m.EzTableFooter })));
 import { EzTableStatusBar } from './EzTableStatusBar';
 
 import { EzTableHeaderSection } from './components/EzTableHeaderSection';
@@ -338,6 +340,7 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
                         )}
 
 
+                        {/* Modular Slot: Toolbar */}
                         {props.slots?.toolbar ? (
                             <props.slots.toolbar
                                 table={table}
@@ -345,30 +348,33 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
                                 setGlobalFilter={setGlobalFilter}
                                 isPending={isPending}
                                 columns={table.getAllColumns()}
+                                {...props.slotProps?.toolbar}
                             />
                         ) : (
-                            <EzTableToolbar
-                                globalFilter={globalFilter}
-                                setGlobalFilter={setGlobalFilter}
-                                enableAdvancedFiltering={props.enableAdvancedFiltering}
-                                enableExport={props.enableExport}
-                                onExportExcel={props.onExportExcel ? () => props.onExportExcel!(table) : undefined}
-                                onExportCSV={props.onExportCSV ? () => props.onExportCSV!(table) : undefined}
-                                onExportPDF={props.onExportPDF ? () => props.onExportPDF!(table) : undefined}
-                                enableChangeTracking={enableChangeTracking}
-                                canUndo={canUndo}
-                                canRedo={canRedo}
-                                undo={undo}
-                                redo={redo}
-                                columns={table.getAllColumns()}
-                                isPending={isPending}
-                                onAdd={editSettings?.allowAdding ? handleAdd : undefined}
-                                onSave={handleSave}
-                                onDiscard={handleDiscard}
-                                enableEditing={enableEditing}
-                                changes={changes}
-                                table={table}
-                            />
+                            <React.Suspense fallback={<div className="h-10 w-full animate-pulse bg-muted/20 rounded-md" />}>
+                                <EzTableToolbar
+                                    globalFilter={globalFilter}
+                                    setGlobalFilter={setGlobalFilter}
+                                    enableAdvancedFiltering={props.enableAdvancedFiltering}
+                                    enableExport={props.enableExport}
+                                    onExportExcel={props.onExportExcel ? () => props.onExportExcel!(table) : undefined}
+                                    onExportCSV={props.onExportCSV ? () => props.onExportCSV!(table) : undefined}
+                                    onExportPDF={props.onExportPDF ? () => props.onExportPDF!(table) : undefined}
+                                    enableChangeTracking={enableChangeTracking}
+                                    canUndo={canUndo}
+                                    canRedo={canRedo}
+                                    undo={undo}
+                                    redo={redo}
+                                    columns={table.getAllColumns()}
+                                    isPending={isPending}
+                                    onAdd={editSettings?.allowAdding ? handleAdd : undefined}
+                                    onSave={handleSave}
+                                    onDiscard={handleDiscard}
+                                    enableEditing={enableEditing}
+                                    changes={changes}
+                                    table={table}
+                                />
+                            </React.Suspense>
                         )}
 
                         <div
@@ -446,9 +452,11 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
                                 />
 
                                 {props.slots?.footer ? (
-                                    <props.slots.footer table={table} />
+                                    <props.slots.footer table={table} {...props.slotProps?.footer} />
                                 ) : (
-                                    <EzTableFooter table={table} columnVirtualizer={columnVirtualizer} density={density} />
+                                    <React.Suspense fallback={null}>
+                                        <EzTableFooter table={table} columnVirtualizer={columnVirtualizer} density={density} />
+                                    </React.Suspense>
                                 )}
                             </div>
                         </div>
@@ -495,6 +503,7 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
 });
 
 EzTableImpl.displayName = 'EzTableImpl';
+export const EzTablePrimitive = EzTableImpl;
 
 const queryClient = new QueryClient();
 

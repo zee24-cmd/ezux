@@ -165,7 +165,6 @@ export function EzSchedulerContent({
                     scrollRef={parentRef as React.RefObject<HTMLDivElement>}
                     onViewChange={setView}
                     onDateChange={setCurrentDate}
-                    components={props.components}
                     onRangeSelect={handleRangeSelect}
                     onSlotClick={(date: Date, resId?: string) => props.onCellClick?.(date, resId)}
                     onEventClick={(event: SchedulerEvent) => props.onEventClick?.(event)}
@@ -194,7 +193,7 @@ export function EzSchedulerContent({
                     onSlotClick={(date: Date) => props.onCellClick?.(date)}
                     onSlotDoubleClick={(date: Date) => handleSlotDoubleClick(date)}
                     onEventClick={(event: SchedulerEvent) => props.onEventClick?.(event) || handleEventDoubleClick(event)}
-                    components={props.components}
+
                     monthsCount={props.monthsCount}
                     dir={dir}
                 />
@@ -218,7 +217,6 @@ export function EzSchedulerContent({
                     onEventClick={(event: SchedulerEvent) => props.onEventClick?.(event) || handleEventDoubleClick(event)}
                     onEventDelete={handleEventDelete}
                     onRangeSelect={handleRangeSelect}
-                    components={props.components}
                     currentTimeIndicator={props.currentTimeIndicator}
                     showResourceHeaders={props.showResourceHeaders}
                     group={props.group}
@@ -237,7 +235,6 @@ export function EzSchedulerContent({
                     daysInView={daysInView}
                     visibleEvents={visibleEvents}
                     onEventClick={(event: SchedulerEvent) => props.onEventClick?.(event) || handleEventDoubleClick(event)}
-                    components={props.components}
                 />
             );
         default:

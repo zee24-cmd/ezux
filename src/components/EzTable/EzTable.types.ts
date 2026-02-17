@@ -242,6 +242,12 @@ export interface EzTableSlots {
     loadingOverlay?: React.ComponentType<any>;
     /** Custom header component. @group Properties */
     header?: React.ComponentType<any>;
+    /** Custom row component. @group Properties */
+    row?: React.ComponentType<{ row: Row<any> }>;
+    /** Custom empty record component. @group Properties */
+    emptyRecord?: React.ComponentType<any>;
+    /** Custom loading component. @group Properties */
+    loading?: React.ComponentType<any>;
 }
 
 // --- Service Interfaces ---
@@ -754,23 +760,6 @@ export interface EzTableProps<TData extends object> extends SharedBaseProps {
      * @group Properties 
      */
     query?: any;
-
-    // Templates & Slots
-    /** 
-     * Custom template for rendering rows.
-     * @group Subcomponents 
-     */
-    rowTemplate?: (props: { row: Row<TData> }) => React.ReactNode;
-    /** 
-     * Custom template for when there are no records.
-     * @group Subcomponents 
-     */
-    emptyRecordTemplate?: () => React.ReactNode;
-    /** 
-     * Custom template for the loading state.
-     * @group Subcomponents 
-     */
-    loadingTemplate?: () => React.ReactNode;
 
     // Lifecycle Events
     // Lifecycle Events

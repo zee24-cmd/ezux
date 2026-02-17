@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { SchedulerEvent, Resource, ViewType, EzSchedulerComponents, GroupModel } from '../EzScheduler.types';
+import { SchedulerEvent, Resource, ViewType, GroupModel } from '../EzScheduler.types';
 import { format, startOfDay, differenceInMinutes, addMinutes, isSameDay } from 'date-fns';
 import { cn } from '../../../lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '../../ui/avatar';
@@ -61,11 +61,6 @@ interface TimelineViewProps {
      * @group Events 
      */
     onRangeSelect?: (start: Date, end: Date, resourceId?: string, position?: { x: number; y: number }) => void;
-    /** 
-     * Custom components for injection.
-     * @group Properties 
-     */
-    components?: EzSchedulerComponents;
     /** 
      * Whether to show the current time indicator.
      * @group Properties 
@@ -132,7 +127,6 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     onEventClick,
     onEventDelete,
     onRangeSelect,
-    components,
     currentTimeIndicator,
     showResourceHeaders = true,
     group,
@@ -426,7 +420,6 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
         } as React.CSSProperties;
     };
 
-    const CustomResourceHeader = components?.resourceHeader;
 
     const groupColWidth = 40; // Width of the group header column
     const resColWidth = 240;  // Width of the resource header column
@@ -584,28 +577,24 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
                                                     !showResourceHeaders && "hidden"
                                                 )}
                                             >
-                                                {CustomResourceHeader ? (
-                                                    <CustomResourceHeader resource={resource} />
-                                                ) : (
-                                                    <>
-                                                        <Avatar className="h-9 w-9 border border-border/60 shadow-sm">
-                                                            {resource.avatar && <AvatarImage src={resource.avatar} alt={resource.name} className="object-cover" />}
-                                                            <AvatarFallback className="text-xs font-bold bg-primary/5 text-primary">
-                                                                {resource.name.charAt(0)}
-                                                            </AvatarFallback>
-                                                        </Avatar>
-                                                        <div className="flex flex-col min-w-0">
-                                                            <span className="text-[13px] font-semibold truncate text-foreground/90 tracking-tight leading-none mb-1.5">{resource.name}</span>
-                                                            <div className="flex items-center gap-1.5">
-                                                                <span className={cn(
-                                                                    "w-1.5 h-1.5 rounded-full",
-                                                                    resource.type === 'Internal' ? "bg-blue-500 shadow-[0_0_6px_rgba(59,130,246,0.5)]" : "bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]"
-                                                                )} />
-                                                                <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{resource.type || 'Available'}</span>
-                                                            </div>
+                                                <>
+                                                    <Avatar className="h-9 w-9 border border-border/60 shadow-sm">
+                                                        {resource.avatar && <AvatarImage src={resource.avatar} alt={resource.name} className="object-cover" />}
+                                                        <AvatarFallback className="text-xs font-bold bg-primary/5 text-primary">
+                                                            {resource.name.charAt(0)}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                    <div className="flex flex-col min-w-0">
+                                                        <span className="text-[13px] font-semibold truncate text-foreground/90 tracking-tight leading-none mb-1.5">{resource.name}</span>
+                                                        <div className="flex items-center gap-1.5">
+                                                            <span className={cn(
+                                                                "w-1.5 h-1.5 rounded-full",
+                                                                resource.type === 'Internal' ? "bg-blue-500 shadow-[0_0_6px_rgba(59,130,246,0.5)]" : "bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]"
+                                                            )} />
+                                                            <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{resource.type || 'Available'}</span>
                                                         </div>
-                                                    </>
-                                                )}
+                                                    </div>
+                                                </>
                                             </div>
 
                                             <TimelineRow
@@ -622,7 +611,6 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
                                                 getEventStyle={getEventStyle}
                                                 onEventClick={onEventClick}
                                                 onEventDelete={onEventDelete}
-                                                components={components}
                                                 slotDuration={slotDuration}
                                                 now={now}
                                                 visibleEvents={visibleEvents}
@@ -656,7 +644,6 @@ interface TimelineRowProps {
     getEventStyle: (event: SchedulerEvent & { level: number }) => React.CSSProperties;
     onEventClick?: (event: SchedulerEvent) => void;
     onEventDelete?: (eventId: string) => void;
-    components?: EzSchedulerComponents;
     slotDuration: number;
     now: Date;
     visibleEvents: SchedulerEvent[];
@@ -679,7 +666,6 @@ const TimelineRow: React.FC<TimelineRowProps> = ({
     getEventStyle,
     onEventClick,
     onEventDelete,
-    components,
     slotDuration,
     now,
     visibleEvents,
@@ -779,7 +765,6 @@ const TimelineRow: React.FC<TimelineRowProps> = ({
                     style={getEventStyle(event)}
                     onClick={onEventClick}
                     onDelete={onEventDelete}
-                    components={components}
                     orientation="horizontal"
                     resizable={true}
                     isBlocked={event.isBlock}

@@ -8,46 +8,7 @@ import { IService } from '../../shared/services/ServiceRegistry';
  */
 export interface TreeNode extends SharedTreeNode { }
 
-/**
- * Component Injection (IoC) slots for customizing tree elements.
- * @group Subcomponents
- */
-export interface EzTreeViewComponents {
-    /**
-     * Custom renderer for the tree node.
-     * @param props.node The node data.
-     * @param props.level Current nesting level (0-based).
-     * @param props.isExpanded If the node is currently expanded.
-     * @param props.isSelected If the node is currently selected.
-     * @param props.isChecked If the node is checked (checkbox mode).
-     * @param props.isIndeterminate If the node is partially checked.
-     * @param props.onToggleExpand Callback to toggle expansion.
-     * @param props.onToggleSelect Callback to toggle selection.
-     * @param props.onToggleCheck Callback to toggle check state.
-     * @group Subcomponents
-     */
-    node?: React.ComponentType<{
-        node: TreeNode;
-        level: number;
-        isExpanded: boolean;
-        isSelected: boolean;
-        isChecked?: boolean;
-        isIndeterminate?: boolean;
-        onToggleExpand: () => void;
-        onToggleSelect: () => void;
-        onToggleCheck?: () => void;
-    }>;
-    /**
-     * Custom expand/collapse icon.
-     * @group Subcomponents
-     */
-    expandIcon?: React.ReactNode | React.ComponentType<{ isExpanded: boolean; isLoading?: boolean }>;
-    /**
-     * Custom checkbox component.
-     * @group Subcomponents
-     */
-    checkbox?: React.ComponentType<{ checked: boolean; indeterminate: boolean; onChange: () => void }>;
-}
+
 
 export type EzTreeViewRef = EzTreeViewApi;
 
@@ -123,12 +84,28 @@ export interface EzTreeViewProps extends SharedBaseProps {
     /** The hierarchical tree data. @group Data */
     data: TreeNode[];
 
+
     /**
-     * Custom subcomponents (Slots) to override default rendering.
-     * Allows fully custom rendering of nodes, icons, and checkboxes.
-     * @group Subcomponents
+     * Slots for modular composition.
+     * @group Extensibility
      */
-    components?: EzTreeViewComponents;
+    slots?: {
+        node?: React.ComponentType<any>;
+        expandIcon?: React.ComponentType<any>;
+        checkbox?: React.ComponentType<any>;
+        dragHandle?: React.ComponentType<any>;
+    };
+
+    /**
+     * Props for slots.
+     * @group Extensibility
+     */
+    slotProps?: {
+        node?: any;
+        expandIcon?: any;
+        checkbox?: any;
+        dragHandle?: any;
+    };
 
     /**
      * Selection mode for the tree.

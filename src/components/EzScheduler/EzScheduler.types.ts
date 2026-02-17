@@ -544,28 +544,7 @@ export type WeekRule = 'FirstDay' | 'FirstFourDayWeek' | 'FirstFullWeek';
 /**
  * Component Injection (IoC).
  */
-export interface EzSchedulerComponents {
-    /** 
-     * Custom event component. 
-     * @group Subcomponents
-     */
-    event?: React.ComponentType<{ event: SchedulerEvent; isPlaceholder?: boolean }>;
-    /** 
-     * Custom toolbar component. 
-     * @group Subcomponents
-     */
-    toolbar?: React.ComponentType<any>;
-    /** 
-     * Custom resource header component. 
-     * @group Subcomponents
-     */
-    resourceHeader?: React.ComponentType<{ resource: Resource }>;
-    /** 
-     * Custom time slot component. 
-     * @group Subcomponents
-     */
-    timeSlot?: React.ComponentType<{ date: Date; isWorkHour?: boolean }>;
-}
+
 
 // --- Main Props Interface ---
 /**
@@ -582,7 +561,40 @@ export interface EzSchedulerComponents {
  * return <EzScheduler events={events} />;
  * ```
  */
+/**
+ * Custom component slots for override.
+ * @group Models
+ */
+export interface EzSchedulerSlots {
+    /** 
+     * Custom toolbar component. 
+     * @group Subcomponents
+     */
+    toolbar?: React.ComponentType<any>;
+    /** 
+     * Custom event modal component. 
+     * @group Subcomponents
+     */
+    eventModal?: React.ComponentType<any>;
+    /** 
+     * Custom quick add popup. 
+     * @group Subcomponents
+     */
+    quickAdd?: React.ComponentType<any>;
+    /** 
+     * Custom resource sidebar. 
+     * @group Subcomponents
+     */
+    resourceSidebar?: React.ComponentType<any>;
+}
+
 export interface EzSchedulerProps extends SharedBaseProps {
+    /** 
+     * Props to pass to the custom slots.
+     * @group Properties 
+     */
+    slotProps?: Record<string, any>;
+
     /** 
      * Allow event dragging. 
      * @group Properties 
@@ -986,6 +998,18 @@ export interface EzSchedulerProps extends SharedBaseProps {
      */
     is24Hour?: boolean;
 
+    /** 
+     * Slots for custom subcomponents.
+     * @group Components 
+     */
+    slots?: {
+        toolbar?: React.ComponentType<any>;
+        eventModal?: React.ComponentType<any>;
+        quickAdd?: React.ComponentType<any>;
+        [key: string]: React.ComponentType<any> | undefined;
+    };
+
+
     // Enterprise Events
     /** 
      * Callback when events overlap.
@@ -998,12 +1022,7 @@ export interface EzSchedulerProps extends SharedBaseProps {
      */
     onCellContextMenu?: (args: { date: Date; x: number; y: number }) => void;
 
-    // Component Injection (IoC) - Legacy support or new extension
-    /** 
-     * Custom component injections (IoC).
-     * @group Properties 
-     */
-    components?: EzSchedulerComponents;
+
 
     // Legacy Prop Support (to avoid breaking demo)
     /** 

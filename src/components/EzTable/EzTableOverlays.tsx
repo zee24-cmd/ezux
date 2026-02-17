@@ -13,9 +13,9 @@ interface EzTableOverlaysProps {
 
 export const EzTableOverlays = memo(({ isLoading, rowCount, renderNoRowsOverlay, slots, localization }: EzTableOverlaysProps) => {
     if (isLoading) {
-        if (slots?.loadingOverlay) {
-            const LoadingOverlay = slots.loadingOverlay;
-            return <LoadingOverlay />;
+        const LoadingSlot = slots?.loading || slots?.loadingOverlay;
+        if (LoadingSlot) {
+            return <LoadingSlot />;
         }
         return (
             <div className="absolute inset-x-0 top-0 z-50 flex flex-col items-center justify-center bg-white/50 dark:bg-black/50 backdrop-blur-[1px] min-h-[200px]">
@@ -28,9 +28,9 @@ export const EzTableOverlays = memo(({ isLoading, rowCount, renderNoRowsOverlay,
     }
 
     if (rowCount === 0) {
-        if (slots?.noRowsOverlay) {
-            const NoRowsOverlay = slots.noRowsOverlay;
-            return <NoRowsOverlay />;
+        const NoRowsSlot = slots?.emptyRecord || slots?.noRowsOverlay;
+        if (NoRowsSlot) {
+            return <NoRowsSlot />;
         }
         return (
             <div className="absolute inset-0 flex flex-col items-center justify-center p-10 text-center">

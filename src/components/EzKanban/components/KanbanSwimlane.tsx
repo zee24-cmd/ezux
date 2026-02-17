@@ -37,15 +37,15 @@ export interface KanbanSwimlaneProps {
     highlightedCardId?: string | null;
     /** Custom field definitions for card rendering. @group Data */
     customFields?: CustomFieldDefinition[];
-    /** Custom renderers for elements within the swimlane. @group Extensibility */
-    customRenderers?: {
-        card?: (card: KanbanCard, defaultContent: React.JSX.Element) => React.JSX.Element;
-        cardContent?: (card: KanbanCard) => React.JSX.Element;
-    };
+
     /** Custom class name for the swimlane container. @group Appearance */
     className?: string;
     /** Text direction. @group Appearance */
     dir?: 'ltr' | 'rtl' | 'auto';
+    /** Slots for modular composition. @group Extensibility */
+    slots?: any;
+    /** Props for slots. @group Extensibility */
+    slotProps?: any;
 }
 
 /**
@@ -65,12 +65,14 @@ export const KanbanSwimlane: React.FC<KanbanSwimlaneProps> = ({
     draggedCardId,
     highlightedCardId, // Added
     customFields,
-    customRenderers,
     className,
     dir,
+    slots,
+    slotProps,
 }) => {
     const isRtl = dir === 'rtl';
     const { t } = useI18n();
+    const CardComponent = slots?.card || KanbanCardComponent;
 
     const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault();
@@ -117,7 +119,7 @@ export const KanbanSwimlane: React.FC<KanbanSwimlaneProps> = ({
                             >
                                 <div className="space-y-2">
                                     {cellCards.map((card) => (
-                                        <KanbanCardComponent
+                                        <CardComponent
                                             key={card.id}
                                             card={card}
                                             onClick={onCardClick}
@@ -127,8 +129,8 @@ export const KanbanSwimlane: React.FC<KanbanSwimlaneProps> = ({
                                             isDragging={draggedCardId === card.id}
                                             isHighlighted={highlightedCardId === card.id}
                                             customFields={customFields}
-                                            customRenderers={customRenderers}
                                             dir={dir}
+                                            {...slotProps?.card}
                                         />
                                     ))}
                                 </div>

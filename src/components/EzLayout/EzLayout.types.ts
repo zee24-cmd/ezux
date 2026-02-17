@@ -34,15 +34,25 @@ export interface EzSidebarComponentProps {
 }
 
 export interface EzLayoutProps extends SharedBaseProps {
-    /** 
-     * Injected components to override or extend the default layout sections.
-     * @group Subcomponents 
+    /**
+     * Slots for modular composition.
+     * @group Extensibility
      */
-    components?: {
-        header?: React.ReactNode | React.ComponentType<EzHeaderComponentProps>;
-        sidebar?: React.ReactNode | React.ComponentType<EzSidebarComponentProps>;
-        footer?: React.ReactNode | React.ComponentType<any>;
-        commandPalette?: React.ReactNode | React.ComponentType<any>;
+    slots?: {
+        header?: React.ComponentType<EzHeaderComponentProps>;
+        sidebar?: React.ComponentType<EzSidebarComponentProps>;
+        footer?: React.ComponentType<any>;
+        commandPalette?: React.ComponentType<any>;
+    };
+    /**
+     * Props for slots.
+     * @group Extensibility
+     */
+    slotProps?: {
+        header?: Partial<EzHeaderComponentProps>;
+        sidebar?: Partial<EzSidebarComponentProps>;
+        footer?: any;
+        commandPalette?: any;
     };
     /** 
      * Configuration for the built-in authentication slider.

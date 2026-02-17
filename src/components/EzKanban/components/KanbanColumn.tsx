@@ -48,16 +48,14 @@ export interface KanbanColumnProps {
     highlightedCardId?: string | null;
     /** Custom field definitions for card rendering. @group Data */
     customFields?: CustomFieldDefinition[];
-    /** Custom renderers for column elements. @group Extensibility */
-    customRenderers?: {
-        card?: (card: KanbanCard, defaultContent: React.JSX.Element) => React.JSX.Element;
-        cardContent?: (card: KanbanCard) => React.JSX.Element;
-        column?: (column: KanbanColumnType) => React.JSX.Element;
-    };
     /** Custom class name for the column container. @group Appearance */
     className?: string;
     /** Text direction. @group Appearance */
     dir?: 'ltr' | 'rtl' | 'auto';
+    /** Slots for modular composition. @group Extensibility */
+    slots?: any;
+    /** Props for slots. @group Extensibility */
+    slotProps?: any;
 }
 
 /**
@@ -81,13 +79,16 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
     draggedCardId,
     highlightedCardId, // Added
     customFields,
-    customRenderers,
     className,
     dir,
+    slots,
+    slotProps,
 }) => {
     const isRtl = dir === 'rtl';
     const { t } = useI18n();
     const [isEditingName, setIsEditingName] = React.useState(false);
+
+    const CardComponent = slots?.card || KanbanCardComponent;
     const [editedName, setEditedName] = React.useState(column.name);
     const inputRef = React.useRef<HTMLInputElement>(null);
 
@@ -251,18 +252,30 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
                                                 paddingBottom: '8px',
                                             }}
                                         >
-                                            <KanbanCardComponent
-                                                card={card}
-                                                onClick={onCardClick}
-                                                onDoubleClick={onCardDoubleClick}
-                                                onDragStart={onCardDragStart}
-                                                onDragEnd={onCardDragEnd}
-                                                isDragging={draggedCardId === card.id}
-                                                isHighlighted={highlightedCardId === card.id}
-                                                customFields={customFields}
-                                                customRenderers={customRenderers}
-                                                dir={dir}
-                                            />
+                                            <div
+                                                key={card.id}
+                                                style={{
+                                                    position: 'absolute',
+                                                    top: 0,
+                                                    left: 0,
+                                                    width: '100%',
+                                                    transform: `translateY(${virtualItem.start}px)`,
+                                                    paddingBottom: '8px',
+                                                }}
+                                            >
+                                                <CardComponent
+                                                    card={card}
+                                                    onClick={onCardClick}
+                                                    onDoubleClick={onCardDoubleClick}
+                                                    onDragStart={onCardDragStart}
+                                                    onDragEnd={onCardDragEnd}
+                                                    isDragging={draggedCardId === card.id}
+                                                    isHighlighted={highlightedCardId === card.id}
+                                                    customFields={customFields}
+                                                    dir={dir}
+                                                    {...slotProps?.card}
+                                                />
+                                            </div>
                                         </div>
                                     );
                                 })}
@@ -281,7 +294,7 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
                 return (
                     <CardContent className="flex-1 overflow-y-auto max-h-[calc(100vh-200px)] space-y-2">
                         {sortedCards.map((card) => (
-                            <KanbanCardComponent
+                            <CardComponent
                                 key={card.id}
                                 card={card}
                                 onClick={onCardClick}
@@ -291,8 +304,8 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
                                 isDragging={draggedCardId === card.id}
                                 isHighlighted={highlightedCardId === card.id}
                                 customFields={customFields}
-                                customRenderers={customRenderers}
                                 dir={dir}
+                                {...slotProps?.card}
                             />
                         ))}
 
@@ -306,10 +319,6 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
             })()}
         </Card>
     );
-
-    if (customRenderers?.column) {
-        return customRenderers.column(column);
-    }
 
     return defaultColumn;
 };

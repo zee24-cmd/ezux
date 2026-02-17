@@ -109,7 +109,9 @@ export const EzTreeView: React.FC<EzTreeViewProps> = (props) => {
                         showCheckboxes={props.showCheckboxes}
                         allowEditing={props.allowEditing}
                         searchTerm={props.searchTerm}
-                        components={props.components}
+
+                        slots={props.slots}
+                        slotProps={props.slotProps}
                         allowTextWrap={allowTextWrap}
                         animation={animation}
                         checkOnClick={checkOnClick}

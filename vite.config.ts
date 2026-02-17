@@ -17,9 +17,17 @@ export default defineConfig({
     },
     build: {
         lib: {
-            entry: path.resolve(__dirname, 'src/index.ts'),
+            entry: {
+                index: path.resolve(__dirname, 'src/index.ts'),
+                scheduler: path.resolve(__dirname, 'src/components/EzScheduler/index.tsx'),
+                kanban: path.resolve(__dirname, 'src/components/EzKanban/index.tsx'),
+                layout: path.resolve(__dirname, 'src/components/EzLayout/index.tsx'),
+                table: path.resolve(__dirname, 'src/components/EzTable/index.tsx'),
+                treeview: path.resolve(__dirname, 'src/components/EzTreeView/index.tsx'),
+                signature: path.resolve(__dirname, 'src/components/EzSignature/index.tsx'),
+            },
             name: 'Ezux',
-            fileName: (format) => `ezux.${format}.js`,
+            fileName: (format, entryName) => `${entryName}.${format}.js`,
         },
         rollupOptions: {
             external: [

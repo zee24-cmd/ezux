@@ -111,8 +111,9 @@ export function EzTableBodySection<TData extends object>({
 
             {rowVirtualizer?.getVirtualItems().map((virtualRow: any) => {
                 const row = rows[virtualRow.index];
+                const RowComponent = slots?.row || EzTableRow;
                 return (
-                    <EzTableRow
+                    <RowComponent
                         key={row.id}
                         virtualRow={virtualRow}
                         row={row}

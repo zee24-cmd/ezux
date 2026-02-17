@@ -42,3 +42,12 @@ pnpm-debug.log*
 
 # Workspace artifacts (system generated)
 .system_generated/
+coverage/
+.nyc_output/
+*.pid
+*.seed
+*.pid.lock
+npm_token.txt
+*.token
+docs/npm_token.txt
+

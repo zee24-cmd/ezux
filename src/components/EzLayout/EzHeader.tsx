@@ -2,7 +2,7 @@ import React from 'react';
 import { EzThemeSwitcher } from './EzThemeSwitcher';
 import { EzThemeColorChanger } from './EzThemeColorChanger';
 import { EzLanguageSwitcher } from './EzLanguageSwitcher';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { EzUserProfile } from './EzUserProfile';
 
 /**
  * Configuration for the EzLayout header.
@@ -30,6 +30,8 @@ export interface EzHeaderProps {
         /** Fallback initials if avatar is missing. @group Appearance */
         initials?: string;
     };
+    /** Callback triggered when the user clicks 'Sign Out'. @group Events */
+    onLogout?: () => void;
     /** Custom class name for the header. @group Appearance */
     className?: string;
     /** Extra content to render in the right-side actions area. @group Data */
@@ -44,6 +46,7 @@ export const EzHeader: React.FC<EzHeaderProps> = ({
     showThemeColorChanger = true,
     showLanguageSwitcher = true,
     user,
+    onLogout,
     className,
     children
 }) => {
@@ -76,14 +79,8 @@ export const EzHeader: React.FC<EzHeaderProps> = ({
                 )}
 
                 {user && (
-                    <div className="flex items-center gap-2 ml-2 pl-2 border-l border-border">
-                        <div className="text-sm font-medium hidden md:block text-muted-foreground">
-                            {user.name}
-                        </div>
-                        <Avatar className="h-8 w-8 cursor-pointer hover:opacity-80 transition-opacity">
-                            <AvatarImage src={user.avatarUrl} alt={user.name} />
-                            <AvatarFallback>{user.initials || user.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
+                    <div className="ml-2 border-l border-border pl-2">
+                        <EzUserProfile user={user} onLogout={onLogout} />
                     </div>
                 )}
             </div>

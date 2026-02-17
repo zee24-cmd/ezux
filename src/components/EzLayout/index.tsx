@@ -71,7 +71,8 @@ const EzLayoutImpl = forwardRef<EzLayoutRef, EzLayoutProps>((props, ref) => {
     // Initialize core services (I18n, Notifications, etc.)
     useInitCoreServices();
     const {
-        components,
+        slots,
+        slotProps,
         authConfig,
         headerConfig,
         children,
@@ -110,26 +111,27 @@ const EzLayoutImpl = forwardRef<EzLayoutRef, EzLayoutProps>((props, ref) => {
                 style={{ height: '100vh', overflow: 'hidden' }}
             >
                 <NotificationPanel />
-                {renderInjected(components?.commandPalette)}
+                {renderInjected(slots?.commandPalette, { ...slotProps?.commandPalette })}
 
-                {!isMinimal && (components?.header || headerConfig) && (
+                {!isMinimal && (slots?.header || headerConfig) && (
                     <header
                         aria-label="Global Header"
                         style={{ height: layoutState.headerHeight }}
                         className={cn("border-b border-border flex-shrink-0 px-4 flex items-center", headerClassName)}
                     >
-                        {renderInjected(components?.header, {
+                        {renderInjected(slots?.header, {
                             ...headerConfig,
                             sidebarOpen: layoutState.sidebarOpen,
                             isMobile: layoutState.isMobile,
                             headerHeight: layoutState.headerHeight,
-                            toggleSidebar: () => layoutService.toggleSidebar()
+                            toggleSidebar: () => layoutService.toggleSidebar(),
+                            ...slotProps?.header
                         }) || (headerConfig && <EzHeader {...headerConfig} />)}
                     </header>
                 )}
 
                 <div className="flex flex-1 overflow-hidden relative">
-                    {!isMinimal && components?.sidebar && (
+                    {!isMinimal && (slots?.sidebar) && (
                         <EzSidebar
                             sidebarOpen={layoutState.sidebarOpen}
                             isMobile={layoutState.isMobile}
@@ -137,11 +139,12 @@ const EzLayoutImpl = forwardRef<EzLayoutRef, EzLayoutProps>((props, ref) => {
                             layoutService={layoutService}
                             focusManager={focusManager}
                         >
-                            {renderInjected(components?.sidebar, {
+                            {renderInjected(slots?.sidebar, {
                                 open: layoutState.sidebarOpen,
                                 isMobile: layoutState.isMobile,
                                 onClose: () => layoutService.toggleSidebar(false),
-                                className: sidebarClassName
+                                className: sidebarClassName,
+                                ...slotProps?.sidebar
                             })}
                         </EzSidebar>
                     )}
@@ -172,9 +175,9 @@ const EzLayoutImpl = forwardRef<EzLayoutRef, EzLayoutProps>((props, ref) => {
                     </div>
                 ))}
 
-                {!isMinimal && components?.footer && (
+                {!isMinimal && (slots?.footer) && (
                     <footer aria-label="Global Footer" className={cn("flex-shrink-0 border-t border-border bg-background", footerClassName)}>
-                        {renderInjected(components.footer)}
+                        {renderInjected(slots?.footer, { ...slotProps?.footer })}
                     </footer>
                 )}
             </div>

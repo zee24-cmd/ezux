@@ -36,10 +36,15 @@ export interface KanbanCardProps {
     tooltipTemplate?: (data: KanbanCardType) => React.ReactNode;
     /** Custom field definitions for rendering values. @group Data */
     customFields?: CustomFieldDefinition[];
-    /** Custom renderers for card elements. @group Extensibility */
-    customRenderers?: {
-        card?: (card: KanbanCardType, defaultContent: React.JSX.Element) => React.JSX.Element;
-        cardContent?: (card: KanbanCardType) => React.JSX.Element;
+    /** Slots for modular composition. @group Extensibility */
+    slots?: {
+        card?: React.ComponentType<any>;
+        cardContent?: React.ComponentType<any>;
+    };
+    /** Props for slots. @group Extensibility */
+    slotProps?: {
+        card?: any;
+        cardContent?: any;
     };
     /** Custom class name for the card container. @group Appearance */
     className?: string;
@@ -59,10 +64,11 @@ const KanbanCardComponent: React.FC<KanbanCardProps> = ({
     onDragEnd,
     isDragging,
     isHighlighted,
-    enableTooltip, // Added
-    tooltipTemplate, // Added
+    enableTooltip,
+    tooltipTemplate,
     customFields,
-    customRenderers,
+    slots,
+    slotProps,
     className,
     dir,
 }) => {
@@ -230,7 +236,8 @@ const KanbanCardComponent: React.FC<KanbanCardProps> = ({
         </div>
     );
 
-    const cardContent = customRenderers?.cardContent ? customRenderers.cardContent(card) : defaultContent;
+    const CardContentSlot = slots?.cardContent;
+    const cardContent = CardContentSlot ? <CardContentSlot card={card} {...slotProps?.cardContent} /> : defaultContent;
 
     const standardCard = (
         <Card
@@ -252,8 +259,9 @@ const KanbanCardComponent: React.FC<KanbanCardProps> = ({
         </Card>
     );
 
-    if (customRenderers?.card) {
-        return customRenderers.card(card, standardCard);
+    const CardSlot = slots?.card;
+    if (CardSlot) {
+        return <CardSlot card={card} defaultContent={standardCard} {...slotProps?.card} />;
     }
 
     return (

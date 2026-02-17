@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "shadcn/tailwind.css";
 /*
   ---break---
 */
@@ -33,6 +32,32 @@
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
+  /* Status Badge Tokens - Light Mode */
+  --ez-status-success-bg: oklch(0.962 0.044 156.74);
+  --ez-status-success-text: oklch(0.208 0.042 165.74);
+  --ez-status-success-border: oklch(0.895 0.051 163.22);
+  --ez-status-success-dot: oklch(0.527 0.154 160.06);
+
+  --ez-status-warning-bg: oklch(0.962 0.059 95.617);
+  --ez-status-warning-text: oklch(0.25 0.05 90);
+  --ez-status-warning-border: oklch(0.89 0.06 90);
+  --ez-status-warning-dot: oklch(0.65 0.18 85);
+
+  --ez-status-error-bg: oklch(0.941 0.03 12.58);
+  --ez-status-error-text: oklch(0.25 0.04 15);
+  --ez-status-error-border: oklch(0.88 0.04 15);
+  --ez-status-error-dot: oklch(0.6 0.18 20);
+
+  --ez-status-info-bg: oklch(0.94 0.03 240);
+  --ez-status-info-text: oklch(0.25 0.04 245);
+  --ez-status-info-border: oklch(0.88 0.04 245);
+  --ez-status-info-dot: oklch(0.55 0.18 250);
+
+  --ez-status-neutral-bg: oklch(0.96 0 0);
+  --ez-status-neutral-text: oklch(0.2 0 0);
+  --ez-status-neutral-border: oklch(0.92 0 0);
+  --ez-status-neutral-dot: oklch(0.6 0 0);
+
   --radius: 0.625rem;
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
@@ -70,6 +95,32 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
+  /* Status Badge Tokens - Dark Mode */
+  --ez-status-success-bg: oklch(0.85 0.1 160);
+  --ez-status-success-text: black;
+  --ez-status-success-border: oklch(0.7 0.08 160);
+  --ez-status-success-dot: oklch(0.3 0.05 160);
+
+  --ez-status-warning-bg: oklch(0.88 0.15 90);
+  --ez-status-warning-text: black;
+  --ez-status-warning-border: oklch(0.75 0.1 90);
+  --ez-status-warning-dot: oklch(0.4 0.08 90);
+
+  --ez-status-error-bg: oklch(0.85 0.12 25);
+  --ez-status-error-text: black;
+  --ez-status-error-border: oklch(0.7 0.1 25);
+  --ez-status-error-dot: oklch(0.35 0.08 25);
+
+  --ez-status-info-bg: oklch(0.85 0.1 250);
+  --ez-status-info-text: black;
+  --ez-status-info-border: oklch(0.7 0.08 250);
+  --ez-status-info-dot: oklch(0.3 0.05 250);
+
+  --ez-status-neutral-bg: oklch(0.2 0 0);
+  --ez-status-neutral-text: oklch(0.9 0 0);
+  --ez-status-neutral-border: oklch(1 0 0 / 20%);
+  --ez-status-neutral-dot: oklch(0.7 0 0);
+
   --radius: 0.5rem;
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
@@ -285,6 +336,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }

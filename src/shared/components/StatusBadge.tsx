@@ -1,69 +1,65 @@
 import { memo } from 'react';
 import { cn } from '../../lib/utils';
 
-export type Status = 'Active' | 'Inactive' | 'Pending' | 'Verified' | 'Unverified' | 'On Leave' | 'Completed' | 'In Progress';
+export type Status = 'Active' | 'Inactive' | 'Pending' | 'Verified' | 'Unverified' | 'On Leave' | 'Completed' | 'In Progress' | 'Archived';
 
-const STATUS_CONFIG: Record<string, { container: string; dot: string }> = {
-    Active: {
-        container: 'bg-emerald-100 text-emerald-950 border-emerald-300 dark:bg-emerald-500 dark:text-emerald-50 dark:border-emerald-400',
-        dot: 'bg-emerald-600 dark:bg-emerald-200'
-    },
-    Verified: {
-        container: 'bg-emerald-100 text-emerald-950 border-emerald-300 dark:bg-emerald-500 dark:text-emerald-50 dark:border-emerald-400',
-        dot: 'bg-emerald-600 dark:bg-emerald-200'
-    },
-    Completed: {
-        container: 'bg-emerald-100 text-emerald-950 border-emerald-300 dark:bg-emerald-500 dark:text-emerald-50 dark:border-emerald-400',
-        dot: 'bg-emerald-600 dark:bg-emerald-200'
-    },
-    Inactive: {
-        container: 'bg-rose-100 text-rose-950 border-rose-300 dark:bg-rose-500 dark:text-rose-50 dark:border-rose-400',
-        dot: 'bg-rose-600 dark:bg-rose-200'
-    },
-    Unverified: {
-        container: 'bg-rose-100 text-rose-950 border-rose-300 dark:bg-rose-500 dark:text-rose-50 dark:border-rose-400',
-        dot: 'bg-rose-600 dark:bg-rose-200'
-    },
-    'On Leave': {
-        container: 'bg-rose-100 text-rose-950 border-rose-300 dark:bg-rose-500 dark:text-rose-50 dark:border-rose-400',
-        dot: 'bg-rose-600 dark:bg-rose-200'
-    },
-    Pending: {
-        container: 'bg-amber-100 text-amber-950 border-amber-300 dark:bg-amber-500 dark:text-amber-50 dark:border-amber-400',
-        dot: 'bg-amber-600 dark:bg-amber-200'
-    },
-    'In Progress': {
-        container: 'bg-blue-100 text-blue-950 border-blue-300 dark:bg-blue-500 dark:text-blue-50 dark:border-blue-400',
-        dot: 'bg-blue-600 dark:bg-blue-200'
-    },
-    Default: {
-        container: 'bg-slate-100 text-slate-950 border-slate-300 dark:bg-slate-500 dark:text-slate-50 dark:border-slate-400',
-        dot: 'bg-slate-600 dark:bg-slate-200'
-    }
-} as const;
+const STATUS_TYPE_MAP: Record<string, string> = {
+    Active: 'success',
+    Verified: 'success',
+    Completed: 'info',
+    'In Progress': 'info',
+    Pending: 'warning',
+    Inactive: 'error',
+    Unverified: 'error',
+    'On Leave': 'error',
+    Archived: 'neutral',
+    Default: 'neutral'
+};
 
-interface StatusBadgeProps {
+export interface StatusBadgeProps {
     status: Status | string;
     className?: string;
+    showDot?: boolean;
+    variant?: 'solid' | 'outline';
 }
 
 /**
- * Optimized StatusBadge component
+ * StatusBadge Component
+ * Displays a status with a consistent design system.
+ * Features:
+ * - Semantic color mapping
+ * - Theme-aware styling (Light/Dark)
  * - Dot indicator for better visual recognition
- * - High-contrast styling for maximum visibility
+ * - High-contrast styling for maximum visibility (WCAG AA)
  */
-export const StatusBadge = memo<StatusBadgeProps>(({ status, className }) => {
-    const config = STATUS_CONFIG[status] || STATUS_CONFIG.Default;
+export const StatusBadge = memo<StatusBadgeProps>(({
+    status,
+    className,
+    showDot = true,
+    variant = 'solid'
+}) => {
+    const type = STATUS_TYPE_MAP[status] || STATUS_TYPE_MAP.Default;
+    const isOutline = variant === 'outline' || status === 'Archived';
 
     return (
         <div
             className={cn(
-                'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-black border tracking-wide transition-all duration-300 shadow-sm',
-                config.container,
+                'inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border tracking-wide transition-all duration-300 shadow-sm whitespace-nowrap',
                 className
             )}
+            style={{
+                backgroundColor: isOutline ? 'transparent' : `var(--ez-status-${type}-bg)`,
+                color: isOutline ? `var(--ez-status-${type}-bg)` : `var(--ez-status-${type}-text)`,
+                borderColor: `var(--ez-status-${type}-border)`,
+                minWidth: '120px'
+            }}
         >
-            <span className={cn('w-2 h-2 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.1)]', config.dot)} />
+            {showDot && (
+                <span
+                    className="w-1.5 h-1.5 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.1)] flex-shrink-0"
+                    style={{ backgroundColor: `var(--ez-status-${type}-dot)` }}
+                />
+            )}
             {status}
         </div>
     );

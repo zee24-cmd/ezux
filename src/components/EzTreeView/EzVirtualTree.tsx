@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, memo } from 'react';
 import { useVirtualization } from '../../shared/hooks/useVirtualization';
-import { TreeNode, EzTreeViewComponents } from './EzTreeView.types';
+import { TreeNode } from './EzTreeView.types';
 import { EzTreeViewItem } from './EzTreeViewItem';
 import { cn } from '../../lib/utils';
 
@@ -39,8 +39,10 @@ interface EzVirtualTreeProps {
     allowEditing?: boolean;
     /** Current search query for highlighting. @group Data */
     searchTerm?: string;
-    /** Custom subcomponent slots. @group Subcomponents */
-    components?: EzTreeViewComponents;
+    /** Slots for modular composition. @group Extensibility */
+    slots?: any;
+    /** Props for slots. @group Extensibility */
+    slotProps?: any;
     /** Whether text wrapping is allowed. @group Appearance */
     allowTextWrap?: boolean;
     /** Animation configuration. @group Appearance */
@@ -83,7 +85,8 @@ export const EzVirtualTree = memo(({
     showCheckboxes,
     allowEditing,
     searchTerm,
-    components,
+    slots,
+    slotProps,
     allowTextWrap,
     animation,
     checkOnClick,
@@ -204,7 +207,8 @@ export const EzVirtualTree = memo(({
                             }}
                             tabIndex={isFocused ? 0 : -1}
                             autoFocus={isFocused}
-                            components={components}
+                            slots={slots}
+                            slotProps={slotProps}
                             allowTextWrap={allowTextWrap}
                             animation={animation}
                             checkOnClick={checkOnClick}

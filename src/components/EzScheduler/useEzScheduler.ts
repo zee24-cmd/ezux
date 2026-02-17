@@ -49,7 +49,7 @@ export const useEzScheduler = (props: EzSchedulerProps) => {
     }), []);
 
     const actions = useMemo(() => createSchedulerActions(store), [store]);
-    const state = useStore(store);
+    const state = useStore(store, (state) => state);
 
     // Sync props to store
     useEffect(() => {

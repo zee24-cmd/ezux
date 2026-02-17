@@ -11,9 +11,11 @@ import { EzSchedulerErrorFallback } from '../shared/components/EzSchedulerErrorF
 import { SchedulerLoadingSpinner } from './components/SchedulerLoadingSpinner';
 import { DndContext, closestCenter } from '@dnd-kit/core';
 const EzEventModal = React.lazy(() => import('./components/EzEventModal').then(m => ({ default: m.EzEventModal })));
-import { EzSchedulerQuickAdd } from './components/EzSchedulerQuickAdd';
+const EzSchedulerQuickAdd = React.lazy(() => import('./components/EzSchedulerQuickAdd').then(m => ({ default: m.EzSchedulerQuickAdd })));
 import { EzSchedulerContent } from './components/EzSchedulerContent';
-import { EzSchedulerToolbar } from './EzSchedulerToolbar';
+
+// Modular: Lazy load default implementations
+const EzSchedulerToolbar = React.lazy(() => import('./EzSchedulerToolbar').then(m => ({ default: m.EzSchedulerToolbar })));
 import { Modal } from '../../shared/components/Modal';
 import { Button } from '../../components/ui/button';
 import { format } from 'date-fns';
@@ -327,45 +329,88 @@ const EzSchedulerInner = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, re
                 dir={scheduler.dir}
             >
                 {props.showHeaderBar !== false && (
-                    <EzSchedulerToolbar
-                        view={view}
-                        setView={setView}
-                        currentDate={currentDate}
-                        next={scheduler.next}
-                        prev={scheduler.prev}
-                        today={scheduler.today}
-                        onAddClick={useCallback(() => setEditorState({ isOpen: true, mode: 'create', event: {} }), [])}
-                        slotDuration={scheduler.slotDuration}
-                        setSlotDuration={scheduler.setSlotDuration}
-                        setCurrentDate={setCurrentDate}
-                        // New Props
-                        onPrev={scheduler.prev}
-                        onNext={scheduler.next}
-                        onToday={scheduler.today}
-                        currentView={view as View}
-                        onViewChange={(v) => {
-                            const normalized = v.toLowerCase().replace(/[^a-z]/g, '');
-                            const mapping: Record<string, ViewType> = {
-                                'day': 'day',
-                                'week': 'week',
-                                'workweek': 'workweek',
-                                'month': 'month',
-                                'timelineday': 'timeline-day',
-                                'timelineweek': 'timeline-week',
-                                'timelineworkweek': 'timeline-week',
-                                'timelinemonth': 'timeline-month',
-                                'agenda': 'agenda',
-                                'timeline': 'timeline-day'
-                            };
-                            const targetView = mapping[normalized] || normalized as ViewType;
-                            setView(targetView);
-                        }}
-                        views={props.views || ['Day', 'Week', 'Month']}
-                        onExportExcel={useCallback(() => props.onExportExcel?.(visibleEvents), [props.onExportExcel, visibleEvents])}
-                        onExportCSV={useCallback(() => props.onExportCSV?.(visibleEvents), [props.onExportCSV, visibleEvents])}
-                        onExportICS={useCallback(() => props.onExportICS?.(visibleEvents), [props.onExportICS, visibleEvents])}
-                        dir={scheduler.dir}
-                    />
+                    <React.Suspense fallback={<div className="h-12 w-full animate-pulse bg-muted/20 rounded-md mb-4" />}>
+                        {props.slots?.toolbar ? (
+                            <props.slots.toolbar
+                                view={view}
+                                setView={setView}
+                                currentDate={currentDate}
+                                next={scheduler.next}
+                                prev={scheduler.prev}
+                                today={scheduler.today}
+                                onAddClick={useCallback(() => setEditorState({ isOpen: true, mode: 'create', event: {} }), [])}
+                                slotDuration={scheduler.slotDuration}
+                                setSlotDuration={scheduler.setSlotDuration}
+                                setCurrentDate={setCurrentDate}
+                                onPrev={scheduler.prev}
+                                onNext={scheduler.next}
+                                onToday={scheduler.today}
+                                currentView={view as View}
+                                onViewChange={(v: string) => {
+                                    const normalized = v.toLowerCase().replace(/[^a-z]/g, '');
+                                    const mapping: Record<string, ViewType> = {
+                                        'day': 'day',
+                                        'week': 'week',
+                                        'workweek': 'workweek',
+                                        'month': 'month',
+                                        'timelineday': 'timeline-day',
+                                        'timelineweek': 'timeline-week',
+                                        'timelineworkweek': 'timeline-week',
+                                        'timelinemonth': 'timeline-month',
+                                        'agenda': 'agenda',
+                                        'timeline': 'timeline-day'
+                                    };
+                                    const targetView = mapping[normalized] || normalized as ViewType;
+                                    setView(targetView);
+                                }}
+                                views={props.views || ['Day', 'Week', 'Month']}
+                                onExportExcel={useCallback(() => props.onExportExcel?.(visibleEvents), [props.onExportExcel, visibleEvents])}
+                                onExportCSV={useCallback(() => props.onExportCSV?.(visibleEvents), [props.onExportCSV, visibleEvents])}
+                                onExportICS={useCallback(() => props.onExportICS?.(visibleEvents), [props.onExportICS, visibleEvents])}
+                                dir={scheduler.dir}
+                                {...props.slotProps?.toolbar}
+                            />
+                        ) : (
+                            <EzSchedulerToolbar
+                                view={view}
+                                setView={setView}
+                                currentDate={currentDate}
+                                next={scheduler.next}
+                                prev={scheduler.prev}
+                                today={scheduler.today}
+                                onAddClick={useCallback(() => setEditorState({ isOpen: true, mode: 'create', event: {} }), [])}
+                                slotDuration={scheduler.slotDuration}
+                                setSlotDuration={scheduler.setSlotDuration}
+                                setCurrentDate={setCurrentDate}
+                                onPrev={scheduler.prev}
+                                onNext={scheduler.next}
+                                onToday={scheduler.today}
+                                currentView={view as View}
+                                onViewChange={(v) => {
+                                    const normalized = v.toLowerCase().replace(/[^a-z]/g, '');
+                                    const mapping: Record<string, ViewType> = {
+                                        'day': 'day',
+                                        'week': 'week',
+                                        'workweek': 'workweek',
+                                        'month': 'month',
+                                        'timelineday': 'timeline-day',
+                                        'timelineweek': 'timeline-week',
+                                        'timelineworkweek': 'timeline-week',
+                                        'timelinemonth': 'timeline-month',
+                                        'agenda': 'agenda',
+                                        'timeline': 'timeline-day'
+                                    };
+                                    const targetView = mapping[normalized] || normalized as ViewType;
+                                    setView(targetView);
+                                }}
+                                views={props.views || ['Day', 'Week', 'Month']}
+                                onExportExcel={useCallback(() => props.onExportExcel?.(visibleEvents), [props.onExportExcel, visibleEvents])}
+                                onExportCSV={useCallback(() => props.onExportCSV?.(visibleEvents), [props.onExportCSV, visibleEvents])}
+                                onExportICS={useCallback(() => props.onExportICS?.(visibleEvents), [props.onExportICS, visibleEvents])}
+                                dir={scheduler.dir}
+                            />
+                        )}
+                    </React.Suspense>
                 )}
                 <DndContext sensors={sensors} onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
                     <div className="flex-1 overflow-hidden relative flex flex-col">
@@ -397,32 +442,65 @@ const EzSchedulerInner = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, re
                     </div>
 
                     {isQuickAddOpen && quickAddSelection && (
-                        <EzSchedulerQuickAdd
-                            start={quickAddSelection.start}
-                            end={quickAddSelection.end}
-                            resourceId={quickAddSelection.resourceId}
-                            resources={internalResources}
-                            onSave={handleQuickAddSave}
-                            onCancel={() => setIsQuickAddOpen(false)}
-                            onMoreOptions={(data) => {
-                                setIsQuickAddOpen(false);
-                                setEditorState({ isOpen: true, mode: 'create', event: data });
-                            }}
-                            position={quickAddPosition}
-                        />
+                        <React.Suspense fallback={null}>
+                            {props.slots?.quickAdd ? (
+                                <props.slots.quickAdd
+                                    start={quickAddSelection.start}
+                                    end={quickAddSelection.end}
+                                    resourceId={quickAddSelection.resourceId}
+                                    resources={internalResources}
+                                    onSave={handleQuickAddSave}
+                                    onCancel={() => setIsQuickAddOpen(false)}
+                                    onMoreOptions={(data: any) => { // Removed explicit type to avoid import issues
+                                        setIsQuickAddOpen(false);
+                                        setEditorState({ isOpen: true, mode: 'create', event: data });
+                                    }}
+                                    position={quickAddPosition}
+                                    {...props.slotProps?.quickAdd}
+                                />
+                            ) : (
+                                <EzSchedulerQuickAdd
+                                    start={quickAddSelection.start}
+                                    end={quickAddSelection.end}
+                                    resourceId={quickAddSelection.resourceId}
+                                    resources={internalResources}
+                                    onSave={handleQuickAddSave}
+                                    onCancel={() => setIsQuickAddOpen(false)}
+                                    onMoreOptions={(data) => {
+                                        setIsQuickAddOpen(false);
+                                        setEditorState({ isOpen: true, mode: 'create', event: data });
+                                    }}
+                                    position={quickAddPosition}
+                                />
+                            )}
+                        </React.Suspense>
                     )}
 
                     <React.Suspense fallback={null}>
-                        <EzEventModal
-                            isOpen={editorState.isOpen}
-                            onClose={() => setEditorState(prev => ({ ...prev, isOpen: false }))}
-                            mode={editorState.mode}
-                            event={editorState.event}
-                            onSave={handleSaveEvent}
-                            onDelete={handleDeleteEvent}
-                            resources={internalResources}
-                            locale={props.locale}
-                        />
+                        {props.slots?.eventModal ? (
+                            <props.slots.eventModal
+                                isOpen={editorState.isOpen}
+                                onClose={() => setEditorState(prev => ({ ...prev, isOpen: false }))}
+                                mode={editorState.mode}
+                                event={editorState.event}
+                                onSave={handleSaveEvent}
+                                onDelete={handleDeleteEvent}
+                                resources={internalResources}
+                                locale={props.locale}
+                                {...props.slotProps?.eventModal}
+                            />
+                        ) : (
+                            <EzEventModal
+                                isOpen={editorState.isOpen}
+                                onClose={() => setEditorState(prev => ({ ...prev, isOpen: false }))}
+                                mode={editorState.mode}
+                                event={editorState.event}
+                                onSave={handleSaveEvent}
+                                onDelete={handleDeleteEvent}
+                                resources={internalResources}
+                                locale={props.locale}
+                            />
+                        )}
                     </React.Suspense>
 
                     <Modal

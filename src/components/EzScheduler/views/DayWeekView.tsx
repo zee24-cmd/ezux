@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
-import { SchedulerEvent, Resource, ViewType, EzSchedulerComponents, GroupModel } from '../EzScheduler.types';
+import { SchedulerEvent, Resource, ViewType, GroupModel } from '../EzScheduler.types';
 import { isSameDay, areIntervalsOverlapping, addMinutes } from 'date-fns';
 import { cn } from '../../../lib/utils';
 import { Clock } from 'lucide-react';
@@ -91,11 +91,6 @@ interface DayWeekViewProps {
      * @group Properties 
      */
     locale?: string;
-    /** 
-     * Custom components for injection.
-     * @group Properties 
-     */
-    components?: EzSchedulerComponents;
     /** 
      * Callback when a range is selected.
      * @group Events 
@@ -259,7 +254,6 @@ export const DayWeekView: React.FC<DayWeekViewProps> = ({
     onViewChange,
     onDateChange,
     locale,
-    components,
     onRangeSelect,
     onSlotClick,
     onSlotDoubleClick,
@@ -689,9 +683,7 @@ export const DayWeekView: React.FC<DayWeekViewProps> = ({
                                                             return <div className="w-full h-full" dangerouslySetInnerHTML={content} />;
                                                         }
                                                         return <div className="w-full h-full">{content}</div>;
-                                                    })() : components?.timeSlot ? (
-                                                        <components.timeSlot date={slotDate} isWorkHour={isWorkHour} />
-                                                    ) : null}
+                                                    })() : null}
                                                 </DroppableSlot>
                                             );
                                         })}
@@ -791,7 +783,6 @@ export const DayWeekView: React.FC<DayWeekViewProps> = ({
                                             onClick={onEventClick}
                                             onDoubleClick={onEventDoubleClick}
                                             onDelete={onEventDelete}
-                                            components={components}
                                             orientation='vertical'
                                             resizable={true}
                                             isBlocked={ev.isBlock}

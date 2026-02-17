@@ -2,7 +2,7 @@ import React, { useEffect, memo, useRef, useState } from 'react';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { EzContextMenu } from '../../shared/components/EzContextMenu';
-import { TreeNode, EzTreeViewComponents } from './EzTreeView.types';
+import { TreeNode } from './EzTreeView.types';
 import { ChevronRight, ChevronDown, Loader2, Check, Minus } from 'lucide-react';
 import { HighlightText } from '../../shared/components/HighlightText';
 import { cn } from '../../lib/utils';
@@ -50,8 +50,12 @@ interface EzTreeViewItemProps {
     tabIndex: number;
     /** Whether to automatically focus this item when mounted. @group Properties */
     autoFocus?: boolean;
-    /** Custom subcomponent slots. @group Subcomponents */
-    components?: EzTreeViewComponents;
+
+    /** Slots for modular composition. @group Extensibility */
+    slots?: any;
+    /** Props for slots. @group Extensibility */
+    slotProps?: any;
+
     /** Whether text wrapping is allowed. @group Appearance */
     allowTextWrap?: boolean;
     /** Animation configuration. @group Appearance */
@@ -82,7 +86,8 @@ export const EzTreeViewItem = memo(({
     node, level, isExpanded, isSelected, isChecked, isIndeterminate, isLoading, hasChildren,
     onToggleExpand, onToggleSelect, onToggleCheck, onRename,
     showCheckboxes, allowEditing, searchTerm,
-    style, onKeyDown, tabIndex, autoFocus, components,
+    style, onKeyDown, tabIndex, autoFocus,
+    slots, slotProps,
     allowTextWrap, animation, checkOnClick, fullRowSelect: _fullRowSelect, fullRowNavigable: _fullRowNavigable,
     onNodeClicked, onDrawNode,
     isEditing: externalIsEditing, onEditingChange, dir
@@ -158,9 +163,9 @@ export const EzTreeViewItem = memo(({
         zIndex: isDragging ? 999 : 'auto',
     };
 
-    const CustomNode = components?.node;
-    const CustomExpandIcon = components?.expandIcon;
-    const CustomCheckbox = components?.checkbox;
+    const CustomNode = slots?.node;
+    const CustomExpandIcon = slots?.expandIcon;
+    const CustomCheckbox = slots?.checkbox;
 
     const renderExpandIcon = () => {
         if (isLoading) return <Loader2 className="w-3.5 h-3.5 animate-spin" />;
@@ -168,7 +173,7 @@ export const EzTreeViewItem = memo(({
 
         if (CustomExpandIcon) {
             const IconComp = CustomExpandIcon as any;
-            return <IconComp isExpanded={isExpanded} isLoading={isLoading} />;
+            return <IconComp isExpanded={isExpanded} isLoading={isLoading} {...slotProps?.expandIcon} />;
         }
 
         if (isExpanded) return <ChevronDown className="w-4 h-4" />;
@@ -180,7 +185,7 @@ export const EzTreeViewItem = memo(({
 
         if (CustomCheckbox) {
             const CheckComp = CustomCheckbox;
-            return <CheckComp checked={isChecked} indeterminate={isIndeterminate} onChange={() => onToggleCheck(node.id)} />;
+            return <CheckComp checked={isChecked} indeterminate={isIndeterminate} onChange={() => onToggleCheck(node.id)} {...slotProps?.checkbox} />;
         }
 
         return (
@@ -252,6 +257,7 @@ export const EzTreeViewItem = memo(({
                         onToggleExpand={() => onToggleExpand(node.id)}
                         onToggleSelect={() => onToggleSelect(node.id)}
                         onToggleCheck={() => onToggleCheck(node.id)}
+                        {...slotProps?.node}
                     />
                 ) : (
                     <>

@@ -52,15 +52,12 @@ export interface KanbanBoardProps {
     highlightedCardId?: string | null;
     /** Optional list of filtered cards to display instead of all board cards. @group Data */
     filteredCards?: KanbanCard[];
-    /** Custom renderers for board elements. @group Extensibility */
-    customRenderers?: {
-        card?: (card: KanbanCard, defaultContent: React.JSX.Element) => React.JSX.Element;
-        cardContent?: (card: KanbanCard) => React.JSX.Element;
-        column?: (column: any) => React.JSX.Element;
-    };
+    /** Slots for modular composition. @group Extensibility */
+    slots?: any;
+    /** Props for slots. @group Extensibility */
+    slotProps?: any;
     /** Custom class name for the board container. @group Appearance */
     className?: string;
-    /** Current view mode of the board. @group State */
     /** Current view mode of the board. @group State */
     view?: 'standard' | 'swimlane' | 'timeline' | 'analytics';
     /** Text direction. @group Appearance */
@@ -89,7 +86,8 @@ export const KanbanBoardComponent: React.FC<KanbanBoardProps> = ({
     selectedColumnId,
     draggedCardId,
     filteredCards,
-    customRenderers,
+    slots,
+    slotProps,
     className,
     view = 'standard',
     dir,
@@ -138,7 +136,8 @@ export const KanbanBoardComponent: React.FC<KanbanBoardProps> = ({
                                 onToggleCollapse={onToggleSwimlaneCollapse}
                                 draggedCardId={draggedCardId}
                                 customFields={board.customFields}
-                                customRenderers={customRenderers as any}
+                                slots={slots}
+                                slotProps={slotProps}
                                 dir={dir}
                             />
                         );
@@ -163,7 +162,8 @@ export const KanbanBoardComponent: React.FC<KanbanBoardProps> = ({
                         onToggleCollapse={() => { }} // Cannot collapse 'uncategorized' for now
                         draggedCardId={draggedCardId}
                         customFields={board.customFields}
-                        customRenderers={customRenderers as any}
+                        slots={slots}
+                        slotProps={slotProps}
                         dir={dir}
                     />
                 )}
@@ -196,7 +196,8 @@ export const KanbanBoardComponent: React.FC<KanbanBoardProps> = ({
                             selectedColumnId={selectedColumnId}
                             draggedCardId={draggedCardId}
                             customFields={board.customFields}
-                            customRenderers={customRenderers as any}
+                            slots={slots}
+                            slotProps={slotProps}
                             dir={dir}
                         />
                     );
