@@ -54,7 +54,7 @@ export const EzContextMenu = <TData,>({ row, data, contextId, children, enabled 
                             ) : (
                                 <ContextMenuItem
                                     inset
-                                    onClick={() => {
+                                    onSelect={() => {
                                         if (item.onClick) {
                                             item.onClick(effectiveData);
                                         } else {
@@ -73,40 +73,32 @@ export const EzContextMenu = <TData,>({ row, data, contextId, children, enabled 
                 ) : (
                     /* Default EzTable Actions (Legacy Fallback) */
                     <>
-                        <ContextMenuItem inset onClick={() => handleAction('edit')}>
-                            Edit Row
-                            <ContextMenuShortcut>⌘E</ContextMenuShortcut>
-                        </ContextMenuItem>
-                        <ContextMenuItem inset onClick={() => handleAction('copy')}>
+                        <ContextMenuItem inset onSelect={() => handleAction('copy')}>
                             Copy Data
                             <ContextMenuShortcut>⌘C</ContextMenuShortcut>
-                        </ContextMenuItem>
-                        <ContextMenuItem inset onClick={() => handleAction('paste')}>
-                            Paste Row
-                            <ContextMenuShortcut>⌘V</ContextMenuShortcut>
                         </ContextMenuItem>
                         <ContextMenuSeparator />
                         {row && (
                             <>
                                 {row.getIsPinned() !== 'top' && (
-                                    <ContextMenuItem inset onClick={() => handleAction('pin-top')}>
+                                    <ContextMenuItem inset onSelect={() => handleAction('pin-top')}>
                                         Pin to Top
                                     </ContextMenuItem>
                                 )}
                                 {row.getIsPinned() !== 'bottom' && (
-                                    <ContextMenuItem inset onClick={() => handleAction('pin-bottom')}>
+                                    <ContextMenuItem inset onSelect={() => handleAction('pin-bottom')}>
                                         Pin to Bottom
                                     </ContextMenuItem>
                                 )}
                                 {row.getIsPinned() && (
-                                    <ContextMenuItem inset onClick={() => handleAction('unpin')}>
+                                    <ContextMenuItem inset onSelect={() => handleAction('unpin')}>
                                         Unpin Row
                                     </ContextMenuItem>
                                 )}
                                 <ContextMenuSeparator />
                             </>
                         )}
-                        <ContextMenuItem inset className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950/50" onClick={() => handleAction('delete')}>
+                        <ContextMenuItem inset className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950/50" onSelect={() => handleAction('delete')}>
                             Delete Row
                             <ContextMenuShortcut>⌘⌫</ContextMenuShortcut>
                         </ContextMenuItem>

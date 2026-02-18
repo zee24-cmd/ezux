@@ -49,7 +49,7 @@ export const StatusBadge = memo<StatusBadgeProps>(({
             )}
             style={{
                 backgroundColor: isOutline ? 'transparent' : `var(--ez-status-${type}-bg)`,
-                color: isOutline ? `var(--ez-status-${type}-bg)` : `var(--ez-status-${type}-text)`,
+                color: isOutline ? (type === 'neutral' ? `var(--ez-status-${type}-text)` : `var(--ez-status-${type}-bg)`) : `var(--ez-status-${type}-text)`,
                 borderColor: `var(--ez-status-${type}-border)`,
                 minWidth: '120px'
             }}
