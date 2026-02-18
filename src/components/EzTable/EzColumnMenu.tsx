@@ -11,7 +11,7 @@ import {
     DropdownMenuSubContent,
     DropdownMenuCheckboxItem
 } from '../ui/dropdown-menu';
-import { MoreVertical, ArrowUp, ArrowDown, ArrowLeftToLine, ArrowRightToLine, EyeOff, XCircle } from 'lucide-react';
+import { MoreVertical, ArrowUp, ArrowDown, ArrowLeftToLine, ArrowRightToLine, EyeOff, XCircle, Group, Ungroup } from 'lucide-react';
 
 interface EzColumnMenuProps<TData, TValue> {
     column: Column<TData, TValue>;
@@ -48,6 +48,25 @@ export function EzColumnMenu<TData, TValue>({ column, table }: EzColumnMenuProps
                                 Clear Sort
                             </DropdownMenuItem>
                         )}
+                        <DropdownMenuSeparator />
+                    </>
+                )}
+                {/* Grouping */}
+                {column.getCanGroup() && (
+                    <>
+                        <DropdownMenuItem onClick={() => column.toggleGrouping()}>
+                            {column.getIsGrouped() ? (
+                                <>
+                                    <Ungroup className="mr-2 h-3.5 w-3.5 text-zinc-500/70" />
+                                    Ungroup
+                                </>
+                            ) : (
+                                <>
+                                    <Group className="mr-2 h-3.5 w-3.5 text-zinc-500/70" />
+                                    Group by column
+                                </>
+                            )}
+                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
                     </>
                 )}

@@ -281,6 +281,7 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
 
     const { handleDragEnd, handleKeyDown, handleDragStart } = useEventHandlers({
         onDragStart: (event: DragStartEvent) => {
+            console.log("[EzTable] DragStart", event);
             setActiveDragHeaderId(event.active.id as string);
         },
         onDragEnd: (event: DragEndEvent) => {
@@ -288,6 +289,7 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
             const { active, over } = event;
             if (!over) return;
             const columnId = active.id as string;
+            console.log(`[EzTable] DragEnd active=${active.id} over=${over.id} columnId=${columnId}`);
             const currentGrouping = [...table.getState().grouping];
 
             if (over.id === 'grouping-panel') {
@@ -510,7 +512,7 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
                         <DragOverlay dropAnimation={null}>
                             {activeDragHeaderId ? (
                                 <EzHeaderDragPreview
-                                    header={table.getImageHeaders().find((h: any) => h.id === activeDragHeaderId) || table.getLeafHeaders().find((h: any) => h.id === activeDragHeaderId) as any}
+                                    header={table.getFlatHeaders().find((h: any) => h.id === activeDragHeaderId) || table.getLeafHeaders().find((h: any) => h.id === activeDragHeaderId) as any}
                                     density={density}
                                 />
                             ) : null}

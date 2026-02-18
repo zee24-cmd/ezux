@@ -1,6 +1,6 @@
 import React from 'react';
 import { Table } from '@tanstack/react-table';
-import { DraggableHeader } from './DraggableHeader';
+import { EzDraggableHeader } from './EzDraggableHeader';
 import { cn } from '../../../lib/utils';
 import { flexColumn, borderStyles } from '../../../shared/utils/ezStyleUtils';
 
@@ -59,7 +59,7 @@ function _EzTableHeaderSection<TData extends object>({
                         </div>
                     ) : (
                         headerGroup.headers.map((header: any) => (
-                            <DraggableHeader
+                            <EzDraggableHeader
                                 key={header.id}
                                 header={header}
                                 density={density}

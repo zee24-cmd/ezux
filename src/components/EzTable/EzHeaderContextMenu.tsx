@@ -6,7 +6,7 @@ import {
     ContextMenuTrigger,
     ContextMenuSeparator,
 } from '../ui/context-menu';
-import { Pin, PinOff } from 'lucide-react';
+import { Pin, PinOff, Group, Ungroup } from 'lucide-react';
 import { Header } from '@tanstack/react-table';
 
 interface EzHeaderContextMenuProps {
@@ -17,6 +17,8 @@ interface EzHeaderContextMenuProps {
 export function EzHeaderContextMenu({ header, children }: EzHeaderContextMenuProps) {
     const column = header.column;
     const isPinned = column.getIsPinned();
+    const canGroup = column.getCanGroup();
+    const isGrouped = column.getIsGrouped();
 
     return (
         <ContextMenu>
@@ -24,6 +26,27 @@ export function EzHeaderContextMenu({ header, children }: EzHeaderContextMenuPro
                 {children}
             </ContextMenuTrigger>
             <ContextMenuContent className="w-48">
+                {canGroup && (
+                    <>
+                        <ContextMenuItem
+                            onClick={() => column.toggleGrouping()}
+                            className="gap-2"
+                        >
+                            {isGrouped ? (
+                                <>
+                                    <Ungroup className="w-3.5 h-3.5" />
+                                    Ungroup {column.id}
+                                </>
+                            ) : (
+                                <>
+                                    <Group className="w-3.5 h-3.5 text-zinc-500/70" />
+                                    Group by column
+                                </>
+                            )}
+                        </ContextMenuItem>
+                        <ContextMenuSeparator />
+                    </>
+                )}
                 <ContextMenuItem
                     onClick={() => column.pin('left')}
                     disabled={isPinned === 'left'}

@@ -18,7 +18,7 @@ interface DraggableHeaderProps {
     columnPinning?: any;
 }
 
-export const DraggableHeader = memo(({ header, density, onAutoFit, columnPinning }: DraggableHeaderProps) => {
+export const EzDraggableHeader = memo(({ header, density, onAutoFit, columnPinning }: DraggableHeaderProps) => {
     const { attributes, listeners, setNodeRef: setDraggableRef, isDragging } = useDraggable({
         id: header.column.id,
         disabled: !header.column.getCanGroup() || header.isPlaceholder,
@@ -100,7 +100,7 @@ export const DraggableHeader = memo(({ header, density, onAutoFit, columnPinning
             )}>
                 {header.column.getCanGroup() && !header.isPlaceholder && (
                     <div {...attributes} {...listeners} className={cn(
-                        "cursor-grab active:cursor-grabbing p-1 text-zinc-400 opacity-0 group-hover/header:opacity-100 transition-opacity",
+                        "cursor-grab active:cursor-grabbing p-1 text-zinc-400 opacity-0 group-hover/header:opacity-100 transition-opacity z-50",
                         align === 'center'
                             ? (meta?.dir === 'rtl' ? "absolute right-1 top-1/2 -translate-y-1/2" : "absolute left-1 top-1/2 -translate-y-1/2")
                             : (meta?.dir === 'rtl' ? "-mr-2 ml-1" : "-ml-2 mr-1")
@@ -157,10 +157,10 @@ export const DraggableHeader = memo(({ header, density, onAutoFit, columnPinning
         </div >
     );
 
-    if (header.column.getCanPin()) {
+    if (header.column.getCanPin() || header.column.getCanGroup()) {
         return <EzHeaderContextMenu header={header}>{content}</EzHeaderContextMenu>;
     }
     return content;
 });
 
-DraggableHeader.displayName = 'DraggableHeader';
+EzDraggableHeader.displayName = 'EzDraggableHeader';
