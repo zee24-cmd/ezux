@@ -14,9 +14,12 @@ import { EzTableProps, EzTableRef } from './EzTable.types';
 import { cn } from '../../lib/utils';
 import {
     DndContext,
-    DragEndEvent
+    DragEndEvent,
+    DragOverlay,
+    DragStartEvent
 } from '@dnd-kit/core';
 import { useImperativeAPI, useDndHandlers, useDialogState, useFieldValidation, useInitCoreServices } from '../../shared/hooks';
+import { EzHeaderDragPreview } from './components/EzHeaderDragPreview';
 const EzGroupingPanel = React.lazy(() => import('./EzGroupingPanel').then(m => ({ default: m.EzGroupingPanel })));
 const EzTableEditDialog = React.lazy(() => import('./EzTableEditDialog').then(m => ({ default: m.EzTableEditDialog })));
 
@@ -274,8 +277,14 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
 
     useImperativeAPI(ref, api);
 
-    const { handleDragEnd, handleKeyDown } = useEventHandlers({
+    const [activeDragHeaderId, setActiveDragHeaderId] = React.useState<string | null>(null);
+
+    const { handleDragEnd, handleKeyDown, handleDragStart } = useEventHandlers({
+        onDragStart: (event: DragStartEvent) => {
+            setActiveDragHeaderId(event.active.id as string);
+        },
         onDragEnd: (event: DragEndEvent) => {
+            setActiveDragHeaderId(null);
             const { active, over } = event;
             if (!over) return;
             const columnId = active.id as string;
@@ -323,16 +332,19 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
             colIndex >= Math.min(start.c, end.c) && colIndex <= Math.max(start.c, end.c);
     }, [rangeSelection]);
 
-    const { sensors, onDragEnd } = useDndHandlers({
+    const { sensors, onDragEnd, onDragStart } = useDndHandlers({
+        onDragStart: handleDragStart,
         onDragEnd: handleDragEnd,
         distance: 5
     });
 
+
     return (
         <EzErrorBoundary fallback={<EzTableErrorFallback />}>
             <TooltipProvider>
-                <DndContext sensors={sensors} onDragEnd={onDragEnd}>
+                <DndContext sensors={sensors} onDragEnd={onDragEnd} onDragStart={onDragStart}>
                     <div className={cn(flexColumn, "w-full min-h-0 gap-3", props.className, props.classNames?.root)} dir={dir}>
+
                         {props.enableGrouping && (
                             <React.Suspense fallback={null}>
                                 <EzGroupingPanel grouping={table.getState().grouping} onGroupingChange={table.setGrouping} columns={table.getAllColumns()} />
@@ -495,6 +507,14 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
                                 />
                             </React.Suspense>
                         )}
+                        <DragOverlay dropAnimation={null}>
+                            {activeDragHeaderId ? (
+                                <EzHeaderDragPreview
+                                    header={table.getImageHeaders().find((h: any) => h.id === activeDragHeaderId) || table.getLeafHeaders().find((h: any) => h.id === activeDragHeaderId) as any}
+                                    density={density}
+                                />
+                            ) : null}
+                        </DragOverlay>
                     </div>
                 </DndContext>
             </TooltipProvider>

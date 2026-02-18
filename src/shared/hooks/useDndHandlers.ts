@@ -1,6 +1,7 @@
-import { useSensor, useSensors, PointerSensor, CollisionDetection, DragEndEvent } from '@dnd-kit/core';
+import { useSensor, useSensors, PointerSensor, CollisionDetection, DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 
 interface UseDndHandlersOptions {
+    onDragStart?: (event: DragStartEvent) => void;
     onDragEnd: (event: DragEndEvent) => void;
     collisionDetection?: CollisionDetection;
     distance?: number;
@@ -22,6 +23,7 @@ export const useDndHandlers = (options: UseDndHandlersOptions) => {
 
     return {
         sensors,
+        onDragStart: options.onDragStart,
         onDragEnd: options.onDragEnd,
         collisionDetection: options.collisionDetection
     };
