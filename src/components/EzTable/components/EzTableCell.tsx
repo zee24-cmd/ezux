@@ -9,7 +9,6 @@ import {
     getPinnedStyles,
     getSelectionClasses,
     getTextOverflowClasses,
-    combineStyleClasses,
     getGridLinesClasses
 } from '../../../shared/utils/styleUtils';
 import { TooltipWrapper } from '../../../shared/components/TooltipWrapper';
@@ -158,7 +157,7 @@ export const EzTableCell = memo(({
                 }
             }}
             onDoubleClick={(e) => onCellDoubleClick?.({ row: cell.row.original, columnId: cell.column.id, cellValue: cell.getValue(), event: e, rowIndex: virtualRowIndex, colIndex: cellIndex })}
-            className={combineStyleClasses(
+            className={cn(
                 "px-4 text-sm text-foreground flex select-none min-h-full min-w-0 flex-shrink-0 relative",
                 isFocused && "z-20",
                 isFocused && validationResult.isValid && "bg-primary/5",

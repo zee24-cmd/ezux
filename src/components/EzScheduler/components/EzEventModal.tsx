@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useForm } from '@tanstack/react-form';
 import { createPortal } from 'react-dom';
-import { SchedulerEvent, Resource } from '../EzScheduler.types';
+import { SchedulerEvent, Resource, EditorMode, Recurrence } from '../EzScheduler.types';
 import { Button } from '../../ui/button';
 import { Input } from '../../ui/input';
 import { Label } from '../../ui/label';
@@ -12,7 +12,7 @@ import { DateTimePicker } from '../../ui/date-time-picker';
 interface EzEventModalProps {
     isOpen: boolean;
     onClose: () => void;
-    mode: 'create' | 'edit' | 'view';
+    mode: EditorMode;
     event?: Partial<SchedulerEvent>;
     onSave: (event: Partial<SchedulerEvent>) => void;
     onDelete?: (eventId: string) => void;
@@ -81,14 +81,14 @@ export const EzEventModal: React.FC<EzEventModalProps> = ({
                 description: value.description,
                 timezone: value.isTimezoneEnabled ? { start: value.startTimezone, end: value.endTimezone } : undefined,
                 recurrence: value.repeatFrequency !== 'Never' ? {
-                    frequency: value.repeatFrequency,
+                    frequency: value.repeatFrequency as Recurrence['frequency'],
                     interval: value.repeatInterval,
                     unit: value.repeatFrequency.replace('ly', '') + '(s)',
-                    end: value.repeatEndLevel,
+                    end: value.repeatEndLevel as Recurrence['end'],
                     endCount: value.repeatEndLevel === 'Count' ? value.repeatEndCount : undefined,
                     endUntil: value.repeatEndLevel === 'Until' ? value.repeatEndUntil : undefined,
                     days: value.repeatFrequency === 'Weekly' ? value.repeatDays : undefined,
-                    repeatBy: (value.repeatFrequency === 'Monthly' || value.repeatFrequency === 'Yearly') ? value.repeatBy : undefined
+                    repeatBy: (value.repeatFrequency === 'Monthly' || value.repeatFrequency === 'Yearly') ? value.repeatBy as Recurrence['repeatBy'] : undefined
                 } : undefined,
                 attachments: value.attachments,
             });
@@ -203,7 +203,7 @@ export const EzEventModal: React.FC<EzEventModalProps> = ({
                                             onBlur={field.handleBlur}
                                             disabled={isReadOnly}
                                             className={cn(
-                                                "h-10 rounded-md border-slate-100 focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20 bg-background transition-all",
+                                                "h-10 rounded-md border-border focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20 bg-background transition-all",
                                                 field.state.meta.errors.length > 0 && "border-destructive focus-visible:border-destructive ring-destructive/20"
                                             )}
                                         />
@@ -226,7 +226,7 @@ export const EzEventModal: React.FC<EzEventModalProps> = ({
                                             value={field.state.value}
                                             onChange={(e) => field.handleChange(e.target.value)}
                                             disabled={isReadOnly}
-                                            className="h-10 rounded-md border-slate-100 focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20 bg-background transition-all"
+                                            className="h-10 rounded-md border-border focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20 bg-background transition-all"
                                         />
                                     </div>
                                 )}
@@ -250,7 +250,7 @@ export const EzEventModal: React.FC<EzEventModalProps> = ({
                                             required
                                             locale={locale}
                                             mode={form.getFieldValue('isAllDay') ? 'date' : 'datetime'}
-                                            className="border-slate-200 focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20"
+                                            className="border-border focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20"
                                         />
                                         {field.state.meta.errors.length > 0 && (
                                             <p className="text-[12px] font-medium text-destructive mt-1.5">
@@ -282,7 +282,7 @@ export const EzEventModal: React.FC<EzEventModalProps> = ({
                                             mode={form.getFieldValue('isAllDay') ? 'date' : 'datetime'}
                                             minDate={form.getFieldValue('start')}
                                             className={cn(
-                                                "border-slate-200 focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20",
+                                                "border-border focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20",
                                                 field.state.meta.errors.length > 0 && "border-destructive focus-visible:border-destructive ring-destructive/20"
                                             )}
                                         />
@@ -308,7 +308,7 @@ export const EzEventModal: React.FC<EzEventModalProps> = ({
                                                 checked={field.state.value}
                                                 onChange={(e) => field.handleChange(e.target.checked)}
                                                 disabled={isReadOnly}
-                                                className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary/30 accent-primary transition-all cursor-pointer"
+                                                className="h-4 w-4 rounded border-border/50 text-primary focus:ring-primary/30 accent-primary transition-all cursor-pointer"
                                             />
                                             <span className="text-[14px] font-medium text-foreground/70 group-hover:text-foreground">All day event</span>
                                         </label>
@@ -325,7 +325,7 @@ export const EzEventModal: React.FC<EzEventModalProps> = ({
                                                 checked={field.state.value}
                                                 onChange={(e) => field.handleChange(e.target.checked)}
                                                 disabled={isReadOnly}
-                                                className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary/30 accent-primary transition-all cursor-pointer"
+                                                className="h-4 w-4 rounded border-border/50 text-primary focus:ring-primary/30 accent-primary transition-all cursor-pointer"
                                             />
                                             <span className="text-[14px] font-medium text-foreground/70 group-hover:text-foreground">Enable timezone</span>
                                         </label>
@@ -339,14 +339,14 @@ export const EzEventModal: React.FC<EzEventModalProps> = ({
                         <form.Subscribe
                             selector={(state) => [state.values.isTimezoneEnabled]}
                             children={([isTimezoneEnabled]) => isTimezoneEnabled && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-slate-50/50 rounded-lg border border-slate-100 animate-in slide-in-from-top-2 duration-300">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-highlight/50 rounded-lg border border-border animate-in slide-in-from-top-2 duration-300">
                                     <form.Field
                                         name="startTimezone"
                                         children={(field) => (
                                             <div className="space-y-2">
                                                 <Label className="text-[13px] font-semibold text-foreground/70">Start Timezone</Label>
                                                 <select
-                                                    className="w-full h-10 px-3 rounded-md border-slate-100 bg-background text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-primary/20 focus-visible:border-primary appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xlmns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20fill%3D%27none%27%20viewBox%3D%270%200%2020%2020%27%3E%3Cpath%20stroke%3D%27%236b7280%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%20stroke-width%3D%271.5%27%20d%3D%27m6%208%204%204%204-4%27%2F%3E%3C%2Fsvg%3E')] bg-[length:20px] bg-[right_8px_center] bg-no-repeat transition-all"
+                                                    className="w-full h-10 px-3 rounded-md border-border bg-background text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-primary/20 focus-visible:border-primary appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xlmns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20fill%3D%27none%27%20viewBox%3D%270%200%2020%2020%27%3E%3Cpath%20stroke%3D%27%236b7280%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%20stroke-width%3D%271.5%27%20d%3D%27m6%208%204%204%204-4%27%2F%3E%3C%2Fsvg%3E')] bg-[length:20px] bg-[right_8px_center] bg-no-repeat transition-all"
                                                     value={field.state.value}
                                                     onChange={(e) => field.handleChange(e.target.value)}
                                                 >
@@ -363,7 +363,7 @@ export const EzEventModal: React.FC<EzEventModalProps> = ({
                                             <div className="space-y-2">
                                                 <Label className="text-[13px] font-semibold text-foreground/70">End Timezone</Label>
                                                 <select
-                                                    className="w-full h-10 px-3 rounded-md border-slate-100 bg-background text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-primary/20 focus-visible:border-primary appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xlmns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20fill%3D%27none%27%20viewBox%3D%270%200%2020%2020%27%3E%3Cpath%20stroke%3D%27%236b7280%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%20stroke-width%3D%271.5%27%20d%3D%27m6%208%204%204%204-4%27%2F%3E%3C%2Fsvg%3E')] bg-[length:20px] bg-[right_8px_center] bg-no-repeat transition-all"
+                                                    className="w-full h-10 px-3 rounded-md border-border bg-background text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-primary/20 focus-visible:border-primary appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xlmns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20fill%3D%27none%27%20viewBox%3D%270%200%2020%2020%27%3E%3Cpath%20stroke%3D%27%236b7280%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%20stroke-width%3D%271.5%27%20d%3D%27m6%208%204%204%204-4%27%2F%3E%3C%2Fsvg%3E')] bg-[length:20px] bg-[right_8px_center] bg-no-repeat transition-all"
                                                     value={field.state.value}
                                                     onChange={(e) => field.handleChange(e.target.value)}
                                                 >
@@ -386,9 +386,9 @@ export const EzEventModal: React.FC<EzEventModalProps> = ({
                                     <div className="space-y-2">
                                         <Label className="text-[13px] font-semibold text-foreground/70">Repeat</Label>
                                         <select
-                                            className="w-full h-10 px-3 rounded-md border-slate-100 bg-background text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-primary/20 focus-visible:border-primary appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xlmns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20fill%3D%27none%27%20viewBox%3D%270%200%2020%2020%27%3E%3Cpath%20stroke%3D%27%236b7280%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%20stroke-width%3D%271.5%27%20d%3D%27m6%208%204%204%204-4%27%2F%3E%3C%2Fsvg%3E')] bg-[length:20px] bg-[right_8px_center] bg-no-repeat transition-all"
+                                            className="w-full h-10 px-3 rounded-md border-border bg-background text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-primary/20 focus-visible:border-primary appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xlmns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20fill%3D%27none%27%20viewBox%3D%270%200%2020%2020%27%3E%3Cpath%20stroke%3D%27%236b7280%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%20stroke-width%3D%271.5%27%20d%3D%27m6%208%204%204%204-4%27%2F%3E%3C%2Fsvg%3E')] bg-[length:20px] bg-[right_8px_center] bg-no-repeat transition-all"
                                             value={field.state.value}
-                                            onChange={(e) => field.handleChange(e.target.value)}
+                                            onChange={(e) => field.handleChange(e.target.value as any)}
                                         >
                                             <option value="Never">Never</option>
                                             <option value="Daily">Daily</option>
@@ -409,9 +409,9 @@ export const EzEventModal: React.FC<EzEventModalProps> = ({
                                             <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
                                                 <Label className="text-[13px] font-semibold text-foreground/70">End</Label>
                                                 <select
-                                                    className="w-full h-10 px-3 rounded-md border-slate-100 bg-background text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-primary/20 focus-visible:border-primary appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xlmns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20fill%3D%27none%27%20viewBox%3D%270%200%2020%2020%27%3E%3Cpath%20stroke%3D%27%236b7280%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%20stroke-width%3D%271.5%27%20d%3D%27m6%208%204%204%204-4%27%2F%3E%3C%2Fsvg%3E')] bg-[length:20px] bg-[right_8px_center] bg-no-repeat transition-all"
+                                                    className="w-full h-10 px-3 rounded-md border-border bg-background text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-primary/20 focus-visible:border-primary appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xlmns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20fill%3D%27none%27%20viewBox%3D%270%200%2020%2020%27%3E%3Cpath%20stroke%3D%27%236b7280%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%20stroke-width%3D%271.5%27%20d%3D%27m6%208%204%204%204-4%27%2F%3E%3C%2Fsvg%3E')] bg-[length:20px] bg-[right_8px_center] bg-no-repeat transition-all"
                                                     value={field.state.value}
-                                                    onChange={(e) => field.handleChange(e.target.value)}
+                                                    onChange={(e) => field.handleChange(e.target.value as any)}
                                                 >
                                                     <option value="Never">Never</option>
                                                     <option value="Until">Until</option>
@@ -436,7 +436,7 @@ export const EzEventModal: React.FC<EzEventModalProps> = ({
                                                 <Label className="text-[13px] font-semibold text-foreground/70">Repeat every</Label>
                                                 <div className="flex items-center gap-3">
                                                     <select
-                                                        className="flex-1 h-10 px-3 rounded-md border-slate-100 bg-background text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-primary/20 focus-visible:border-primary appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xlmns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20fill%3D%27none%27%20viewBox%3D%270%200%2020%2020%27%3E%3Cpath%20stroke%3D%27%236b7280%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%20stroke-width%3D%271.5%27%20d%3D%27m6%208%204%204%204-4%27%2F%3E%3C%2Fsvg%3E')] bg-[length:20px] bg-[right_8px_center] bg-no-repeat transition-all"
+                                                        className="flex-1 h-10 px-3 rounded-md border-border bg-background text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-primary/20 focus-visible:border-primary appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xlmns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20fill%3D%27none%27%20viewBox%3D%270%200%2020%2020%27%3E%3Cpath%20stroke%3D%27%236b7280%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%20stroke-width%3D%271.5%27%20d%3D%27m6%208%204%204%204-4%27%2F%3E%3C%2Fsvg%3E')] bg-[length:20px] bg-[right_8px_center] bg-no-repeat transition-all"
                                                         value={field.state.value}
                                                         onChange={(e) => field.handleChange(parseInt(e.target.value))}
                                                     >
@@ -464,7 +464,7 @@ export const EzEventModal: React.FC<EzEventModalProps> = ({
                                                         locale={locale}
                                                         mode="date"
                                                         minDate={form.getFieldValue('start')}
-                                                        className="border-slate-100 focus:border-primary"
+                                                        className="border-border focus:border-primary"
                                                     />
                                                 </div>
                                             )}
@@ -481,7 +481,7 @@ export const EzEventModal: React.FC<EzEventModalProps> = ({
                                                         min={1}
                                                         value={field.state.value}
                                                         onChange={(e) => field.handleChange(parseInt(e.target.value))}
-                                                        className="h-10 rounded-md border-slate-100 focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20 bg-background transition-all"
+                                                        className="h-10 rounded-md border-border focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20 bg-background transition-all"
                                                     />
                                                 </div>
                                             )}
@@ -576,7 +576,7 @@ export const EzEventModal: React.FC<EzEventModalProps> = ({
                                     <textarea
                                         id="description"
                                         placeholder="Add description"
-                                        className="flex min-h-[100px] w-full rounded-md border-slate-100 bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-primary/20 focus-visible:border-primary disabled:cursor-not-allowed disabled:opacity-50 resize-none transition-all hover:border-slate-200"
+                                        className="flex min-h-[100px] w-full rounded-md border-border bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-primary/20 focus-visible:border-primary disabled:cursor-not-allowed disabled:opacity-50 resize-none transition-all hover:border-border"
                                         value={field.state.value}
                                         onChange={(e) => field.handleChange(e.target.value)}
                                         disabled={isReadOnly}
@@ -609,7 +609,7 @@ export const EzEventModal: React.FC<EzEventModalProps> = ({
                                             type="button"
                                             variant="outline"
                                             size="sm"
-                                            className="h-8 text-xs font-semibold gap-2 border-dashed border-slate-300 hover:border-indigo-600/40 hover:text-indigo-600 transition-all"
+                                            className="h-8 text-xs font-semibold gap-2 border-dashed border-border/50 hover:border-primary/40 hover:text-primary transition-all"
                                             onClick={() => document.getElementById('file-upload')?.click()}
                                         >
                                             <Paperclip className="w-3 h-3" /> Add Files
@@ -619,21 +619,21 @@ export const EzEventModal: React.FC<EzEventModalProps> = ({
                                     {(field.state.value || []).length > 0 && (
                                         <div className="grid grid-cols-1 gap-3">
                                             {(field.state.value || []).map((file: File, idx: number) => (
-                                                <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-100 group hover:border-slate-200 transition-all">
+                                                <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-highlight border border-border group hover:border-border transition-all">
                                                     <div className="flex items-center gap-3 overflow-hidden">
-                                                        <div className="w-9 h-9 rounded-md bg-white border border-slate-200 flex items-center justify-center shrink-0 shadow-sm">
-                                                            <Paperclip className="w-4 h-4 text-slate-400" />
+                                                        <div className="w-9 h-9 rounded-md bg-white border border-border flex items-center justify-center shrink-0 shadow-sm">
+                                                            <Paperclip className="w-4 h-4 text-muted-foreground" />
                                                         </div>
                                                         <div className="flex flex-col overflow-hidden">
-                                                            <span className="text-[13px] font-medium text-slate-700 truncate">{file.name}</span>
-                                                            <span className="text-[11px] text-slate-400 font-medium">{(file.size / 1024).toFixed(1)} KB</span>
+                                                            <span className="text-[13px] font-medium text-foreground truncate">{file.name}</span>
+                                                            <span className="text-[11px] text-muted-foreground font-medium">{(file.size / 1024).toFixed(1)} KB</span>
                                                         </div>
                                                     </div>
                                                     <Button
                                                         type="button"
                                                         variant="ghost"
                                                         size="icon"
-                                                        className="h-8 w-8 text-slate-300 hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-all"
+                                                        className="h-8 w-8 text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-all"
                                                         onClick={() => field.handleChange((field.state.value || []).filter((_: any, i: number) => i !== idx))}
                                                     >
                                                         <Trash2 className="w-4 h-4" />
@@ -657,7 +657,7 @@ export const EzEventModal: React.FC<EzEventModalProps> = ({
                         alignItems: 'center',
                         justifyContent: 'flex-end',
                         padding: '24px 40px',
-                        backgroundColor: '#fafbfc',
+                        backgroundColor: 'var(--highlight)',
                         gap: '12px',
                         width: '100%',
                         flexShrink: 0
@@ -696,7 +696,7 @@ export const EzEventModal: React.FC<EzEventModalProps> = ({
                             <Button
                                 type="button"
                                 variant="outline"
-                                className="h-10 px-8 font-bold border border-slate-200 hover:bg-slate-50 text-slate-700 shrink-0 rounded-md transition-all"
+                                className="h-10 px-8 font-bold border border-border hover:bg-highlight text-foreground shrink-0 rounded-md transition-all"
                                 style={{ minWidth: '100px' }}
                                 onClick={onClose}
                             >

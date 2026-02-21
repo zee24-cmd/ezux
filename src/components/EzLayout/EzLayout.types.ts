@@ -1,5 +1,5 @@
 import React from 'react';
-import { ServiceRegistry } from '../../shared/services/ServiceRegistry';
+import { ServiceRegistry, IService } from '../../shared/services/ServiceRegistry';
 import { SharedBaseProps } from '../../shared/types/BaseProps';
 import { EzHeaderProps } from './EzHeader';
 
@@ -41,8 +41,8 @@ export interface EzLayoutProps extends SharedBaseProps {
     slots?: {
         header?: React.ComponentType<EzHeaderComponentProps>;
         sidebar?: React.ComponentType<EzSidebarComponentProps>;
-        footer?: React.ComponentType<any>;
-        commandPalette?: React.ComponentType<any>;
+        footer?: React.ComponentType<Record<string, unknown>>;
+        commandPalette?: React.ComponentType<Record<string, unknown>>;
     };
     /**
      * Props for slots.
@@ -51,8 +51,8 @@ export interface EzLayoutProps extends SharedBaseProps {
     slotProps?: {
         header?: Partial<EzHeaderComponentProps>;
         sidebar?: Partial<EzSidebarComponentProps>;
-        footer?: any;
-        commandPalette?: any;
+        footer?: Record<string, unknown>;
+        commandPalette?: Record<string, unknown>;
     };
     /** 
      * Configuration for the built-in authentication slider.
@@ -251,7 +251,7 @@ export interface EzLayoutRef {
     getMainContentStyle: () => React.CSSProperties;
 
     /** Returns the underlying LayoutService instance. @group Services */
-    getLayoutService: () => any;
+    getLayoutService: () => IService;
 
     /** Returns the service registry used by the layout. @group Services */
     getServiceRegistry: () => ServiceRegistry;
@@ -260,7 +260,7 @@ export interface EzLayoutRef {
     refresh: () => void;
 
     /** Programmatically adds a side panel. @group Methods */
-    addPanel: (panel: any) => void;
+    addPanel: (panel: Record<string, unknown>) => void;
     /** Removes a side panel by its ID. @group Methods */
     removePanel: (id: string) => void;
 }

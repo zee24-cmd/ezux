@@ -30,14 +30,14 @@ export const useTreeState = (props: EzTreeViewProps) => {
     const isMountedRef = useRef(false);
 
     // Proxies for compatibility
-    const setInternalTreeData = useCallback((updater: any) => {
+    const setInternalTreeData = useCallback((updater: TreeNode[] | ((prev: TreeNode[]) => TreeNode[])) => {
         setState(prev => ({
             ...prev,
             internalTreeData: typeof updater === 'function' ? updater(prev.internalTreeData) : updater
         }));
     }, [setState]);
 
-    const setLoadingNodes = useCallback((updater: any) => {
+    const setLoadingNodes = useCallback((updater: Set<string> | ((prev: Set<string>) => Set<string>)) => {
         setState(prev => ({
             ...prev,
             loadingNodes: typeof updater === 'function' ? updater(prev.loadingNodes) : updater
@@ -52,7 +52,7 @@ export const useTreeState = (props: EzTreeViewProps) => {
 
         // Apply field mapping if provided
         if (fields) {
-            const mapNodes = (nodes: any[]): TreeNode[] => {
+            const mapNodes = (nodes: TreeNode[]): TreeNode[] => {
                 return nodes.map(node => {
                     const mapped = mapFieldsToTreeNode(node, fields);
                     if (mapped.children) {

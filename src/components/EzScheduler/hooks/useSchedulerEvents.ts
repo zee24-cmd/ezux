@@ -47,11 +47,11 @@ export const useSchedulerEvents = (
         () => new SchedulerService(events || [])
     ) as SchedulerService;
 
-    const recurrenceEngine = propsRecurrenceEngine || getOrRegisterService(
+    const recurrenceEngine = (propsRecurrenceEngine || getOrRegisterService(
         serviceRegistry,
         'RecurrenceEngine',
         () => new RecurrenceEngine()
-    );
+    )) as RecurrenceEngine;
 
     // --- Sync Props to Service (Controlled Mode Support) ---
     // If props.events is provided, we ensure the service knows about them.

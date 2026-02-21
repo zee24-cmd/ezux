@@ -114,8 +114,12 @@ export const useVirtualization = (config: VirtualizationConfig): VirtualizationR
 
     const parentRef = useRef<HTMLDivElement>(null);
     const [activeOverscan, setActiveOverscan] = useState(progressiveRendering ? 1 : (overscanCount || prefetchDistance));
-    const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const scrollRafRef = useRef<number | null>(null);
     const isScrollingRef = useRef(false);
+
+    // TanStack Virtual v3 has a typo in the property name — single constant to fix when they patch it
+    const VIRTUALIZER_LANGUAGE_DIR_KEY = 'lanugageDirection' as const;
 
 
     // Handle progressive overscan
@@ -168,7 +172,6 @@ export const useVirtualization = (config: VirtualizationConfig): VirtualizationR
         []
     );
 
-    // Row virtualizer configuration
     const rowVirtualizerConfig: Partial<VirtualizerOptions<HTMLDivElement, Element>> = useMemo(() => ({
         count: rowCount,
         getScrollElement: () => parentRef.current,
@@ -179,21 +182,18 @@ export const useVirtualization = (config: VirtualizationConfig): VirtualizationR
         scrollPaddingEnd,
         rangeExtractor: enhancedRangeExtractor,
         scrollToFn,
-        lanugageDirection: languageDirection, // TanStack Virtual v3 uses this specific (misspelled) property
-        // Only track scroll state, don't interfere with scroll position
+        [VIRTUALIZER_LANGUAGE_DIR_KEY]: languageDirection,
         onChange: (instance: Virtualizer<HTMLDivElement, Element>) => {
             const offset = instance.scrollOffset ?? 0;
 
-            // Debounce onScroll callback to prevent excessive calls
-            if (scrollTimeoutRef.current) {
-                clearTimeout(scrollTimeoutRef.current);
-            }
-
-            scrollTimeoutRef.current = setTimeout(() => {
+            // Use requestAnimationFrame for frame-boundary-aligned scroll callbacks
+            if (scrollRafRef.current !== null) cancelAnimationFrame(scrollRafRef.current);
+            scrollRafRef.current = requestAnimationFrame(() => {
                 onScroll?.(offset);
-            }, 16); // ~60fps
+                scrollRafRef.current = null;
+            });
 
-            // Track scrolling state with debounce
+            // Track scrolling state
             if (instance.isScrolling) {
                 if (!isScrollingRef.current) {
                     isScrollingRef.current = true;
@@ -245,33 +245,26 @@ export const useVirtualization = (config: VirtualizationConfig): VirtualizationR
     }, [config.id, rowVirtualizer, virtualizationService]);
 
 
-    // Column virtualizer (optional)
-    const columnVirtualizerConfig: Partial<VirtualizerOptions<HTMLDivElement, Element>> | undefined = useMemo(() => {
-        if (!enableColumnVirtualization || !columnCount) {
-            return undefined;
-        }
+    const columnVirtualizerConfig: Partial<VirtualizerOptions<HTMLDivElement, Element>> = useMemo(() => ({
+        horizontal: true,
+        count: (enableColumnVirtualization && columnCount) ? columnCount : 0,
+        getScrollElement: () => parentRef.current,
+        estimateSize: typeof columnWidth === 'function' ? columnWidth : () => columnWidth as number,
+        overscan: activeOverscan,
+        rangeExtractor: enhancedRangeExtractor,
+        [VIRTUALIZER_LANGUAGE_DIR_KEY]: languageDirection
+    }), [enableColumnVirtualization, columnCount, columnWidth, activeOverscan, enhancedRangeExtractor]);
 
-        return {
-            horizontal: true,
-            count: columnCount,
-            getScrollElement: () => parentRef.current,
-            estimateSize: typeof columnWidth === 'function' ? columnWidth : () => columnWidth as number,
-            overscan: activeOverscan,
-            rangeExtractor: enhancedRangeExtractor,
-            lanugageDirection: languageDirection
-        };
-    }, [enableColumnVirtualization, columnCount, columnWidth, activeOverscan, enhancedRangeExtractor]);
+    // Always call useVirtualizer unconditionally (Rules of Hooks).
+    // Gate the exposed instance via enableColumnVirtualization instead.
+    const _columnVirtualizer = useVirtualizer(columnVirtualizerConfig as VirtualizerOptions<HTMLDivElement, Element>);
+    const columnVirtualizer = (enableColumnVirtualization && columnCount) ? _columnVirtualizer : undefined;
 
-    const columnVirtualizer = columnVirtualizerConfig
-        ? useVirtualizer(columnVirtualizerConfig as VirtualizerOptions<HTMLDivElement, Element>)
-        : undefined;
-
-    // Cleanup scroll timeout on unmount
+    // Cleanup RAF and scroll timeout on unmount
     useEffect(() => {
         return () => {
-            if (scrollTimeoutRef.current) {
-                clearTimeout(scrollTimeoutRef.current);
-            }
+            if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+            if (scrollRafRef.current !== null) cancelAnimationFrame(scrollRafRef.current);
         };
     }, []);
 

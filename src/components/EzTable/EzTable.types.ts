@@ -151,9 +151,9 @@ export interface EzTableClassNames {
     /** Body class. @group Properties */
     body?: string;
     /** Row class or function. @group Properties */
-    row?: string | ((row: Row<any>) => string);
+    row?: string | ((row: Row<unknown>) => string);
     /** Cell class or function. @group Properties */
-    cell?: string | ((cell: any) => string);
+    cell?: string | ((cell: unknown) => string);
     /** Footer class. @group Properties */
     footer?: string;
 }
@@ -233,21 +233,21 @@ export interface EzTableLocalization {
  */
 export interface EzTableSlots {
     /** Custom toolbar component. @group Properties */
-    toolbar?: React.ComponentType<any>;
+    toolbar?: React.ComponentType<unknown>;
     /** Custom footer component. @group Properties */
-    footer?: React.ComponentType<any>;
+    footer?: React.ComponentType<unknown>;
     /** Custom overlay for empty state. @group Properties */
-    noRowsOverlay?: React.ComponentType<any>;
+    noRowsOverlay?: React.ComponentType<unknown>;
     /** Custom loading overlay. @group Properties */
-    loadingOverlay?: React.ComponentType<any>;
+    loadingOverlay?: React.ComponentType<unknown>;
     /** Custom header component. @group Properties */
-    header?: React.ComponentType<any>;
+    header?: React.ComponentType<unknown>;
     /** Custom row component. @group Properties */
-    row?: React.ComponentType<{ row: Row<any> }>;
+    row?: React.ComponentType<{ row: Row<unknown> }>;
     /** Custom empty record component. @group Properties */
-    emptyRecord?: React.ComponentType<any>;
+    emptyRecord?: React.ComponentType<unknown>;
     /** Custom loading component. @group Properties */
-    loading?: React.ComponentType<any>;
+    loading?: React.ComponentType<unknown>;
 }
 
 // --- Service Interfaces ---
@@ -267,14 +267,14 @@ export interface TableParams {
     filters?: ColumnFiltersState;
     /** Search term. @group Properties */
     globalFilter?: string;
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 /**
  * Service interface for table data management.
  * @group Services
  */
-export interface ITableService<T extends RowData = any> extends IService {
+export interface ITableService<T extends RowData = Record<string, unknown>> extends IService {
     /** Retrieves a page of data. @group Services */
     getData(params: TableParams): Promise<{
         data: T[];
@@ -290,7 +290,6 @@ export interface ITableService<T extends RowData = any> extends IService {
     initializeWithData?(data: T[]): void;
 }
 
-// ... existing code ...
 // Global Filter State can be string (simple) or object (advanced)
 export type EzGlobalFilterState = string | {
     quickSearch?: string;
@@ -302,7 +301,7 @@ export type EzGlobalFilterState = string | {
  * Props passed to custom cell renderers.
  * @group Models
  */
-export interface EzTableCellProps<TData = any, TValue = any> {
+export interface EzTableCellProps<TData = Record<string, unknown>, TValue = unknown> {
     /** Returns the current cell value. @group Properties */
     getValue: () => TValue;
     /** The TanStack Row instance. @group Properties */
@@ -317,7 +316,7 @@ export interface EzTableCellProps<TData = any, TValue = any> {
  * Props passed to custom editor components.
  * @group Models
  */
-export interface EzTableEditorProps<TData = any, TValue = any> extends EzTableCellProps<TData, TValue> {
+export interface EzTableEditorProps<TData = Record<string, unknown>, TValue = unknown> extends EzTableCellProps<TData, TValue> {
     /** Current value in the editor. @group Properties */
     value: TValue;
     /** Callback to update the value. @group Events */
@@ -334,11 +333,11 @@ export interface EzTableEditorProps<TData = any, TValue = any> extends EzTableCe
 export type EzColumnMeta = {
     // Injected Components (IoC)
     /** Custom cell component. @group Components */
-    Cell?: React.ComponentType<EzTableCellProps<any, any>>;
+    Cell?: React.ComponentType<EzTableCellProps<Record<string, unknown>, unknown>>;
     /** Custom editor component. @group Components */
-    Editor?: React.ComponentType<EzTableEditorProps<any, any>>;
+    Editor?: React.ComponentType<EzTableEditorProps<Record<string, unknown>, unknown>>;
     /** Custom filter component. @group Components */
-    Filter?: React.ComponentType<any>;
+    Filter?: React.ComponentType<unknown>;
 
     /** Filter UI variant. @group Properties */
     filterVariant?: 'text' | 'range' | 'select';
@@ -397,7 +396,7 @@ export type EzColumnMeta = {
     };
     /** Options for select/dropdown columns. @group Properties */
     selectOptions?: {
-        options?: { value: any; label: string; color?: string; icon?: React.ReactNode }[];
+        options?: { value: unknown; label: string; color?: string; icon?: React.ReactNode }[];
         multiSelect?: boolean;
         variant?: 'dropdown' | 'radio' | 'combobox';
     };
@@ -427,7 +426,7 @@ declare module '@tanstack/react-table' {
         classNames?: EzTableClassNames;
         icons?: EzTableIcons;
         slots?: EzTableSlots;
-        slotProps?: Record<string, any>;
+        slotProps?: Record<string, unknown>;
         localization?: EzTableLocalization;
         gridLines?: 'Both' | 'Horizontal' | 'Vertical' | 'None';
     }
@@ -495,7 +494,7 @@ export interface EzTableProps<TData extends object> extends SharedBaseProps {
      * Props to pass to the custom slots.
      * @group Properties 
      */
-    slotProps?: Record<string, any>;
+    slotProps?: Record<string, unknown>;
 
     // --- 3. Styling & Icons ---
     /** 
@@ -527,7 +526,7 @@ export interface EzTableProps<TData extends object> extends SharedBaseProps {
      * Alias for onDataRequest. Triggered when data needs to be fetched (e.g. pagination/sorting in server-side mode).
      * @group Events 
      */
-    onFetchData?: (params: any) => void;
+    onFetchData?: (params: unknown) => void;
 
     // --- 6. Localization ---
     /** 
@@ -615,8 +614,8 @@ export interface EzTableProps<TData extends object> extends SharedBaseProps {
     onEndReached?: () => void;
 
     /**
-     * Alias for data.
      * @deprecated Use `data` instead.
+     * @remarks Providing `dataSource` without `data` will trigger a runtime warning.
      * @group Properties
      */
     dataSource?: TData[];
@@ -695,7 +694,6 @@ export interface EzTableProps<TData extends object> extends SharedBaseProps {
     enableHtmlSanitizer?: boolean;
 
     // Dimension Settings
-    // Dimension Settings
     /** 
      * Width of the table. 
      * Accepts pixel number or CSS string (e.g. '100%').
@@ -759,9 +757,8 @@ export interface EzTableProps<TData extends object> extends SharedBaseProps {
      * Passed to `onDataRequest`.
      * @group Properties 
      */
-    query?: any;
+    query?: unknown;
 
-    // Lifecycle Events
     // Lifecycle Events
     /** 
      * Callback when grid renders starts.
@@ -783,7 +780,7 @@ export interface EzTableProps<TData extends object> extends SharedBaseProps {
      * Triggered by paging, sorting, filtering, etc.
      * @group Events 
      */
-    onDataRequest?: (query: any) => void;
+    onDataRequest?: (query: unknown) => void;
     /** 
      * Callback when a data change (add/edit/delete) is requested.
      * @group Events 
@@ -793,7 +790,7 @@ export interface EzTableProps<TData extends object> extends SharedBaseProps {
      * Callback when an internal error occurs.
      * @group Events 
      */
-    onError?: (error: any) => void;
+    onError?: (error: unknown) => void;
     /** 
      * Callback when the table is refreshed.
      * @group Events 
@@ -805,7 +802,7 @@ export interface EzTableProps<TData extends object> extends SharedBaseProps {
      * Callback when a cell is focused.
      * @group Events 
      */
-    onCellFocus?: (args: { cell: any, row: Row<TData> }) => void;
+    onCellFocus?: (args: { cell: unknown, row: Row<TData> }) => void;
     /** 
      * Callback when a toolbar item is clicked.
      * @group Events 
@@ -895,13 +892,13 @@ export interface EzTableProps<TData extends object> extends SharedBaseProps {
      * Callback when the edit form is rendered.
      * @group Events 
      */
-    onFormRender?: (args: { form: any, mode: 'Add' | 'Edit' }) => void;
+    onFormRender?: (args: { form: unknown, mode: 'Add' | 'Edit' }) => void;
     /** 
      * Function to validate a field during editing.
      * Return true if valid, or an error message string if invalid.
      * @group Properties 
      */
-    validateField?: (args: { fieldName: string, value: any, data: TData }) => boolean | string;
+    validateField?: (args: { fieldName: string, value: unknown, data: TData }) => boolean | string;
 
 
 
@@ -950,6 +947,17 @@ export interface EzTableProps<TData extends object> extends SharedBaseProps {
     /** @group Events */
     onGroupingChange?: (grouping: GroupingState) => void;
     /** @group Properties */
+    /**
+     * Enable horizontal column reordering via drag-and-drop.
+     * @group Features
+     * @default true
+     */
+    enableColumnReorder?: boolean;
+    /**
+     * Callback when column order changes.
+     * @group Events
+     */
+    onColumnOrderChange?: (columnOrder: string[]) => void;
     /**
      * Whether sorting is handled manually (server-side).
      * @group Properties
@@ -1133,13 +1141,13 @@ export interface EzTableProps<TData extends object> extends SharedBaseProps {
      * Callback when a cell is clicked.
      * @group Events
      */
-    onCellClick?: (params: { row: TData, columnId: string, cellValue: any, event: React.MouseEvent }) => void;
+    onCellClick?: (params: { row: TData, columnId: string, cellValue: unknown, event: React.MouseEvent }) => void;
     /** @group Events */
     /**
      * Callback when a cell is double-clicked.
      * @group Events
      */
-    onCellDoubleClick?: (params: { row: TData, columnId: string, cellValue: any, event: React.MouseEvent }) => void;
+    onCellDoubleClick?: (params: { row: TData, columnId: string, cellValue: unknown, event: React.MouseEvent }) => void;
 
     // Enterprise Settings
     /** @group Properties */
@@ -1175,19 +1183,19 @@ export interface EzTableProps<TData extends object> extends SharedBaseProps {
      * Callback when data is pasted from clipboard.
      * @group Events
      */
-    onPaste?: (args: { data: any[][]; rowIndex: number; colIndex: number }) => void;
+    onPaste?: (args: { data: unknown[][]; rowIndex: number; colIndex: number }) => void;
     /** @group Events */
     /**
      * Callback when a cell is saved (async).
      * @group Events
      */
-    onCellSave?: (args: { value: any; oldValue: any; cancel: boolean }) => Promise<void>;
+    onCellSave?: (args: { value: unknown; oldValue: unknown; cancel: boolean }) => Promise<void>;
     /** @group Events */
     /**
      * Callback when context menu is opened.
      * @group Events
      */
-    onContextMenuOpen?: (args: { row: Row<TData>; column: Column<TData, any>; items: any[] }) => void;
+    onContextMenuOpen?: (args: { row: Row<TData>; column: Column<TData, unknown>; items: unknown[] }) => void;
     /** @group Events */
     /**
      * Callback when export completes.
@@ -1209,7 +1217,7 @@ export interface EzTableProps<TData extends object> extends SharedBaseProps {
 }
 
 // Imperative Handle Interface
-export interface EzTableRef<TData = any> {
+export interface EzTableRef<TData = Record<string, unknown>> {
     // ... existing methods
     // Data Operations
     /** 
@@ -1226,7 +1234,7 @@ export interface EzTableRef<TData = any> {
      * Sets a value for a specific cell.
      * @group Methods 
      */
-    setCellValue: (key: string, field: string, value: any) => void;
+    setCellValue: (key: string, field: string, value: unknown) => void;
     /** 
      * Updates the data for a specific row.
      * @group Methods 
@@ -1299,7 +1307,7 @@ export interface EzTableRef<TData = any> {
      * Filters the table by a specific column.
      * @group Methods 
      */
-    filterByColumn: (fieldName: string, operator: string, value: any) => void;
+    filterByColumn: (fieldName: string, operator: string, value: unknown) => void;
     /** 
      * Clears the filter for a specific column or all columns.
      * @group Methods 
@@ -1340,7 +1348,7 @@ export interface EzTableRef<TData = any> {
      * Returns a column definition by its field name.
      * @group Methods 
      */
-    getColumnByField: (field: string) => any;
+    getColumnByField: (field: string) => ColumnDef<TData> | undefined;
 
     /** 
      * Adds a new record to the table.
@@ -1377,7 +1385,7 @@ export interface EzTableRef<TData = any> {
      * Returns the underlying data module (internal use).
      * @group Methods 
      */
-    getDataModule: () => any;
+    getDataModule: () => unknown;
     /** 
      * Returns row information for a specific key.
      * @group Methods 
@@ -1459,7 +1467,7 @@ export interface EzTableRef<TData = any> {
      * Exports data as CSV.
      * @group Methods 
      */
-    exportDataAsCsv: (options?: any) => void;
+    exportDataAsCsv: (options?: Record<string, unknown>) => void;
     /** 
      * Sets the filter model programmatically.
      * @group Methods 

@@ -100,19 +100,19 @@ export const AuthSlider: React.FC<AuthSliderProps> = ({
                 )}>
                     {/* Inner Content of Overlay */}
                     <div className={cn(
-                        "relative -left-full h-full w-[200%] bg-gradient-to-br from-indigo-600 to-blue-700 text-white transition-transform duration-700 ease-in-out",
+                        "relative -left-full h-full w-[200%] bg-gradient-to-br from-primary to-primary/90 text-white transition-transform duration-700 ease-in-out",
                         isSignUp ? "translate-x-1/2" : "translate-x-0"
                     )}>
                         <div className="flex h-full w-full">
                             {/* Overlay Left (Shows when on Sign Up page - moves to cover SignIn) */}
                             <div className="flex flex-col items-center justify-center w-1/2 px-12 text-center h-full">
                                 <h2 className="text-3xl font-bold mb-4 tracking-tight">Welcome Back!</h2>
-                                <p className="mb-8 text-sm opacity-90 leading-relaxed text-indigo-100">
+                                <p className="mb-8 text-sm opacity-90 leading-relaxed text-primary-foreground/90">
                                     To keep connected with us please login with your personal info
                                 </p>
                                 <Button
                                     variant="outline"
-                                    className="rounded-full border-white/40 bg-white/10 text-white hover:bg-white hover:text-indigo-600 px-10 py-6 font-semibold tracking-wide transition-all backdrop-blur-sm shadow-md"
+                                    className="rounded-full border-white/40 bg-white/10 text-white hover:bg-white hover:text-primary px-10 py-6 font-semibold tracking-wide transition-all backdrop-blur-sm shadow-md"
                                     onClick={toggleMode}
                                 >
                                     Sign In
@@ -122,12 +122,12 @@ export const AuthSlider: React.FC<AuthSliderProps> = ({
                             {/* Overlay Right (Shows when on Sign In page - moves to cover SignUp) */}
                             <div className="flex flex-col items-center justify-center w-1/2 px-12 text-center h-full">
                                 <h2 className="text-3xl font-bold mb-4 tracking-tight">Hello, Friend!</h2>
-                                <p className="mb-8 text-sm opacity-90 leading-relaxed text-indigo-100">
+                                <p className="mb-8 text-sm opacity-90 leading-relaxed text-primary-foreground/90">
                                     Enter your personal details and start your journey with us
                                 </p>
                                 <Button
                                     variant="outline"
-                                    className="rounded-full border-white/40 bg-white/10 text-white hover:bg-white hover:text-indigo-600 px-10 py-6 font-semibold tracking-wide transition-all backdrop-blur-sm shadow-md"
+                                    className="rounded-full border-white/40 bg-white/10 text-white hover:bg-white hover:text-primary px-10 py-6 font-semibold tracking-wide transition-all backdrop-blur-sm shadow-md"
                                     onClick={toggleMode}
                                 >
                                     Sign Up
@@ -142,7 +142,7 @@ export const AuthSlider: React.FC<AuthSliderProps> = ({
                     <button
                         onClick={toggleMode}
                         type="button"
-                        className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline transition-colors animate-pulse"
+                        className="text-sm font-semibold text-primary dark:text-primary/90 hover:underline transition-colors animate-pulse"
                     >
                         {isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}
                     </button>

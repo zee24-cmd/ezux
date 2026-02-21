@@ -8,6 +8,11 @@ import type { IService } from '../../shared/services/ServiceRegistry';
 export type View = 'Day' | 'Week' | 'WorkWeek' | 'Month' | 'TimelineDay' | 'TimelineWeek' | 'TimelineWorkWeek' | 'TimelineMonth' | 'Agenda' | 'MonthAgenda' | 'Year';
 
 /**
+ * Editor mode.
+ */
+export type EditorMode = 'create' | 'edit' | 'view';
+
+/**
  * Action types for the scheduler editor.
  */
 export type CurrentAction = 'Add' | 'Edit' | 'Delete';
@@ -24,7 +29,7 @@ export interface EventSettingsModel {
      * The data source for events. 
      * @group Models
      */
-    dataSource: Object[] | any; // DataManager in future
+    dataSource: Record<string, unknown>[] | unknown; // DataManager in future
     /** 
      * Custom field mapping. 
      * @group Models
@@ -121,7 +126,7 @@ export interface EventData {
     isAllDay?: boolean;
     recurrenceRule?: string;
     resourceID?: string | number | (string | number)[];
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 
@@ -187,6 +192,28 @@ export interface Reminder {
     status?: 'pending' | 'sent' | 'dismissed';
 }
 
+/** 
+ * Timezone configuration for an event.
+ */
+export interface Timezone {
+    start?: string;
+    end?: string;
+}
+
+/** 
+ * Recurrence configuration for an event.
+ */
+export interface Recurrence {
+    frequency: 'Never' | 'Daily' | 'Weekly' | 'Monthly' | 'Yearly';
+    interval?: number;
+    unit?: string;
+    end?: 'Never' | 'Until' | 'Count';
+    endCount?: number;
+    endUntil?: Date;
+    days?: string[];
+    repeatBy?: 'day' | 'ordinal';
+}
+
 // Old SchedulerEvent
 /**
  * Represents a single event in the scheduler.
@@ -212,6 +239,8 @@ export interface SchedulerEvent {
     description?: string;
     /** Recurrence rule string (RRULE) */
     rrule?: string;
+    /** Legacy recurrence rule property */
+    recurrenceRule?: string;
     /** Excluded dates for recurrence */
     exdate?: string[];
     /** Recurrence exception dates */
@@ -230,11 +259,17 @@ export interface SchedulerEvent {
     attendees?: Attendee[];
     /** List of reminders */
     reminders?: Reminder[];
+    /** Timezone configuration */
+    timezone?: Timezone;
+    /** Recurrence configuration */
+    recurrence?: Recurrence;
+    /** Files attached to the event (alias for attachedFiles) */
+    attachments?: any[];
     /** Whether the event is a holiday */
     isHoliday?: boolean;
     /** Whether the event slot is fully booked */
     isFullyBooked?: boolean;
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 // New ResourceModel (Metadata about resource collection)
@@ -261,7 +296,7 @@ export interface ResourceModel {
      * Resource data array. 
      * @group Models
      */
-    dataSource: Object[];
+    dataSource: Record<string, unknown>[] | unknown;
     /** 
      * Field for resource text. 
      * @group Models
@@ -302,13 +337,15 @@ export interface Resource {
     color?: string;
     /** URL to the resource's avatar image */
     avatar?: string;
+    /** Type or designation of the resource */
+    type?: string;
     /** Working hours configuration for this resource */
     workingHours?: {
         start: number; // 0-23
         end: number;   // 0-23
         days: number[]; // 0=Sun, 1=Mon...
     };
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 /**
@@ -470,7 +507,7 @@ export interface HeaderRowModel {
      * Template for the header row. 
      * @group Models
      */
-    template?: string | ((props: any) => React.ReactNode);
+    template?: string | ((props: Record<string, unknown>) => React.ReactNode);
 }
 
 /**
@@ -523,27 +560,53 @@ export interface QuickInfoTemplatesModel {
      * Template for the content area. 
      * @group Models
      */
-    content?: string | ((props: any) => React.ReactNode);
+    content?: string | ((props: Record<string, unknown>) => React.ReactNode);
     /** 
      * Template for the footer area. 
      * @group Models
      */
-    footer?: string | ((props: any) => React.ReactNode);
+    footer?: string | ((props: Record<string, unknown>) => React.ReactNode);
     /** 
      * Template for the header area. 
      * @group Models
      */
-    header?: string | ((props: any) => React.ReactNode);
+    header?: string | ((props: Record<string, unknown>) => React.ReactNode);
 }
 
 export type WeekRule = 'FirstDay' | 'FirstFourDayWeek' | 'FirstFullWeek';
 
 /**
- * Component Injection (IoC)
+ * Configuration for component slots and their props.
+ * @group Extensibility
  */
+export interface SchedulerSlotConfig {
+    slots?: {
+        toolbar?: React.ComponentType<unknown>;
+        eventModal?: React.ComponentType<unknown>;
+        quickAdd?: React.ComponentType<unknown>;
+        resourceSidebar?: React.ComponentType<unknown>;
+        [key: string]: React.ComponentType<unknown> | undefined;
+    };
+    slotProps?: {
+        toolbar?: Record<string, unknown>;
+        eventModal?: Record<string, unknown>;
+        quickAdd?: Record<string, unknown>;
+        resourceSidebar?: Record<string, unknown>;
+        [key: string]: Record<string, unknown> | undefined;
+    };
+}
+
 /**
- * Component Injection (IoC).
+ * Custom component slots for override.
+ * @group Models
+ * @deprecated Use SchedulerSlotConfig
  */
+export interface EzSchedulerSlots {
+    toolbar?: React.ComponentType<unknown>;
+    eventModal?: React.ComponentType<unknown>;
+    quickAdd?: React.ComponentType<unknown>;
+    resourceSidebar?: React.ComponentType<unknown>;
+}
 
 
 // --- Main Props Interface ---
@@ -561,39 +624,18 @@ export type WeekRule = 'FirstDay' | 'FirstFourDayWeek' | 'FirstFullWeek';
  * return <EzScheduler events={events} />;
  * ```
  */
-/**
- * Custom component slots for override.
- * @group Models
- */
-export interface EzSchedulerSlots {
-    /** 
-     * Custom toolbar component. 
-     * @group Subcomponents
-     */
-    toolbar?: React.ComponentType<any>;
-    /** 
-     * Custom event modal component. 
-     * @group Subcomponents
-     */
-    eventModal?: React.ComponentType<any>;
-    /** 
-     * Custom quick add popup. 
-     * @group Subcomponents
-     */
-    quickAdd?: React.ComponentType<any>;
-    /** 
-     * Custom resource sidebar. 
-     * @group Subcomponents
-     */
-    resourceSidebar?: React.ComponentType<any>;
-}
-
 export interface EzSchedulerProps extends SharedBaseProps {
+    /** 
+     * Slots for modular composition.
+     * @group Extensibility
+     */
+    slots?: SchedulerSlotConfig['slots'];
+
     /** 
      * Props to pass to the custom slots.
      * @group Properties 
      */
-    slotProps?: Record<string, any>;
+    slotProps?: SchedulerSlotConfig['slotProps'];
 
     /** 
      * Allow event dragging. 
@@ -659,7 +701,7 @@ export interface EzSchedulerProps extends SharedBaseProps {
      * Template for cell headers.
      * @group Properties 
      */
-    cellHeaderTemplate?: string | ((props: any) => React.ReactNode);
+    cellHeaderTemplate?: string | ((props: Record<string, unknown>) => React.ReactNode);
     /** 
      * Custom CSS class for the scheduler container.
      * @group Properties 
@@ -679,17 +721,17 @@ export interface EzSchedulerProps extends SharedBaseProps {
      * Template for date headers.
      * @group Properties 
      */
-    dateHeader?: string | ((props: any) => React.ReactNode);
+    dateHeader?: string | ((props: Record<string, unknown>) => React.ReactNode);
     /** 
      * Template for date range display.
      * @group Properties 
      */
-    dateRangeTemplate?: string | ((props: any) => React.ReactNode);
+    dateRangeTemplate?: string | ((props: Record<string, unknown>) => React.ReactNode);
     /** 
      * Template for day headers.
      * @group Properties 
      */
-    dayHeaderTemplate?: string | ((props: any) => React.ReactNode);
+    dayHeaderTemplate?: string | ((props: Record<string, unknown>) => React.ReactNode);
     /** 
      * Enable adaptive UI for mobile devices.
      * @group Properties 
@@ -744,7 +786,7 @@ export interface EzSchedulerProps extends SharedBaseProps {
      * Template for header indentation.
      * @group Properties 
      */
-    headerIndentTemplate?: string | ((props: any) => React.ReactNode);
+    headerIndentTemplate?: string | ((props: Record<string, unknown>) => React.ReactNode);
     /** 
      * Custom header rows configuration.
      * @group Properties 
@@ -784,7 +826,7 @@ export interface EzSchedulerProps extends SharedBaseProps {
      * Template for month view headers.
      * @group Properties 
      */
-    monthHeaderTemplate?: string | ((props: any) => React.ReactNode);
+    monthHeaderTemplate?: string | ((props: Record<string, unknown>) => React.ReactNode);
     /** 
      * Show quick info popup on selection end.
      * @group Properties 
@@ -795,676 +837,196 @@ export interface EzSchedulerProps extends SharedBaseProps {
      * @group Properties 
      */
     readOnly?: boolean;
-    /** 
-     * Template for resource headers.
-     * @group Properties 
-     */
-    resourceHeaderTemplate?: string | ((props: any) => React.ReactNode);
-    /** 
-     * Resources data.
-     * @group Properties 
-     */
+    resourceHeaderTemplate?: string | ((props: Record<string, unknown>) => React.ReactNode);
     resources?: ResourceModel[] | Resource[];
-    /** 
-     * Auto-adjust row height based on content.
-     * @group Properties 
-     */
     rowAutoHeight?: boolean;
-    /** 
-     * The currently selected date.
-     * @group Properties 
-     */
     selectedDate?: Date;
-    /** 
-     * Show the header bar.
-     * @group Properties 
-     */
     showHeaderBar?: boolean;
-    /** 
-     * Show quick info popup on click.
-     * @group Properties 
-     */
     showQuickInfoPopup?: boolean;
-    /** 
-     * Show resource headers.
-     * @group Properties 
-     */
     showResourceHeaders?: boolean;
-    /** 
-     * Show current time indicator.
-     * @group Properties 
-     */
     showTimeIndicator?: boolean;
-    /** 
-     * Show current time indicator.
-     * @group Properties 
-     */
     currentTimeIndicator?: boolean;
-    /** 
-     * Start hour of the scheduler (e.g., '08:00').
-     * @group Properties 
-     */
     startHour?: string;
-    /** 
-     * Time scale configuration.
-     * @group Properties 
-     */
     timeScale?: TimeScaleModel;
-    /** 
-     * Timezone of the scheduler.
-     * @group Properties 
-     */
     timezone?: string;
-    /** 
-     * Timezone data source.
-     * @group Properties 
-     */
     timezoneDataSource?: TimezoneFields[];
-    /** 
-     * Toolbar items configuration.
-     * @group Properties 
-     */
     toolbarItems?: (string | ToolbarItemModel)[];
-    /** 
-     * Available views configuration.
-     * @group Properties 
-     */
     views?: (View | ViewsModel)[];
-    /** 
-     * Width of the scheduler.
-     * @group Properties 
-     */
     width?: string | number;
-    /** 
-     * Working days (0=Sun, 1=Mon, etc.).
-     * @group Properties 
-     */
     workDays?: number[];
-    /** 
-     * Working hours configuration.
-     * @group Properties 
-     */
     workHours?: WorkHoursModel;
-    // Missing Props
-    /** 
-     * Template for cell content.
-     * @group Templates 
-     */
-    cell?: string | ((props: any) => React.ReactNode);
-    /** 
-     * Template for editor footer.
-     * @group Templates 
-     */
-    editorFooterTemplate?: string | ((props: any) => React.ReactNode);
-    /** 
-     * Template for editor header.
-     * @group Templates 
-     */
-    editorHeaderTemplate?: string | ((props: any) => React.ReactNode);
-    /** 
-     * Template for editor content.
-     * @group Templates 
-     */
-    editorTemplate?: string | ((props: any) => React.ReactNode);
-    /** 
-     * Enable HTML sanitizer for templates.
-     * @group Properties 
-     */
+    cell?: string | ((date: Date, resourceId?: string) => React.ReactNode);
+    cellTemplate?: string | ((props: Record<string, unknown>) => React.ReactNode);
+    editorFooterTemplate?: string | ((props: Record<string, unknown>) => React.ReactNode);
+    editorHeaderTemplate?: string | ((props: Record<string, unknown>) => React.ReactNode);
+    editorTemplate?: string | ((props: Record<string, unknown>) => React.ReactNode);
     enableHtmlSanitizer?: boolean;
-    /** 
-     * CSS class for event drag area.
-     * @group Properties 
-     */
     eventDragArea?: string;
-    /** 
-     * Number of months to display in year/month views.
-     * @group Properties 
-     */
     monthsCount?: number;
-    /** 
-     * Number of items to render outside visible area.
-     * @group Properties 
-     */
     overscanCount?: number;
-    /** Progressive rendering for large datasets */
-    /** 
-     * Progressive rendering for large datasets.
-     * @group Properties 
-     */
     progressiveRendering?: boolean;
-    /** 
-     * Distance in items to prefetch.
-     * @group Properties 
-     */
     prefetchDistance?: number;
-    /** 
-     * Debugging for virtualization.
-     * @group Properties 
-     */
     debugVirtualization?: boolean;
-    /** 
-     * Templates for quick info popup.
-     * @group Templates 
-     */
     quickInfoTemplates?: QuickInfoTemplatesModel;
-    /** 
-     * Show week numbers.
-     * @group Properties 
-     */
     showWeekNumber?: boolean;
-    /** 
-     * Show weekends.
-     * @group Properties 
-     */
     showWeekend?: boolean;
-    /** 
-     * Time format (e.g., 'HH:mm').
-     * @group Properties 
-     */
     timeFormat?: string;
-    /** 
-     * Week start rule.
-     * @group Properties 
-     */
     weekRule?: WeekRule;
-    /** 
-     * Recurrence engine instance.
-     * @group Properties 
-     */
-    recurrenceEngine?: any;
-    /** 
-     * Duration of a time slot in minutes.
-     * @group Properties 
-     */
+    recurrenceEngine?: unknown;
     slotDuration?: number;
-    /** 
-     * Height of a time slot in pixels.
-     * @group Properties 
-     */
     slotHeight?: number;
-    /** 
-     * Whether the scheduler is loading data.
-     * @group Properties 
-     */
     isLoading?: boolean;
-    /** 
-     * Allow past events modification.
-     * @group Properties 
-     */
     allowPastEvents?: boolean;
-    /** 
-     * Use 24-hour format.
-     * @group Properties 
-     */
     is24Hour?: boolean;
 
-    /** 
-     * Slots for custom subcomponents.
-     * @group Components 
-     */
-    slots?: {
-        toolbar?: React.ComponentType<any>;
-        eventModal?: React.ComponentType<any>;
-        quickAdd?: React.ComponentType<any>;
-        [key: string]: React.ComponentType<any> | undefined;
-    };
-
-
     // Enterprise Events
-    /** 
-     * Callback when events overlap.
-     * @group Events 
-     */
     onEventOverlap?: (args: { event: SchedulerEvent; existingEvents: SchedulerEvent[]; cancel: boolean }) => void;
-    /** 
-     * Callback when a cell is right-clicked.
-     * @group Events 
-     */
     onCellContextMenu?: (args: { date: Date; x: number; y: number }) => void;
 
-
-
     // Legacy Prop Support (to avoid breaking demo)
-    /** 
-     * Array of event data.
-     * @group Properties 
-     */
     events?: SchedulerEvent[];
-    /** 
-     * Default initial view.
-     * @group Properties 
-     */
     defaultView?: ViewType;
-    /** 
-     * Default initial selected date.
-     * @group Properties 
-     */
     defaultSelectedDate?: Date;
-    /** 
-     * Show resources in Day view.
-     * @group Properties 
-     */
     showResourcesInDayView?: boolean;
-    /** 
-     * Show unassigned lane in swimlane views.
-     * @group Properties 
-     */
     showUnassignedLane?: boolean;
-    /** 
-     * Callback when the view changes.
-     * @group Events 
-     */
-    onViewChange?: (view: any) => void;
-    /** 
-     * Callback when the date changes.
-     * @group Events 
-     */
+    onViewChange?: (view: View) => void;
     onDateChange?: (date: Date) => void;
-    /** 
-     * Callback when the slot duration changes.
-     * @group Events 
-     */
     onSlotDurationChange?: (duration: number) => void;
-    /** 
-     * Callback when a cell is clicked.
-     * @group Events 
-     */
     onCellClick?: (date: Date, resourceId?: string) => void;
-    /** 
-     * Callback when a cell is double-clicked.
-     * @group Events 
-     */
     onCellDoubleClick?: (date: Date, resourceId?: string) => void;
-    /** 
-     * Callback when an event is clicked.
-     * @group Events 
-     */
     onEventClick?: (event: SchedulerEvent) => void;
-    /** 
-     * Callback when an event is double-clicked.
-     * @group Events 
-     */
     onEventDoubleClick?: (event: SchedulerEvent) => void;
-    /** 
-     * Callback when an event is created.
-     * @group Events 
-     */
     onEventCreate?: (event: Partial<SchedulerEvent>) => void | Promise<void>;
-    /** 
-     * Callback when an event is deleted.
-     * @group Events 
-     */
     onEventDelete?: (eventId: string) => void | Promise<void>;
-    /** 
-     * Callback when an event is changed.
-     * @group Events 
-     */
-    onEventChange?: (event: SchedulerEvent) => void;
+    onEventChange?: (event: SchedulerEvent) => void | Promise<void>;
 
-    // Event Callbacks (keeping some existing ones if needed, but adding the new exhaustive ones)
-    /** 
-     * Callback when an action begins.
-     * @group Events 
-     */
+    // Event Callbacks (exhaustive)
     actionBegin?: (args: ActionEventArgs) => void;
-    /** 
-     * Callback when an action completes.
-     * @group Events 
-     */
     actionComplete?: (args: ActionEventArgs) => void;
-    /** 
-     * Callback when an action fails.
-     * @group Events 
-     */
     actionFailure?: (args: ActionFailureArgs) => void;
-    /** 
-     * Callback when a cell is clicked.
-     * @group Events 
-     */
     cellClick?: (args: CellClickEventArgs) => void;
-    /** 
-     * Callback when a cell is double-clicked.
-     * @group Events 
-     */
     cellDoubleClick?: (args: CellClickEventArgs) => void;
-    /** 
-     * Callback when an event is clicked.
-     * @group Events 
-     */
-    eventClick?: (args: EventClickArgs) => void;
-    /** 
-     * Callback when an event is double-clicked.
-     * @group Events 
-     */
-    eventDoubleClick?: (args: EventClickArgs) => void;
-    /** 
-     * Callback during navigation.
-     * @group Events 
-     */
+    eventClick?: (args: EventClickEventArgs) => void;
+    eventDoubleClick?: (args: EventClickEventArgs) => void;
     navigating?: (args: NavigatingEventArgs) => void;
-    /** 
-     * Callback when a popup closes.
-     * @group Events 
-     */
     popupClose?: (args: PopupCloseEventArgs) => void;
-    /** 
-     * Callback when a popup opens.
-     * @group Events 
-     */
     popupOpen?: (args: PopupOpenEventArgs) => void;
-    /** 
-     * Callback when a cell is rendered.
-     * @group Events 
-     */
     renderCell?: (args: RenderCellEventArgs) => void;
-    /** 
-     * Callback when resizing starts.
-     * @group Events 
-     */
     resizeStart?: (args: ResizeEventArgs) => void;
-    /** 
-     * Callback when resizing stops.
-     * @group Events 
-     */
     resizeStop?: (args: ResizeEventArgs) => void;
-    /** 
-     * Callback when dragging starts.
-     * @group Events 
-     */
     dragStart?: (args: DragEventArgs) => void;
-    /** 
-     * Callback during dragging.
-     * @group Events 
-     */
     drag?: (args: DragEventArgs) => void;
-    /** 
-     * Callback when dragging stops.
-     * @group Events 
-     */
     dragStop?: (args: DragEventArgs) => void;
-    /** 
-     * Callback when selection changes.
-     * @group Events 
-     */
     select?: (args: SelectEventArgs) => void;
-    // Missing Events
-    /** 
-     * Callback before pasting.
-     * @group Events 
-     */
-    beforePaste?: (args: any) => void;
-    /** 
-     * Callback before printing.
-     * @group Events 
-     */
-    beforePrint?: (args: any) => void;
-    /** 
-     * Callback when component is created.
-     * @group Events 
-     */
-    created?: (args: any) => void;
-    /** 
-     * Callback during data binding.
-     * @group Events 
-     */
-    dataBinding?: (args: any) => void;
-    /** 
-     * Callback when data is bound.
-     * @group Events 
-     */
-    dataBound?: (args: any) => void;
-    /** 
-     * Callback when component is destroyed.
-     * @group Events 
-     */
-    destroyed?: (args: any) => void;
-    /** 
-     * Callback when event is rendered.
-     * @group Events 
-     */
-    eventRendered?: (args: any) => void;
-    /** 
-     * Callback during excel export.
-     * @group Events 
-     */
-    excelExport?: (args: any) => void;
-    /** 
-     * Callback on hover.
-     * @group Events 
-     */
-    hover?: (args: any) => void;
-    /** 
-     * Callback when "more events" is clicked.
-     * @group Events 
-     */
-    moreEventsClick?: (args: any) => void;
-    /** 
-     * Callback during resizing.
-     * @group Events 
-     */
+    beforePaste?: (args: Record<string, unknown>) => void;
+    beforePrint?: (args: Record<string, unknown>) => void;
+    created?: (args: Record<string, unknown>) => void;
+    dataBinding?: (args: Record<string, unknown>) => void;
+    dataBound?: (args: Record<string, unknown>) => void;
+    destroyed?: (args: Record<string, unknown>) => void;
+    eventRendered?: (args: Record<string, unknown>) => void;
+    excelExport?: (args: Record<string, unknown>) => void;
+    hover?: (args: Record<string, unknown>) => void;
+    moreEventsClick?: (args: Record<string, unknown>) => void;
     resizing?: (args: ResizeEventArgs) => void;
-    /** 
-     * Callback when tooltip opens.
-     * @group Events 
-     */
-    tooltipOpen?: (args: any) => void;
-    /** 
-     * Callback when virtual scroll starts.
-     * @group Events 
-     */
-    virtualScrollStart?: (args: any) => void;
-    /** 
-     * Callback when virtual scroll stops.
-     * @group Events 
-     */
-    virtualScrollStop?: (args: any) => void;
+    tooltipOpen?: (args: Record<string, unknown>) => void;
+    virtualScrollStart?: (args: Record<string, unknown>) => void;
+    virtualScrollStop?: (args: Record<string, unknown>) => void;
 
-    // Export Callbacks (IoC)
-    /** 
-     * Export to Excel callback.
-     * @group Events 
-     */
+    // Export Callbacks
     onExportExcel?: (events: SchedulerEvent[]) => void;
-    /** 
-     * Export to CSV callback.
-     * @group Events 
-     */
     onExportCSV?: (events: SchedulerEvent[]) => void;
-    /** 
-     * Export to ICS callback.
-     * @group Events 
-     */
     onExportICS?: (events: SchedulerEvent[]) => void;
 }
 
 // --- Event Argument Interfaces ---
+
 /**
  * Arguments for action events.
  */
 export interface ActionEventArgs {
-    /** 
-     * The type of request being performed.
-     * @group Models
-     */
     requestType: string;
-    /** 
-     * Whether the action should be cancelled.
-     * @group Models
-     */
     cancel: boolean;
-    /** 
-     * Associated data for the action.
-     * @group Models
-     */
-    data?: Object;
-    [key: string]: any;
+    data?: Record<string, unknown>;
+    [key: string]: unknown;
 }
 
 /**
  * Arguments for action failure events.
  */
 export interface ActionFailureArgs {
-    /** 
-     * The type of request that failed.
-     * @group Models
-     */
     requestType: string;
-    /** 
-     * The error that occurred.
-     * @group Models
-     */
     error: Error;
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 /**
  * Arguments for cell click events.
  */
 export interface CellClickEventArgs {
-    /** 
-     * Start time of the clicked cell.
-     * @group Models
-     */
     startTime: Date;
-    /** 
-     * End time of the clicked cell.
-     * @group Models
-     */
     endTime: Date;
-    /** 
-     * The HTML element that was clicked.
-     * @group Models
-     */
     element?: HTMLElement;
-    /** 
-     * Whether the cell is in the all-day row.
-     * @group Models
-     */
     isAllDay: boolean;
-    /** 
-     * The resource group index.
-     * @group Models
-     */
     groupIndex?: number;
 }
 
 /**
  * Arguments for event click events.
  */
-export interface EventClickArgs {
-    /** 
-     * The data of the clicked event.
-     * @group Models
-     */
-    data: EventData;
-    /** 
-     * The HTML element of the event.
-     * @group Models
-     */
+export interface EventClickEventArgs {
+    event: SchedulerEvent;
     element?: HTMLElement;
-    /** 
-     * The raw mouse event.
-     * @group Models
-     */
-    event?: React.MouseEvent;
+    cancel: boolean;
 }
 
 /**
  * Arguments for navigation events.
  */
 export interface NavigatingEventArgs {
-    /** 
-     * The date before navigation.
-     * @group Models
-     */
     previousDate: Date;
-    /** 
-     * The new active date.
-     * @group Models
-     */
     currentDate: Date;
-    /** 
-     * The view mode before navigation.
-     * @group Models
-     */
-    previousView: View;
-    /** 
-     * The new active view mode.
-     * @group Models
-     */
-    currentView: View;
-    /** 
-     * Whether navigation should be cancelled.
-     * @group Models
-     */
+    previousView: View | ViewType;
+    currentView: View | ViewType;
     cancel?: boolean;
 }
 
 /**
- * Arguments for popup opening events.
+ * Arguments for popup events.
  */
 export interface PopupOpenEventArgs {
-    /** 
-     * The type of popup being opened.
-     * @group Models
-     */
-    type: 'Editor' | 'QuickInfo';
-    /** 
-     * The data associated with the popup.
-     * @group Models
-     */
-    data?: EventData;
-    /** 
-     * The popup HTML element.
-     * @group Models
-     */
+    type: 'Editor' | 'QuickInfo' | string;
+    data?: EventData | Record<string, unknown>;
     element?: HTMLElement;
-    /** 
-     * Whether to cancel the opening.
-     * @group Models
-     */
     cancel: boolean;
 }
 
 /**
- * Arguments for popup closing events.
+ * Arguments for popup close events.
  */
 export interface PopupCloseEventArgs {
-    /** 
-     * The type of popup being closed.
-     * @group Models
-     */
-    type: 'Editor' | 'QuickInfo';
-    /** 
-     * The data associated with the popup.
-     * @group Models
-     */
-    data?: EventData;
-    /** 
-     * The popup HTML element.
-     * @group Models
-     */
+    type: 'Editor' | 'QuickInfo' | string;
+    data?: EventData | Record<string, unknown>;
     element?: HTMLElement;
+    cancel: boolean;
+}
+
+/**
+ * Arguments for cell rendering events.
+ */
+export interface RenderCellEventArgs {
+    date: Date;
+    element: HTMLElement;
+    view: View;
+    groupIndex?: number;
 }
 
 /**
  * Arguments for resize events.
  */
 export interface ResizeEventArgs {
-    /** 
-     * The event data being resized.
-     * @group Models
-     */
     data: EventData;
-    /** 
-     * The HTML element being resized.
-     * @group Models
-     */
     element?: HTMLElement;
-    /** 
-     * Whether to cancel resizing.
-     * @group Models
-     */
     cancel: boolean;
 }
 
@@ -1472,77 +1034,20 @@ export interface ResizeEventArgs {
  * Arguments for drag events.
  */
 export interface DragEventArgs {
-    /** 
-     * The event data being dragged.
-     * @group Models
-     */
     data: EventData;
-    /** 
-     * The HTML element being dragged.
-     * @group Models
-     */
     element?: HTMLElement;
-    /** 
-     * Whether to cancel dragging.
-     * @group Models
-     */
     cancel: boolean;
-    /** 
-     * The drag target element.
-     * @group Models
-     */
     target?: HTMLElement;
-}
-
-/**
- * Arguments for cell rendering events.
- */
-export interface RenderCellEventArgs {
-    /** 
-     * The date of the cell.
-     * @group Models
-     */
-    date: Date;
-    /** 
-     * The cell HTML element.
-     * @group Models
-     */
-    element: HTMLElement;
-    /** 
-     * The current view mode.
-     * @group Models
-     */
-    view: View;
-    /** 
-     * The resource group index.
-     * @group Models
-     */
-    groupIndex?: number;
 }
 
 /**
  * Arguments for selection events.
  */
 export interface SelectEventArgs {
-    /** 
-     * The selected HTML elements.
-     * @group Models
-     */
     element?: HTMLElement[];
-    /** 
-     * Start time of the selection.
-     * @group Models
-     */
     startTime: Date;
-    /** 
-     * End time of the selection.
-     * @group Models
-     */
     endTime: Date;
 }
-
-
-// ...
 
 /**
  * Imperative API Reference
@@ -1605,12 +1110,12 @@ export interface EzSchedulerRef {
      * Add a new event.
      * @group Methods 
      */
-    addEvent: (event: SchedulerEvent | Record<string, any>) => Promise<void>;
+    addEvent: (event: SchedulerEvent | Record<string, unknown>) => Promise<void>;
     /** 
      * Save an existing or new event.
      * @group Methods 
      */
-    saveEvent: (event: SchedulerEvent | Record<string, any>) => Promise<void>;
+    saveEvent: (event: SchedulerEvent | Record<string, unknown>) => Promise<void>;
     /** 
      * Delete an event by ID.
      * @group Methods 
@@ -1631,7 +1136,7 @@ export interface EzSchedulerRef {
      * Add a new resource.
      * @group Methods 
      */
-    addResource: (resource: Resource | Record<string, any>) => Promise<void>;
+    addResource: (resource: Resource | Record<string, unknown>) => Promise<void>;
     /** 
      * Remove a resource by ID.
      * @group Methods 

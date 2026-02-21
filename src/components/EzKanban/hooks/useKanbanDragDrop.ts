@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import type { KanbanBoard, KanbanCard, EzKanbanProps } from '../EzKanban.types';
 import { globalServiceRegistry } from '../../../shared/services/ServiceRegistry';
+import type { NotificationService } from '../../../shared/services/NotificationService';
 
 type DragEvents = Pick<EzKanbanProps, 'onCardDragStart' | 'onCardDragStop' | 'onCardDragEnter' | 'onCardDragLeave'>;
 
@@ -71,7 +72,7 @@ export const useKanbanDragDrop = (
 
             if (cardsInColumn.length >= targetColumn.wipLimit && (draggedCard.columnId !== targetColumnId || draggedCard.swimlaneId !== targetSwimlaneId)) {
                 // WIP limit exceeded
-                const notificationService = globalServiceRegistry.get<any>('NotificationService');
+                const notificationService = globalServiceRegistry.get<NotificationService>('NotificationService');
                 if (notificationService) {
                     notificationService.add({
                         type: 'warning',

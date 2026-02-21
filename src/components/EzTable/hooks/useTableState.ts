@@ -71,7 +71,8 @@ export const useTableState = <TData extends object>(props: EzTableProps<TData>, 
             rowPinning: { top: [], bottom: [] } as RowPinningState,
             pagination: { pageIndex: 0, pageSize: pageSize } as PaginationState,
             columnPinning: { left: [], right: [] } as ColumnPinningState,
-            columnVisibility: {} as Record<string, boolean>
+            columnVisibility: {} as Record<string, boolean>,
+            columnOrder: [] as string[]
         },
         persistenceKey: enablePersistence ? persistenceKey : undefined
     });
@@ -155,6 +156,13 @@ export const useTableState = <TData extends object>(props: EzTableProps<TData>, 
     const setRowPinning = (updater: any) => setState(prev => ({ ...prev, rowPinning: resolveUpdater(updater, prev.rowPinning) }));
     const setColumnPinning = (updater: any) => setState(prev => ({ ...prev, columnPinning: resolveUpdater(updater, prev.columnPinning) }));
     const setColumnVisibility = (updater: any) => setState(prev => ({ ...prev, columnVisibility: resolveUpdater(updater, prev.columnVisibility) }));
+    const setColumnOrder = (updater: any) => {
+        setState(prev => {
+            const newOrder = resolveUpdater(updater, prev.columnOrder);
+            setTimeout(() => props.onColumnOrderChange?.(newOrder), 0);
+            return { ...prev, columnOrder: newOrder };
+        });
+    };
 
     // --- Table Instance ---
     const table: Table<TData> = useReactTable({
@@ -175,6 +183,7 @@ export const useTableState = <TData extends object>(props: EzTableProps<TData>, 
             rowPinning: state.rowPinning,
             columnPinning: state.columnPinning,
             columnVisibility: state.columnVisibility,
+            columnOrder: state.columnOrder,
             ...props.state
         }), [state, props.state]),
 
@@ -189,6 +198,7 @@ export const useTableState = <TData extends object>(props: EzTableProps<TData>, 
         onRowPinningChange: setRowPinning,
         onColumnPinningChange: setColumnPinning,
         onColumnVisibilityChange: setColumnVisibility,
+        onColumnOrderChange: setColumnOrder,
 
         // Handlers
         globalFilterFn: advancedFilterFn,
@@ -238,7 +248,8 @@ export const useTableState = <TData extends object>(props: EzTableProps<TData>, 
             expanded: state.expanded, setExpanded,
             rowPinning: state.rowPinning, setRowPinning,
             columnPinning: state.columnPinning, setColumnPinning,
-            columnVisibility: state.columnVisibility, setColumnVisibility
+            columnVisibility: state.columnVisibility, setColumnVisibility,
+            columnOrder: state.columnOrder, setColumnOrder
         }
     };
 };

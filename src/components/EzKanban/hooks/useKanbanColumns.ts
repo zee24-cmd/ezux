@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import type { EzKanbanProps, KanbanBoard, KanbanColumn, IKanbanService } from '../EzKanban.types';
 import { globalServiceRegistry } from '../../../shared/services/ServiceRegistry';
+import type { NotificationService } from '../../../shared/services/NotificationService';
 
 /**
  * Hook for managing Kanban column operations with optimistic updates.
@@ -20,7 +21,7 @@ export const useKanbanColumns = (props: EzKanbanProps, board: KanbanBoard) => {
     };
 
     const notify = (type: 'success' | 'error', message: string, duration = 3000) => {
-        const notificationService = globalServiceRegistry.get<any>('NotificationService');
+        const notificationService = globalServiceRegistry.get<NotificationService>('NotificationService');
         if (notificationService) {
             notificationService.add({ type, message, duration });
         }
@@ -54,7 +55,7 @@ export const useKanbanColumns = (props: EzKanbanProps, board: KanbanBoard) => {
 
             return { previousBoard };
         },
-        onError: (_err: Error, _newColumn: KanbanColumn, context: any) => {
+        onError: (_err: Error, _newColumn: KanbanColumn, context: { previousBoard?: KanbanBoard } | undefined) => {
             if (context?.previousBoard) {
                 updateBoardCache(context.previousBoard);
             }
@@ -108,7 +109,7 @@ export const useKanbanColumns = (props: EzKanbanProps, board: KanbanBoard) => {
 
             return { previousBoard };
         },
-        onError: (_err: Error, _variables: any, context: any) => {
+        onError: (_err: Error, _variables: { columnId: string; updates: Partial<KanbanColumn> }, context: { previousBoard?: KanbanBoard } | undefined) => {
             if (context?.previousBoard) {
                 updateBoardCache(context.previousBoard);
             }
@@ -147,13 +148,13 @@ export const useKanbanColumns = (props: EzKanbanProps, board: KanbanBoard) => {
 
             return { previousBoard, deletedColumnName: deletedColumn?.name };
         },
-        onError: (_err: Error, _columnId: string, context: any) => {
+        onError: (_err: Error, _columnId: string, context: { previousBoard?: KanbanBoard; deletedColumnName?: string } | undefined) => {
             if (context?.previousBoard) {
                 updateBoardCache(context.previousBoard);
             }
             notify('error', 'Failed to delete column', 5000);
         },
-        onSuccess: (_columnId, _variables, context: any) => {
+        onSuccess: (_columnId, _variables, context: { previousBoard?: KanbanBoard; deletedColumnName?: string } | undefined) => {
             const name = context?.deletedColumnName || 'Column';
             notify('success', `Column "${name}" deleted`);
         },
@@ -198,7 +199,7 @@ export const useKanbanColumns = (props: EzKanbanProps, board: KanbanBoard) => {
 
             return { previousBoard };
         },
-        onError: (_err: Error, _variables: any, context: any) => {
+        onError: (_err: Error, _variables: string[], context: { previousBoard?: KanbanBoard } | undefined) => {
             if (context?.previousBoard) {
                 updateBoardCache(context.previousBoard);
             }

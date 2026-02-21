@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react';
-import { EzSchedulerProps, ViewType } from '../EzScheduler.types';
+import { EzSchedulerProps, ViewType, View } from '../EzScheduler.types';
 import { useComponentState } from '../../../shared/hooks/useComponentState';
 
 /**
@@ -66,7 +66,20 @@ export const useSchedulerState = (props: EzSchedulerProps) => {
     // --- State Updaters ---
     const setView = useCallback((newView: ViewType) => {
         setState(prev => ({ ...prev, view: newView }));
-        onViewChange?.(newView);
+
+        // Map ViewType to View
+        const mapping: Record<ViewType, View> = {
+            'day': 'Day',
+            'week': 'Week',
+            'workweek': 'WorkWeek',
+            'month': 'Month',
+            'agenda': 'Agenda',
+            'timeline-day': 'TimelineDay',
+            'timeline-week': 'TimelineWeek',
+            'timeline-month': 'TimelineMonth'
+        };
+
+        onViewChange?.(mapping[newView] || (newView as any));
     }, [onViewChange, setState]);
 
     const setCurrentDate = useCallback((newDate: Date) => {

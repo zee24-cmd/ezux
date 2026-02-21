@@ -1,5 +1,5 @@
 import React, { useEffect, memo, useRef, useState } from 'react';
-import { useDraggable, useDroppable } from '@dnd-kit/core';
+import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { EzContextMenu } from '../../shared/components/EzContextMenu';
 import { TreeNode } from './EzTreeView.types';
@@ -52,9 +52,19 @@ interface EzTreeViewItemProps {
     autoFocus?: boolean;
 
     /** Slots for modular composition. @group Extensibility */
-    slots?: any;
+    slots?: {
+        node?: React.ComponentType<unknown>;
+        expandIcon?: React.ComponentType<unknown>;
+        checkbox?: React.ComponentType<unknown>;
+        dragHandle?: React.ComponentType<unknown>;
+    };
     /** Props for slots. @group Extensibility */
-    slotProps?: any;
+    slotProps?: {
+        node?: Record<string, unknown>;
+        expandIcon?: Record<string, unknown>;
+        checkbox?: Record<string, unknown>;
+        dragHandle?: Record<string, unknown>;
+    };
 
     /** Whether text wrapping is allowed. @group Appearance */
     allowTextWrap?: boolean;
@@ -111,19 +121,20 @@ export const EzTreeViewItem = memo(({
         onDrawNode?.(node);
     }, [node, onDrawNode]);
 
-    const { setNodeRef, transform, isDragging, attributes, listeners } = useDraggable({
+    const {
+        setNodeRef,
+        transform,
+        isDragging,
+        attributes,
+        listeners,
+        transition
+    } = useSortable({
         id: node.id,
-        data: { node, type: 'tree-item' }
-    });
-
-    const { setNodeRef: setDroppableRef, isOver } = useDroppable({
-        id: node.id,
-        data: { node, level }
+        data: { node, type: 'tree-item', level }
     });
 
     const elementRef = useRef<HTMLDivElement | null>(null);
     const setRefs = (el: HTMLDivElement | null) => {
-        setDroppableRef(el);
         setNodeRef(el);
         elementRef.current = el;
     };
@@ -158,8 +169,9 @@ export const EzTreeViewItem = memo(({
 
     const combinedStyle: React.CSSProperties = {
         ...style,
-        transform: CSS.Translate.toString(transform),
-        opacity: isDragging ? 0.5 : 1,
+        transform: CSS.Translate.toString(transform) ? `${style.transform || ''} ${CSS.Translate.toString(transform)}` : style.transform,
+        transition: transition || style.transition,
+        opacity: isDragging ? 0.3 : 1,
         zIndex: isDragging ? 999 : 'auto',
     };
 
@@ -172,7 +184,7 @@ export const EzTreeViewItem = memo(({
         if (!hasChildren) return null;
 
         if (CustomExpandIcon) {
-            const IconComp = CustomExpandIcon as any;
+            const IconComp = CustomExpandIcon as React.ComponentType<{ isExpanded: boolean; isLoading: boolean }>;
             return <IconComp isExpanded={isExpanded} isLoading={isLoading} {...slotProps?.expandIcon} />;
         }
 
@@ -184,7 +196,7 @@ export const EzTreeViewItem = memo(({
         if (!showCheckboxes) return null;
 
         if (CustomCheckbox) {
-            const CheckComp = CustomCheckbox;
+            const CheckComp = CustomCheckbox as React.ComponentType<{ checked: boolean; indeterminate: boolean; onChange: () => void }>;
             return <CheckComp checked={isChecked} indeterminate={isIndeterminate} onChange={() => onToggleCheck(node.id)} {...slotProps?.checkbox} />;
         }
 
@@ -241,23 +253,25 @@ export const EzTreeViewItem = memo(({
                 className={cn(
                     "flex items-center py-1.5 px-2 cursor-pointer hover:bg-muted/50 rounded-md w-full group outline-none focus:ring-1 focus:ring-primary/30 select-none",
                     isSelected ? 'bg-primary/10 text-primary' : 'text-foreground',
-                    isOver ? 'bg-primary/20 ring-2 ring-primary' : '',
+                    isDragging ? 'bg-primary/5' : '',
                     animation ? 'transition-all duration-200' : ''
                 )}
                 style={{ ...combinedStyle, paddingInlineStart: `${paddingStart}px` }}
             >
                 {CustomNode ? (
                     <CustomNode
-                        node={node}
-                        level={level}
-                        isExpanded={isExpanded}
-                        isSelected={isSelected}
-                        isChecked={isChecked}
-                        isIndeterminate={isIndeterminate}
-                        onToggleExpand={() => onToggleExpand(node.id)}
-                        onToggleSelect={() => onToggleSelect(node.id)}
-                        onToggleCheck={() => onToggleCheck(node.id)}
-                        {...slotProps?.node}
+                        {...({
+                            node: node,
+                            level: level,
+                            isExpanded: isExpanded,
+                            isSelected: isSelected,
+                            isChecked: isChecked,
+                            isIndeterminate: isIndeterminate,
+                            onToggleExpand: () => onToggleExpand(node.id),
+                            onToggleSelect: () => onToggleSelect(node.id),
+                            onToggleCheck: () => onToggleCheck(node.id),
+                            ...(slotProps?.node || {})
+                        } as any)}
                     />
                 ) : (
                     <>

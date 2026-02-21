@@ -3,11 +3,14 @@
 import React from 'react';
 import { Card, CardHeader, CardContent } from '../../ui/card';
 import { Button } from '../../ui/button';
-import type { KanbanColumn as KanbanColumnType, KanbanCard, CustomFieldDefinition } from '../EzKanban.types';
+import type { KanbanColumn as KanbanColumnType, KanbanCard, CustomFieldDefinition, KanbanSlotConfig } from '../EzKanban.types';
 import { KanbanCard as KanbanCardComponent } from './KanbanCard';
+
 import { useKanbanVirtualization } from '../hooks/useKanbanVirtualization';
 import { Plus, ChevronDown, ChevronRight, MoreHorizontal, Trash2 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../ui/dropdown-menu';
+import { useSortable, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { useI18n } from '../../../shared/hooks/useI18n';
 import { cn } from '../../../lib/utils';
 
@@ -53,9 +56,9 @@ export interface KanbanColumnProps {
     /** Text direction. @group Appearance */
     dir?: 'ltr' | 'rtl' | 'auto';
     /** Slots for modular composition. @group Extensibility */
-    slots?: any;
+    slots?: KanbanSlotConfig['slots'];
     /** Props for slots. @group Extensibility */
-    slotProps?: any;
+    slotProps?: KanbanSlotConfig['slotProps'];
 }
 
 /**
@@ -68,8 +71,6 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
     onCardClick,
     onCardDoubleClick,
     onCardDragStart,
-    onCardDragEnd,
-    onDrop, // Restoring onDrop
     onAddCard,
     onToggleCollapse,
     onDeleteColumn,
@@ -117,33 +118,46 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
         }
     };
 
-    const handleDragOver = (e: React.DragEvent) => {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-    };
 
-    const handleDrop = (e: React.DragEvent) => {
-        e.preventDefault();
-        onDrop?.(column.id);
-    };
 
     const isWipLimitExceeded = column.wipLimit && cards.length > column.wipLimit;
     const isWipLimitWarning = column.wipLimit && cards.length === column.wipLimit;
 
-    const defaultColumn = (
+    const {
+        setNodeRef,
+        attributes,
+        listeners,
+        transform,
+        transition,
+        isDragging
+    } = useSortable({
+        id: column.id,
+        data: { type: 'column', column }
+    });
+
+    const style = {
+        transform: CSS.Translate.toString(transform),
+        transition,
+    };
+
+    return (
         <Card
+            ref={setNodeRef}
+            style={style}
             className={cn(
                 'flex flex-col w-80 shrink-0 transition-colors',
                 selectedColumnId === column.id ? 'ring-2 ring-primary border-primary' : '',
+                isDragging ? 'opacity-50' : '',
                 className
             )}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            onClick={() => onColumnClick?.(column.id)} // Select on click
+            onClick={() => onColumnClick?.(column.id)}
         >
             <CardHeader className="pb-3" onDoubleClick={() => setIsEditingName(true)}>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 flex-1">
+                        <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded text-muted-foreground/50 hover:text-primary transition-colors">
+                            <MoreHorizontal className="h-4 w-4" />
+                        </div>
                         <Button
                             variant="ghost"
                             size="sm"
@@ -268,12 +282,11 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
                                                     onClick={onCardClick}
                                                     onDoubleClick={onCardDoubleClick}
                                                     onDragStart={onCardDragStart}
-                                                    onDragEnd={onCardDragEnd}
                                                     isDragging={draggedCardId === card.id}
                                                     isHighlighted={highlightedCardId === card.id}
                                                     customFields={customFields}
                                                     dir={dir}
-                                                    {...slotProps?.card}
+                                                    {...(slotProps?.card as Record<string, any>)}
                                                 />
                                             </div>
                                         </div>
@@ -293,21 +306,25 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
                 // Standard rendering for smaller lists
                 return (
                     <CardContent className="flex-1 overflow-y-auto max-h-[calc(100vh-200px)] space-y-2">
-                        {sortedCards.map((card) => (
-                            <CardComponent
-                                key={card.id}
-                                card={card}
-                                onClick={onCardClick}
-                                onDoubleClick={onCardDoubleClick}
-                                onDragStart={onCardDragStart}
-                                onDragEnd={onCardDragEnd}
-                                isDragging={draggedCardId === card.id}
-                                isHighlighted={highlightedCardId === card.id}
-                                customFields={customFields}
-                                dir={dir}
-                                {...slotProps?.card}
-                            />
-                        ))}
+                        <SortableContext
+                            items={cards.map(card => card.id)}
+                            strategy={verticalListSortingStrategy}
+                        >
+                            {sortedCards.map((card) => (
+                                <CardComponent
+                                    key={card.id}
+                                    card={card}
+                                    onClick={onCardClick}
+                                    onDoubleClick={onCardDoubleClick}
+                                    onDragStart={onCardDragStart}
+                                    isDragging={draggedCardId === card.id}
+                                    isHighlighted={highlightedCardId === card.id}
+                                    customFields={customFields}
+                                    dir={dir}
+                                    {...(slotProps?.card as Record<string, any>)}
+                                />
+                            ))}
+                        </SortableContext>
 
                         {cards.length === 0 && (
                             <div className="flex h-32 items-center justify-center rounded-lg border border-dashed text-sm text-muted-foreground">
@@ -319,6 +336,4 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
             })()}
         </Card>
     );
-
-    return defaultColumn;
 };

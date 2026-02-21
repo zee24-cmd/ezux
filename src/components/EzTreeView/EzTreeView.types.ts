@@ -86,25 +86,27 @@ export interface EzTreeViewProps extends SharedBaseProps {
 
 
     /**
-     * Slots for modular composition.
+     * Component slots for custom rendering override.
      * @group Extensibility
      */
     slots?: {
-        node?: React.ComponentType<any>;
-        expandIcon?: React.ComponentType<any>;
-        checkbox?: React.ComponentType<any>;
-        dragHandle?: React.ComponentType<any>;
+        node?: React.ComponentType<unknown>;
+        expandIcon?: React.ComponentType<unknown>;
+        checkbox?: React.ComponentType<unknown>;
+        dragHandle?: React.ComponentType<unknown>;
+        [key: string]: React.ComponentType<unknown> | undefined;
     };
 
     /**
-     * Props for slots.
+     * Props to pass to custom slots.
      * @group Extensibility
      */
     slotProps?: {
-        node?: any;
-        expandIcon?: any;
-        checkbox?: any;
-        dragHandle?: any;
+        node?: Record<string, unknown>;
+        expandIcon?: Record<string, unknown>;
+        checkbox?: Record<string, unknown>;
+        dragHandle?: Record<string, unknown>;
+        [key: string]: unknown;
     };
 
     /**
@@ -312,17 +314,17 @@ export interface EzTreeViewProps extends SharedBaseProps {
      * Callback triggered when node dragging starts (cancellable).
      * @group Events 
      */
-    onNodeDragStart?: (event: any) => boolean | void;
+    onNodeDragStart?: (event: React.DragEvent | unknown) => boolean | void;
     /** 
      * Callback triggered when node dragging stops.
      * @group Events 
      */
-    onNodeDragStop?: (event: any) => void;
+    onNodeDragStop?: (event: React.DragEvent | unknown) => void;
     /** 
      * Callback triggered during node dragging.
      * @group Events 
      */
-    onNodeDragging?: (event: any) => void;
+    onNodeDragging?: (event: React.DragEvent | unknown) => void;
     /** 
      * Callback triggered when a node is selected.
      * @group Events 

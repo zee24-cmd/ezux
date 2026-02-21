@@ -12,7 +12,26 @@ import { useServiceState } from '../../shared/hooks/useServiceState';
 import { I18nState } from '../../shared/services/I18nService';
 
 import { getSvgPathFromStroke } from '../../shared/utils/canvasUtils';
-const MemoizedStroke = React.memo(({ stroke, options, color }: { stroke: number[][], options: any, color: string }) => {
+interface StrokeOptions {
+    size?: number;
+    thinning?: number;
+    smoothing?: number;
+    streamline?: number;
+    easing?: (t: number) => number;
+    start?: {
+        taper?: number | boolean;
+        easing?: (t: number) => number;
+        cap?: boolean;
+    };
+    end?: {
+        taper?: number | boolean;
+        easing?: (t: number) => number;
+        cap?: boolean;
+    };
+    simulatePressure?: boolean;
+}
+
+const MemoizedStroke = React.memo(({ stroke, options, color }: { stroke: number[][], options: StrokeOptions, color: string }) => {
     const outline = getStroke(stroke, options);
     return <path d={getSvgPathFromStroke(outline)} fill={color} />;
 });
@@ -166,7 +185,19 @@ const EzSignature = React.forwardRef<EzSignatureRef, EzSignatureProps>((props, r
         canRedo: () => historyIndex < history.length - 1,
         isEmpty: () => strokes.length === 0 && points.length === 0,
         getSignature: () => strokes,
-        load: (data: any) => {
+        load: (data: number[][][] | string) => {
+            if (typeof data === 'string') {
+                try {
+                    const parsed = JSON.parse(data);
+                    if (Array.isArray(parsed)) {
+                        setStrokes(parsed);
+                        pushToHistory(parsed);
+                    }
+                } catch (e) {
+                    console.error("Failed to parse signature data", e);
+                }
+                return;
+            }
             if (Array.isArray(data)) {
                 setStrokes(data);
                 pushToHistory(data);

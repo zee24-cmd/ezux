@@ -4,8 +4,8 @@
  */
 export const createCRUDMethods = <T>(
     getData: () => T[] | Promise<T[]>,
-    addItem: (item: T) => void | Promise<any>,
-    updateItem: (item: T) => void | Promise<any>,
+    addItem: (item: T) => void | Promise<unknown>,
+    updateItem: (item: T) => void | Promise<unknown>,
     deleteItem: (id: string | number) => void | Promise<void>
 ) => {
     return {
@@ -36,7 +36,7 @@ export const createRefreshMethods = (
     refresh: () => void,
     forceUpdate?: () => void
 ) => {
-    const methods: Record<string, any> = {
+    const methods: Record<string, unknown> = {
         refresh
     };
 
@@ -58,7 +58,7 @@ export const createSelectionMethods = <T>(
     getSelectedItems: () => T[],
     selectRowByRange?: (start: string | number, end: string | number) => void
 ) => {
-    const methods: Record<string, any> = {
+    const methods: Record<string, unknown> = {
         selectRow: selectItem,
         selectRows: selectItems,
         clearSelection,
@@ -80,7 +80,7 @@ export const createNavigationMethods = (
     scrollToIndex: (index: number) => void,
     goToPage?: (page: number) => void
 ) => {
-    const methods: Record<string, any> = {
+    const methods: Record<string, unknown> = {
         scrollToIndex
     };
 
@@ -99,7 +99,7 @@ export const createExportMethods = (
     exportToExcel?: () => void,
     print?: () => void
 ) => {
-    const methods: Record<string, any> = {};
+    const methods: Record<string, unknown> = {};
 
     if (exportToCsv) {
         methods.exportDataAsCsv = exportToCsv;
@@ -119,7 +119,7 @@ export const createExportMethods = (
 /**
  * Validates imperative API for completeness and consistency
  */
-export const validateImperativeAPI = (api: Record<string, any>, requiredMethods: string[]): boolean => {
+export const validateImperativeAPI = (api: Record<string, unknown>, requiredMethods: string[]): boolean => {
     const missingMethods = requiredMethods.filter(method => !(method in api));
 
     if (missingMethods.length > 0) {

@@ -460,7 +460,7 @@ export const DayWeekView: React.FC<DayWeekViewProps> = ({
                                                     <span className="absolute -top-1 px-1.5 py-0.5 bg-destructive/10 text-destructive text-[9px] font-black uppercase tracking-tighter rounded-full border border-destructive/20 mb-1 leading-none shadow-sm">Holiday</span>
                                                 )}
                                                 {dayInfo?.isFullyBooked && (
-                                                    <span className="absolute -top-1 px-1.5 py-0.5 bg-amber-500/10 text-amber-600 text-[9px] font-black uppercase tracking-tighter rounded-full border border-amber-500/20 mb-1 leading-none shadow-sm">Fully Booked</span>
+                                                    <span className="absolute -top-1 px-1.5 py-0.5 bg-warning/10 text-warning-foreground text-[9px] font-black uppercase tracking-tighter rounded-full border border-warning/20 mb-1 leading-none shadow-sm">Fully Booked</span>
                                                 )}
                                                 {dateHeaderTemplate ? (
                                                     <div className="h-full w-full flex items-center justify-center pt-2">
@@ -540,7 +540,7 @@ export const DayWeekView: React.FC<DayWeekViewProps> = ({
                                                                 </span>
                                                             )}
                                                             {fullyBookedInfo && (
-                                                                <span className="text-xs font-black uppercase tracking-wider text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded-sm mb-0.5">
+                                                                <span className="text-xs font-black uppercase tracking-wider text-warning-foreground bg-warning/10 px-2 py-0.5 rounded-sm mb-0.5">
                                                                     Fully Booked
                                                                 </span>
                                                             )}
@@ -672,7 +672,7 @@ export const DayWeekView: React.FC<DayWeekViewProps> = ({
                                                         sIdx === secondaryLoop.length - 1 && "border-e-0", // Remove border for last sub-column only
                                                         isHorizontalScroll && "snap-center",
                                                         holidayInfo && "bg-[repeating-linear-gradient(-45deg,hsl(var(--destructive)/0.05)_0px,hsl(var(--destructive)/0.05)_10px,transparent_10px,transparent_20px)] bg-destructive/[0.02]",
-                                                        fullyBookedInfo && "bg-[repeating-linear-gradient(-45deg,theme(colors.amber.500/0.05)_0px,theme(colors.amber.500/0.05)_10px,transparent_10px,transparent_20px)] bg-amber-500/[0.02]",
+                                                        fullyBookedInfo && "bg-[repeating-linear-gradient(-45deg,theme(colors.warning/0.05)_0px,theme(colors.warning/0.05)_10px,transparent_10px,transparent_20px)] bg-warning/[0.02]",
                                                         !holidayInfo && !fullyBookedInfo && "bg-background"
                                                     )}
                                                 >

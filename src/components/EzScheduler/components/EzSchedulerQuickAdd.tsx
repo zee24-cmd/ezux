@@ -113,7 +113,7 @@ export const EzSchedulerQuickAdd: React.FC<EzSchedulerQuickAddProps> = ({
                     </div>
                 )}
                 {isPast && (
-                    <div className="flex items-center gap-2 text-xs text-amber-500 font-medium">
+                    <div className="flex items-center gap-2 text-xs text-warning-foreground font-medium">
                         <AlertCircle className="h-3 w-3" />
                         <span>This event is in the past</span>
                     </div>

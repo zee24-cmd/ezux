@@ -5,6 +5,8 @@ import {
     View,
     SchedulerEvent,
     Resource,
+    ResourceModel,
+    EditorMode,
     EzSchedulerRef
 } from '../EzScheduler.types';
 import { useComponentImperativeAPI } from '../../../shared/hooks/useComponentImperativeAPI';
@@ -18,13 +20,13 @@ import {
 import { SchedulerService } from '../services/SchedulerService';
 
 export const useSchedulerImperative = (
-    view: ViewType,
+    view: ViewType | View,
     currentDate: Date,
     schedulerService: SchedulerService,
     visibleEvents: SchedulerEvent[],
     methods: {
-        setEditorState: (state: any) => void;
-        setResources: (res: Resource[] | ((prev: Resource[]) => Resource[])) => void;
+        setEditorState: (state: { isOpen: boolean; mode: EditorMode; event?: SchedulerEvent | Partial<SchedulerEvent> | undefined }) => void;
+        setResources: (res: (Resource[] | ResourceModel[]) | ((prev: (Resource[] | ResourceModel[])) => (Resource[] | ResourceModel[]))) => void;
         scrollToIndex: (index: number) => void;
         forceUpdate: () => void;
         showSpinner: () => void;
@@ -37,7 +39,7 @@ export const useSchedulerImperative = (
         today: () => void;
     },
     ref: React.Ref<EzSchedulerRef>,
-    extraApi: any = {}
+    extraApi: Partial<EzSchedulerRef> = {}
 ) => {
 
     const api = useMemo(() => {
@@ -52,8 +54,8 @@ export const useSchedulerImperative = (
         const spinnerMethods = createSpinnerMethods(methods.showSpinner, methods.hideSpinner);
         const refreshMethods = createRefreshMethods(() => { }, methods.forceUpdate);
         const exportMethods = createExportMethods(
-            () => extraApi.onExportExcel?.(visibleEvents),
-            () => extraApi.onExportICS?.(visibleEvents),
+            () => (extraApi as any).onExportExcel?.(visibleEvents),
+            () => (extraApi as any).onExportICS?.(visibleEvents),
             () => {
                 // PrintService can optionally be IoC'd too, but for now we'll keep it as it's lightweight or handle it later.
                 // Actually, let's just use window.print similar to EzTable for now to remove pure dependency if possible,
@@ -87,24 +89,28 @@ export const useSchedulerImperative = (
 
             // DataOperations
             ...crudMethods,
-            getEvents: () => schedulerService.getEvents(),
-            getEventsInDateRange: (start: Date, end: Date) => schedulerService.getEvents(start, end),
-            addEvent: (e: any) => schedulerService.addEvent(e),
-            saveEvent: (e: any) => schedulerService.updateEvent(e),
-            deleteEvent: (id: string | number) => schedulerService.deleteEvent(id as string),
+            getEvents: async () => schedulerService.getEvents(),
+            getEventsInDateRange: async (start: Date, end: Date) => schedulerService.getEvents(start, end),
+            addEvent: async (e: SchedulerEvent | Record<string, unknown>) => { await schedulerService.addEvent(e as Partial<SchedulerEvent>); },
+            saveEvent: async (e: SchedulerEvent | Record<string, unknown>) => { await schedulerService.updateEvent(e as SchedulerEvent); },
+            deleteEvent: async (id: string | number) => { await schedulerService.deleteEvent(id); },
             getCurrentViewEvents: () => visibleEvents,
-            addResource: (r: Resource | Record<string, any>) => methods.setResources(prev => [...prev, r as Resource]),
-            removeResource: (id: string | number) => methods.setResources(prev => prev.filter(r => r.id !== id)),
+            addResource: async (r: Resource | Record<string, unknown>) => {
+                methods.setResources(prev => [...(prev as Resource[]), r as Resource]);
+            },
+            removeResource: async (id: string | number) => {
+                methods.setResources(prev => (prev as Resource[]).filter(r => r.id !== id));
+            },
 
             // Editor
-            openEditor: (data: any, action: string = 'Add') => {
+            openEditor: (data: SchedulerEvent, action: string = 'Add') => {
                 methods.setEditorState({
                     isOpen: true,
-                    mode: action === 'Edit' ? 'edit' : 'create',
+                    mode: action === 'Edit' ? 'edit' : (action === 'view' ? 'view' : 'create'),
                     event: data
                 });
             },
-            closeEditor: () => methods.setEditorState({ isOpen: false }),
+            closeEditor: () => methods.setEditorState({ isOpen: false, mode: 'create', event: undefined }),
             closeQuickInfoPopup: methods.closeQuickInfoPopup,
 
             // Spinner
@@ -116,9 +122,12 @@ export const useSchedulerImperative = (
             // Exporting
             ...exportMethods,
 
+            // View State
+            currentView: view as View,
+
             // Extra
             ...extraApi
-        };
+        } as EzSchedulerRef;
     }, [view, currentDate, visibleEvents, methods, schedulerService, extraApi]);
 
     useComponentImperativeAPI(ref, api);

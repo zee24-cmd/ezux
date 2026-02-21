@@ -1,10 +1,10 @@
 import { Store } from '@tanstack/store';
-import type { SchedulerEvent, Resource, ViewType, ResourceModel } from '../EzScheduler.types';
+import type { SchedulerEvent, Resource, ViewType, ResourceModel, View } from '../EzScheduler.types';
 
 export interface SchedulerState {
     events: SchedulerEvent[];
-    resources: Resource[] | ResourceModel[];
-    view: ViewType;
+    resources: (Resource | ResourceModel)[];
+    view: ViewType | View;
     currentDate: Date;
     selectedDate: Date;
     selectedEventId: string | null;
@@ -45,7 +45,7 @@ export const createSchedulerActions = (store: Store<SchedulerState>) => ({
             events: state.events.filter((e) => e.id !== id),
         }));
     },
-    setResources: (resources: Resource[] | ResourceModel[]) => {
+    setResources: (resources: (Resource | ResourceModel)[]) => {
         store.setState((state) => ({ ...state, resources }));
     },
     setView: (view: ViewType) => {

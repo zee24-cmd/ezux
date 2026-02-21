@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import type { EzKanbanProps, KanbanBoard, KanbanSwimlane, IKanbanService } from '../EzKanban.types';
 import { globalServiceRegistry } from '../../../shared/services/ServiceRegistry';
+import type { NotificationService } from '../../../shared/services/NotificationService';
 
 /**
  * Hook for managing Kanban swimlane operations with optimistic updates.
@@ -20,7 +21,7 @@ export const useKanbanSwimlanes = (props: EzKanbanProps, board: KanbanBoard) => 
     };
 
     const notify = (type: 'success' | 'error', message: string, duration = 3000) => {
-        const notificationService = globalServiceRegistry.get<any>('NotificationService');
+        const notificationService = globalServiceRegistry.get<NotificationService>('NotificationService');
         if (notificationService) {
             notificationService.add({ type, message, duration });
         }
@@ -54,7 +55,7 @@ export const useKanbanSwimlanes = (props: EzKanbanProps, board: KanbanBoard) => 
 
             return { previousBoard };
         },
-        onError: (_err: Error, _newSwimlane: KanbanSwimlane, context: any) => {
+        onError: (_err: Error, _newSwimlane: KanbanSwimlane, context: { previousBoard?: KanbanBoard } | undefined) => {
             if (context?.previousBoard) {
                 updateBoardCache(context.previousBoard);
             }
@@ -107,7 +108,7 @@ export const useKanbanSwimlanes = (props: EzKanbanProps, board: KanbanBoard) => 
 
             return { previousBoard };
         },
-        onError: (_err: Error, _variables: any, context: any) => {
+        onError: (_err: Error, _variables: { swimlaneId: string; updates: Partial<KanbanSwimlane> }, context: { previousBoard?: KanbanBoard } | undefined) => {
             if (context?.previousBoard) {
                 updateBoardCache(context.previousBoard);
             }
@@ -146,13 +147,13 @@ export const useKanbanSwimlanes = (props: EzKanbanProps, board: KanbanBoard) => 
 
             return { previousBoard, deletedSwimlaneName: deletedSwimlane?.name };
         },
-        onError: (_err: Error, _swimlaneId: string, context: any) => {
+        onError: (_err: Error, _swimlaneId: string, context: { previousBoard?: KanbanBoard; deletedSwimlaneName?: string } | undefined) => {
             if (context?.previousBoard) {
                 updateBoardCache(context.previousBoard);
             }
             notify('error', 'Failed to delete swimlane', 5000);
         },
-        onSuccess: (_swimlaneId, _variables, context: any) => {
+        onSuccess: (_swimlaneId, _variables, context: { previousBoard?: KanbanBoard; deletedSwimlaneName?: string } | undefined) => {
             const name = context?.deletedSwimlaneName || 'Swimlane';
             notify('success', `Swimlane "${name}" deleted`);
         },
@@ -188,7 +189,7 @@ export const useKanbanSwimlanes = (props: EzKanbanProps, board: KanbanBoard) => 
 
             return { previousBoard };
         },
-        onError: (_err: Error, _variables: any, context: any) => {
+        onError: (_err: Error, _variables: string[], context: { previousBoard?: KanbanBoard } | undefined) => {
             if (context?.previousBoard) {
                 updateBoardCache(context.previousBoard);
             }

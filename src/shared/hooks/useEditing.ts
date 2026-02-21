@@ -335,15 +335,8 @@ export const useEditing = <TData extends Record<string, any> = any>(
         });
 
         onRowDelete?.(id);
-
-        // Remove from deleting state after callback
-        setTimeout(() => {
-            setState(prev => {
-                const newDeletingIds = new Set(prev.deletingIds);
-                newDeletingIds.delete(id);
-                return { ...prev, deletingIds: newDeletingIds };
-            });
-        }, 100);
+        // Note: deletingIds is cleared when the parent refreshes data and the row
+        // is no longer present. Avoid raw setTimeout here to prevent use-after-unmount updates.
     }, [allowDeleting, onRowDelete]);
 
     // Check if deleting

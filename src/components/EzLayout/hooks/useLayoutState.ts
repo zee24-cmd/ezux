@@ -1,8 +1,8 @@
 import { useEffect, useTransition } from 'react';
 import { useComponentState } from '../../../shared/hooks/useComponentState';
 import { EzLayoutProps } from '../EzLayout.types';
-import { LayoutService } from '../../../shared/services/LayoutService';
-import { I18nService } from '../../../shared/services/I18nService';
+import { LayoutService, LayoutState } from '../../../shared/services/LayoutService';
+import { I18nService, I18nState } from '../../../shared/services/I18nService';
 import { FocusManagerService } from '../../../shared/services/FocusManagerService';
 import { globalServiceRegistry } from '../../../shared/services/ServiceRegistry';
 import { NotificationService } from '../../../shared/services/NotificationService';
@@ -42,7 +42,7 @@ export const useLayoutState = (props: EzLayoutProps) => {
     // 2. Reactive State
     const { state: layoutState, setImmediateState: setLayoutState } = useComponentState({
         initialState: layoutService.getState(),
-        service: layoutService as any,
+        service: layoutService,
         onChange: (state) => {
             onSidebarToggle?.(state.sidebarOpen);
         }
@@ -50,7 +50,7 @@ export const useLayoutState = (props: EzLayoutProps) => {
 
     const { state: i18nState, setImmediateState: setI18nState } = useComponentState({
         initialState: { locale: i18nService.locale, dir: i18nService.dir },
-        service: i18nService as any
+        service: i18nService
     });
 
     const [isPending, startTransition] = useTransition();
@@ -60,10 +60,10 @@ export const useLayoutState = (props: EzLayoutProps) => {
     }, [layoutService, headerHeight, sidebarWidth, breakpoint]);
 
     useEffect(() => {
-        const unsubLayout = layoutService.subscribe((state: any) => {
+        const unsubLayout = layoutService.subscribe((state: LayoutState) => {
             startTransition(() => setLayoutState(state));
         });
-        const unsubI18n = i18nService.subscribe((state: any) => {
+        const unsubI18n = i18nService.subscribe((state: I18nState) => {
             startTransition(() => setI18nState(state));
         });
         return () => {

@@ -49,7 +49,7 @@ export const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onCha
             <div className="flex gap-2 items-center mb-2">
                 <label className="text-sm font-medium">Repeat</label>
                 <select
-                    className="border rounded p-1 text-sm dark:bg-slate-700 dark:border-slate-600"
+                    className="border rounded p-1 text-sm dark:bg-muted dark:border-border"
                     value={freq === null ? 'none' : freq}
                     onChange={(e) => {
                         const val = e.target.value;
@@ -71,7 +71,7 @@ export const RecurrenceEditor: React.FC<RecurrenceEditorProps> = ({ value, onCha
                     <input
                         type="number"
                         min="1"
-                        className="w-16 border rounded p-1 text-sm dark:bg-slate-700 dark:border-slate-600"
+                        className="w-16 border rounded p-1 text-sm dark:bg-muted dark:border-border"
                         value={interval}
                         onChange={(e) => updateRule(freq, parseInt(e.target.value) || 1)}
                     />

@@ -10,6 +10,8 @@ import { useDebounce } from '../../../shared/hooks/useDebounce';
 import { useI18n } from '../../../shared/hooks/useI18n';
 import type { FilterConfig, KanbanBoard } from '../EzKanban.types';
 import { FilterPopover } from './FilterPopover';
+import type { ExportService } from '../../../shared/services/ExportService';
+import type { NotificationService } from '../../../shared/services/NotificationService';
 
 /**
  * Props for the KanbanToolbar component.
@@ -94,7 +96,7 @@ export const KanbanToolbar: React.FC<KanbanToolbarProps> = ({
         if (!board) return;
 
         try {
-            const exportService = globalServiceRegistry.get<any>('ExportService');
+            const exportService = globalServiceRegistry.get<ExportService>('ExportService');
 
             if (format === 'csv') {
                 // Export cards as CSV
@@ -111,8 +113,20 @@ export const KanbanToolbar: React.FC<KanbanToolbarProps> = ({
                 }));
 
                 if (exportService) {
-                    const csv = exportService.toCSV(csvData);
-                    exportService.download(csv, `kanban-board-${board.id}.csv`);
+                    // Note: based on ExportService definition, it has exportToCSV, not toCSV/download
+                    // But in this file it was coded assuming toCSV/download.
+                    // I will stick to what's in ExportService.ts: exportToCSV
+                    exportService.exportToCSV(csvData, [
+                        { header: 'ID', accessorKey: 'id' },
+                        { header: 'Title', accessorKey: 'title' },
+                        { header: 'Description', accessorKey: 'description' },
+                        { header: 'Column', accessorKey: 'column' },
+                        { header: 'Priority', accessorKey: 'priority' },
+                        { header: 'Assignees', accessorKey: 'assignees' },
+                        { header: 'Tags', accessorKey: 'tags' },
+                        { header: 'Due Date', accessorKey: 'dueDate' },
+                        { header: 'Archived', accessorKey: 'isArchived' },
+                    ], { fileName: `kanban-board-${board.id}` });
                 } else {
                     // Fallback: manual CSV generation
                     const headers = Object.keys(csvData[0] || {});
@@ -133,8 +147,8 @@ export const KanbanToolbar: React.FC<KanbanToolbarProps> = ({
                 // Export full board as JSON
                 const jsonData = JSON.stringify(board, null, 2);
 
-                if (exportService) {
-                    exportService.download(jsonData, `kanban-board-${board.id}.json`);
+                if (exportService && (exportService as any).download) {
+                    (exportService as any).download(jsonData, `kanban-board-${board.id}.json`);
                 } else {
                     // Fallback: manual JSON download
                     const blob = new Blob([jsonData], { type: 'application/json' });
@@ -148,7 +162,7 @@ export const KanbanToolbar: React.FC<KanbanToolbarProps> = ({
             }
 
             // Show success notification
-            const notificationService = globalServiceRegistry.get<any>('NotificationService');
+            const notificationService = globalServiceRegistry.get<NotificationService>('NotificationService');
             if (notificationService) {
                 notificationService.add({
                     type: 'success',
@@ -157,7 +171,7 @@ export const KanbanToolbar: React.FC<KanbanToolbarProps> = ({
                 });
             }
         } catch (error) {
-            const notificationService = globalServiceRegistry.get<any>('NotificationService');
+            const notificationService = globalServiceRegistry.get<NotificationService>('NotificationService');
             if (notificationService) {
                 notificationService.add({
                     type: 'error',

@@ -589,7 +589,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
                                                         <div className="flex items-center gap-1.5">
                                                             <span className={cn(
                                                                 "w-1.5 h-1.5 rounded-full",
-                                                                resource.type === 'Internal' ? "bg-blue-500 shadow-[0_0_6px_rgba(59,130,246,0.5)]" : "bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]"
+                                                                resource.type === 'Internal' ? "bg-primary shadow-[0_0_6px_var(--primary)]/50" : "bg-success shadow-[0_0_6px_var(--success)]/50"
                                                             )} />
                                                             <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{resource.type || 'Available'}</span>
                                                         </div>

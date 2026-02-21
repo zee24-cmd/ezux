@@ -1,7 +1,7 @@
 import React from 'react';
 import { cn } from '../../../lib/utils';
 
-export type LoadingSpinnerVariant = 'primary' | 'blue';
+export type LoadingSpinnerVariant = 'primary' | 'secondary';
 
 export interface EzLoadingSpinnerProps {
     variant?: LoadingSpinnerVariant;
@@ -22,7 +22,7 @@ export const EzLoadingSpinner: React.FC<EzLoadingSpinnerProps> = ({
     };
     const spinnerBorderColors = {
         primary: "border-primary/20 border-t-primary",
-        blue: "border-blue-500 border-t-transparent"
+        secondary: "border-muted-foreground/20 border-t-muted-foreground"
     };
 
     return (

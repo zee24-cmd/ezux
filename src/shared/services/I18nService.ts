@@ -36,6 +36,7 @@ export class I18nService extends BaseService<I18nState> {
 
     private initialTranslations: Record<string, Record<string, string>> = {
         en: {
+            // EzSignature
             'controls': 'Controls',
             'customize_stroke': 'Customize the stroke.',
             'stroke_color': 'Stroke Color',
@@ -48,7 +49,7 @@ export class I18nService extends BaseService<I18nState> {
             'download_png': 'Download PNG',
             'captured_output': 'Captured Output',
             'download': 'Download',
-            // Kanban
+            // EzKanban
             'add_card': 'Add Card',
             'add_column': 'Add Column',
             'add_swimlane': 'Add Swimlane',
@@ -62,6 +63,48 @@ export class I18nService extends BaseService<I18nState> {
             'items': 'items',
             'switch_language': 'Switch Language',
             'reload_dataset': 'Reload Dataset',
+            // EzTable
+            'no_rows': 'No records to display',
+            'loading': 'Loading...',
+            'rows_per_page': 'Rows per page',
+            'of': 'of',
+            'page': 'Page',
+            'go_to_page': 'Go to page',
+            'first_page': 'First page',
+            'last_page': 'Last page',
+            'next_page': 'Next page',
+            'previous_page': 'Previous page',
+            'filter': 'Filter',
+            'sort_asc': 'Sort ascending',
+            'sort_desc': 'Sort descending',
+            'clear_filter': 'Clear filter',
+            'column_settings': 'Column settings',
+            'group_by': 'Group by',
+            'ungroup': 'Ungroup',
+            'pin_left': 'Pin left',
+            'pin_right': 'Pin right',
+            'unpin': 'Unpin',
+            'hide_column': 'Hide column',
+            'selected_rows': 'selected rows',
+            'total_rows': 'Total rows',
+            // EzScheduler
+            'day_view': 'Day',
+            'week_view': 'Week',
+            'month_view': 'Month',
+            'agenda_view': 'Agenda',
+            'today': 'Today',
+            'add_event': 'Add Event',
+            'edit_event': 'Edit Event',
+            'delete_event': 'Delete Event',
+            'all_day': 'All day',
+            'no_events': 'No events',
+            // EzLayout
+            'sign_in': 'Sign In',
+            'sign_out': 'Sign Out',
+            'profile': 'Profile',
+            'settings': 'Settings',
+            'toggle_theme': 'Toggle theme',
+            'toggle_sidebar': 'Toggle sidebar',
         },
         fr: {
             'controls': 'Contrôles',
@@ -205,7 +248,6 @@ export class I18nService extends BaseService<I18nState> {
         },
     };
 
-
     private _locale: string = 'en';
     private _translations: Record<string, Record<string, string>> = {};
 
@@ -217,62 +259,56 @@ export class I18nService extends BaseService<I18nState> {
         });
 
         this._locale = defaultLocale;
-        this._translations = {};
-
-        // Use closures to guarantee 'this' context and use local fields
-        const self = this;
-
-        /**
-         * Sets the active locale and updates text direction.
-         * @param locale The locale code to switch to.
-         * @group Methods
-         */
-        this.setLocale = (locale: string) => {
-            self._locale = locale;
-            self.setState({
-                locale,
-                dir: ['ar', 'he', 'fa'].includes(locale) ? 'rtl' : 'ltr'
-            });
-        };
-
-        /**
-         * Dynamically registers custom translations for a specific locale.
-         * @param locale The locale to add translations for.
-         * @param da Key-value pairs of translation strings.
-         * @group Methods
-         */
-        this.registerTranslations = (locale: string, da: Record<string, string>) => {
-            self._translations[locale] = { ...self._translations[locale], ...da };
-            self.setState(prev => ({
-                translations: {
-                    ...(prev?.translations || {}),
-                    [locale]: { ...(prev?.translations?.[locale] || {}), ...da }
-                }
-            }));
-        };
-
-        /**
-         * Translates a key based on the current active locale.
-         * @param key The translation key to lookup.
-         * @returns The localized string or the key if not found.
-         * @group Methods
-         */
-        this.t = (key: string): string => {
-            // Use local fields to avoid "state undefined" crash
-            const localeData = self._translations[self._locale] || self._translations['en'];
-            return localeData?.[key] || key;
-        };
-
-        // Initial set
         this._translations = this.initialTranslations;
-        this.setState(prev => ({
-            ...(prev || {}),
+
+        this.setState({
             translations: this.initialTranslations
-        }));
+        });
     }
 
     get locale() { return this.state.locale; }
     get dir() { return this.state.dir; }
+
+    /**
+     * Sets the active locale and updates text direction.
+     * @param locale The locale code to switch to.
+     * @group Methods
+     */
+    setLocale = (locale: string): void => {
+        this._locale = locale;
+        this.setState({
+            locale,
+            dir: ['ar', 'he', 'fa'].includes(locale) ? 'rtl' : 'ltr'
+        });
+    };
+
+    /**
+     * Dynamically registers custom translations for a specific locale.
+     * @param locale The locale to add translations for.
+     * @param da Key-value pairs of translation strings.
+     * @group Methods
+     */
+    registerTranslations = (locale: string, da: Record<string, string>): void => {
+        this._translations[locale] = { ...this._translations[locale], ...da };
+        this.setState(prev => ({
+            translations: {
+                ...(prev?.translations || {}),
+                [locale]: { ...(prev?.translations?.[locale] || {}), ...da }
+            }
+        }));
+    };
+
+    /**
+     * Translates a key based on the current active locale.
+     * Falls back to English, then returns the key itself if not found.
+     * @param key The translation key to lookup.
+     * @returns The localized string or the key if not found.
+     * @group Methods
+     */
+    t = (key: string): string => {
+        const localeData = this._translations[this._locale] || this._translations['en'];
+        return localeData?.[key] ?? key;
+    };
 
     /**
      * Formats a date based on the current active locale.
@@ -303,9 +339,4 @@ export class I18nService extends BaseService<I18nState> {
     formatCurrency = (value: number, currency = 'USD') => {
         return formatUtils.formatCurrency(value, this.state.locale, currency);
     }
-
-    // Methods are defined in constructor now
-    setLocale(_locale: string) { /* overwritten by constructor */ }
-    registerTranslations(_locale: string, _da: Record<string, string>) { /* overwritten by constructor */ }
-    t(_key: string): string { return _key; /* overwritten by constructor */ }
 }

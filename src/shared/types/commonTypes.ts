@@ -88,7 +88,7 @@ export interface TreeNode {
     isLeaf?: boolean;
     isLoading?: boolean;
     isLoaded?: boolean;
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 /**

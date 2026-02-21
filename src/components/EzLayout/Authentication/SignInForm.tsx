@@ -54,26 +54,26 @@ export const SignInForm: React.FC<SignInFormProps> = ({ onSubmit, defaultValues 
         >
             <div className="text-center mb-8">
                 <h1 className="text-3xl font-bold mb-3 tracking-tight text-zinc-900 dark:text-white">Sign In</h1>
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">Use your social account or email to login</p>
+                <p className="text-sm text-zinc-500 dark:text-muted-foreground">Use your social account or email to login</p>
 
                 <div className="flex justify-center gap-4 mt-6">
-                    <Button type="button" variant="outline" size="icon" className="rounded-full w-10 h-10 border-zinc-200 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900">
+                    <Button type="button" variant="outline" size="icon" className="rounded-full w-10 h-10 border-border hover:bg-background-secondary dark:border-zinc-800 dark:hover:bg-zinc-900">
                         <Facebook className="w-4 h-4 text-blue-600" />
                     </Button>
-                    <Button type="button" variant="outline" size="icon" className="rounded-full w-10 h-10 border-zinc-200 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900">
+                    <Button type="button" variant="outline" size="icon" className="rounded-full w-10 h-10 border-border hover:bg-background-secondary dark:border-zinc-800 dark:hover:bg-zinc-900">
                         <Github className="w-4 h-4 text-zinc-900 dark:text-white" />
                     </Button>
-                    <Button type="button" variant="outline" size="icon" className="rounded-full w-10 h-10 border-zinc-200 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900">
+                    <Button type="button" variant="outline" size="icon" className="rounded-full w-10 h-10 border-border hover:bg-background-secondary dark:border-zinc-800 dark:hover:bg-zinc-900">
                         <span className="font-bold text-xs">G</span>
                     </Button>
                 </div>
 
                 <div className="relative my-6">
                     <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t border-zinc-200 dark:border-zinc-800" />
+                        <span className="w-full border-t border-border dark:border-zinc-800" />
                     </div>
                     <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-white dark:bg-zinc-950 px-2 text-zinc-400">Or use your email</span>
+                        <span className="bg-white dark:bg-zinc-950 px-2 text-muted-foreground">Or use your email</span>
                     </div>
                 </div>
             </div>
@@ -94,7 +94,7 @@ export const SignInForm: React.FC<SignInFormProps> = ({ onSubmit, defaultValues 
                             <div className="space-y-1">
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <Mail className="h-4 w-4 text-zinc-400" />
+                                        <Mail className="h-4 w-4 text-muted-foreground" />
                                     </div>
                                     <Input
                                         id={emailId}
@@ -103,7 +103,7 @@ export const SignInForm: React.FC<SignInFormProps> = ({ onSubmit, defaultValues 
                                         onBlur={field.handleBlur}
                                         onChange={(e) => field.handleChange(e.target.value)}
                                         className={cn(
-                                            "pl-10 bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 h-11 focus-visible:ring-indigo-500",
+                                            "pl-10 bg-background-secondary dark:bg-zinc-900/50 border-border dark:border-zinc-800 h-11 focus-visible:ring-primary/20",
                                             field.state.meta.errors.length > 0 && "border-red-500 focus-visible:ring-red-500"
                                         )}
                                         placeholder="Email Address"
@@ -137,7 +137,7 @@ export const SignInForm: React.FC<SignInFormProps> = ({ onSubmit, defaultValues 
                                     onBlur={field.handleBlur}
                                     onChange={(e) => field.handleChange(e.target.value)}
                                     className={cn(
-                                        "bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 h-11 focus-visible:ring-indigo-500",
+                                        "bg-background-secondary dark:bg-zinc-900/50 border-border dark:border-zinc-800 h-11 focus-visible:ring-primary/20",
                                         field.state.meta.errors.length > 0 && "border-red-500 focus-visible:ring-red-500"
                                     )}
                                     placeholder="Password"
@@ -149,7 +149,7 @@ export const SignInForm: React.FC<SignInFormProps> = ({ onSubmit, defaultValues 
                         )}
                     />
                     <div className="flex justify-end pt-1">
-                        <a href="#" className="text-xs font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
+                        <a href="#" className="text-xs font-medium text-primary hover:text-primary/90 dark:text-indigo-400">
                             Forgot your password?
                         </a>
                     </div>
@@ -159,7 +159,7 @@ export const SignInForm: React.FC<SignInFormProps> = ({ onSubmit, defaultValues 
             <Button
                 type="submit"
                 disabled={form.state.isSubmitting}
-                className="w-full mt-6 rounded-lg h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold uppercase tracking-wide text-xs shadow-lg shadow-indigo-500/20 transition-all"
+                className="w-full mt-6 rounded-lg h-11 bg-primary hover:bg-primary/90 text-white font-semibold uppercase tracking-wide text-xs shadow-lg shadow-primary/20 transition-all"
             >
                 {form.state.isSubmitting ? 'Signing In...' : 'Sign In'}
             </Button>

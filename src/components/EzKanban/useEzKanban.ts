@@ -1,7 +1,11 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import type { EzKanbanProps, EzKanbanRef } from './EzKanban.types';
+import type {
+    EzKanbanProps,
+    EzKanbanRef,
+    KanbanCard
+} from './EzKanban.types';
 import { useKanbanState } from './hooks/useKanbanState';
 import { useKanbanCards } from './hooks/useKanbanCards';
 import { useKanbanColumns } from './hooks/useKanbanColumns';
@@ -22,9 +26,9 @@ import { I18nState } from '../../shared/services/I18nService';
  * @param extraApi Optional API methods to merge into the returned object.
  * @group Hooks
  */
-export const useEzKanban = <TCard = any>(
+export const useEzKanban = <TCard = KanbanCard>(
     props: EzKanbanProps,
-    extraApi: any = {}
+    extraApi: Record<string, unknown> = {}
 ) => {
     // Reactively track direction
     const i18nState = useServiceState<I18nState>('I18nService');
@@ -124,8 +128,8 @@ export const useEzKanban = <TCard = any>(
         },
         onAction: (index: number) => {
             const card = filteredCards[index];
-            if (card && extraApi.onCardClick) {
-                extraApi.onCardClick(card);
+            if (card && (extraApi as any).onCardClick) {
+                (extraApi as any).onCardClick(card);
             }
         }
     });
@@ -133,19 +137,18 @@ export const useEzKanban = <TCard = any>(
     // 7. Imperative API
     const imperativeAPI = useMemo<EzKanbanRef<TCard>>(() => ({
         // Card operations
-        addCard: createCard as any,
-        updateCard,
+        addCard: createCard as unknown as (draft: Partial<TCard>) => Promise<TCard>,
+        updateCard: updateCard as unknown as (cardId: string, updates: Partial<TCard>) => Promise<unknown>,
         deleteCard,
         moveCard,
-        duplicateCard,
+        duplicateCard: duplicateCard as unknown as (cardId: string) => Promise<TCard>,
         archiveCard,
         restoreCard,
-        getCard: (cardId: string) => board.cards.find(c => c.id === cardId) as any,
-        getCards: () => board.cards as any[],
-        getCardsInColumn: (columnId: string) => board.cards.filter(c => c.columnId === columnId) as any[],
-        getOrderedCards: (columnId: string) => (board.cards as any[])
-            .filter((c: any) => c.columnId === columnId)
-            .sort((a, b) => (a.position ?? 0) - (b.position ?? 0)) as any[],
+        getCard: (cardId: string) => board.cards.find(c => c.id === cardId) as unknown as TCard | undefined,
+        getCards: () => board.cards as unknown as TCard[],
+        getCardsInColumn: (columnId: string) => board.cards.filter(c => c.columnId === columnId) as unknown as TCard[],
+        getOrderedCards: (columnId: string) => (board.cards.filter((c: KanbanCard) => c.columnId === columnId)
+            .sort((a, b) => (a.position ?? 0) - (b.position ?? 0)) as unknown as TCard[]),
 
         // Column operations
         addColumn: createColumn,
@@ -175,7 +178,7 @@ export const useEzKanban = <TCard = any>(
             setSelectedCards(filtered);
         },
         deselectAllCards: () => setSelectedCards([]),
-        getSelectedCards: () => board.cards.filter((c: any) => selectedCards.includes(c.id)) as any[],
+        getSelectedCards: () => board.cards.filter((c: KanbanCard) => selectedCards.includes(c.id)) as unknown as TCard[],
 
         // UI Operations (Enterprise)
         focusCard: (cardId: string) => {
@@ -209,7 +212,7 @@ export const useEzKanban = <TCard = any>(
         setActiveFilters,
         getActiveFilters: () => activeFilters,
         clearFilters,
-        getFilteredCards: () => filteredCards as any[],
+        getFilteredCards: () => filteredCards as unknown as TCard[],
 
         // Board operations
         getBoard: () => board,

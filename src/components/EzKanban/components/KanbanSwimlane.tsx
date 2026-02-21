@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import type { KanbanSwimlane as KanbanSwimlaneType, KanbanColumn, KanbanCard, CustomFieldDefinition } from '../EzKanban.types';
+import type { KanbanSwimlane as KanbanSwimlaneType, KanbanColumn, KanbanCard, CustomFieldDefinition, KanbanSlotConfig } from '../EzKanban.types';
 import { KanbanCard as KanbanCardComponent } from './KanbanCard';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '../../ui/button';
@@ -43,9 +43,9 @@ export interface KanbanSwimlaneProps {
     /** Text direction. @group Appearance */
     dir?: 'ltr' | 'rtl' | 'auto';
     /** Slots for modular composition. @group Extensibility */
-    slots?: any;
+    slots?: KanbanSlotConfig['slots'];
     /** Props for slots. @group Extensibility */
-    slotProps?: any;
+    slotProps?: KanbanSlotConfig['slotProps'];
 }
 
 /**
@@ -130,7 +130,7 @@ export const KanbanSwimlane: React.FC<KanbanSwimlaneProps> = ({
                                             isHighlighted={highlightedCardId === card.id}
                                             customFields={customFields}
                                             dir={dir}
-                                            {...slotProps?.card}
+                                            {...(slotProps?.card as Record<string, any>)}
                                         />
                                     ))}
                                 </div>

@@ -61,9 +61,9 @@ export const EzPagination: React.FC<PaginationProps> = ({
                     </div>
                     {changes && (changes.added > 0 || changes.edited > 0 || changes.deleted > 0) && (
                         <div className="flex items-center gap-2 border-l border-border/50 pl-2 ml-1">
-                            {changes.added > 0 && <span className="text-emerald-600 dark:text-emerald-400 font-bold">{changes.added} added</span>}
-                            {changes.edited > 0 && <span className="text-amber-600 dark:text-amber-400 font-bold">{changes.edited} edited</span>}
-                            {changes.deleted > 0 && <span className="text-rose-600 dark:text-rose-400 font-bold">{changes.deleted} deleted</span>}
+                            {changes.added > 0 && <span className="text-success dark:text-success/80 font-bold">{changes.added} added</span>}
+                            {changes.edited > 0 && <span className="text-warning dark:text-warning/80 font-bold">{changes.edited} edited</span>}
+                            {changes.deleted > 0 && <span className="text-error dark:text-error/80 font-bold">{changes.deleted} deleted</span>}
                         </div>
                     )}
                 </div>

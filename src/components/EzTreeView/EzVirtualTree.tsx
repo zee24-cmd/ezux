@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback, memo } from 'react';
 import { useVirtualization } from '../../shared/hooks/useVirtualization';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { TreeNode } from './EzTreeView.types';
 import { EzTreeViewItem } from './EzTreeViewItem';
 import { cn } from '../../lib/utils';
@@ -40,9 +41,19 @@ interface EzVirtualTreeProps {
     /** Current search query for highlighting. @group Data */
     searchTerm?: string;
     /** Slots for modular composition. @group Extensibility */
-    slots?: any;
+    slots?: {
+        node?: React.ComponentType<unknown>;
+        expandIcon?: React.ComponentType<unknown>;
+        checkbox?: React.ComponentType<unknown>;
+        dragHandle?: React.ComponentType<unknown>;
+    };
     /** Props for slots. @group Extensibility */
-    slotProps?: any;
+    slotProps?: {
+        node?: Record<string, unknown>;
+        expandIcon?: Record<string, unknown>;
+        checkbox?: Record<string, unknown>;
+        dragHandle?: Record<string, unknown>;
+    };
     /** Whether text wrapping is allowed. @group Appearance */
     allowTextWrap?: boolean;
     /** Animation configuration. @group Appearance */
@@ -174,54 +185,59 @@ export const EzVirtualTree = memo(({
                     position: 'relative',
                 }}
             >
-                {getVirtualItems().map((virtualRow: any) => {
-                    const item = items[virtualRow.index];
-                    const { node, level } = item;
-                    const isFocused = focusedIndex === virtualRow.index;
+                <SortableContext
+                    items={items.map(item => item.node.id)}
+                    strategy={verticalListSortingStrategy}
+                >
+                    {getVirtualItems().map((virtualRow) => {
+                        const item = items[virtualRow.index];
+                        const { node, level } = item;
+                        const isFocused = focusedIndex === virtualRow.index;
 
-                    return (
-                        <EzTreeViewItem
-                            key={node.id}
-                            node={node}
-                            level={level}
-                            isExpanded={expandedNodes.has(node.id)}
-                            isSelected={selectedNodes.has(node.id)}
-                            isChecked={checkedNodes.has(node.id)}
-                            isIndeterminate={indeterminateNodes.has(node.id)}
-                            isLoading={loadingNodes.has(node.id)}
-                            hasChildren={!!node.children?.length || (!node.isLoaded && !node.isLeaf)}
-                            onToggleExpand={onToggleExpand}
-                            onToggleSelect={onToggleSelect}
-                            onToggleCheck={onToggleCheck}
-                            onRename={onNodeRename}
-                            showCheckboxes={showCheckboxes}
-                            allowEditing={allowEditing}
-                            searchTerm={searchTerm}
-                            onKeyDown={(e) => handleKeyDown(e, virtualRow.index, node)}
-                            style={{
-                                position: 'absolute',
-                                top: `${virtualRow.start}px`,
-                                left: 0,
-                                width: '100%',
-                                height: `${virtualRow.size}px`,
-                            }}
-                            tabIndex={isFocused ? 0 : -1}
-                            autoFocus={isFocused}
-                            slots={slots}
-                            slotProps={slotProps}
-                            allowTextWrap={allowTextWrap}
-                            animation={animation}
-                            checkOnClick={checkOnClick}
-                            fullRowSelect={fullRowSelect}
-                            fullRowNavigable={fullRowNavigable}
-                            onNodeClicked={onNodeClicked}
-                            onDrawNode={onDrawNode}
-                            isEditing={editingNodeId === node.id}
-                            onEditingChange={(editing) => setEditingNodeId(editing ? node.id : null)}
-                            dir={dir}
-                        />
-                    );
-                })}
+                        return (
+                            <EzTreeViewItem
+                                key={node.id}
+                                node={node}
+                                level={level}
+                                isExpanded={expandedNodes.has(node.id)}
+                                isSelected={selectedNodes.has(node.id)}
+                                isChecked={checkedNodes.has(node.id)}
+                                isIndeterminate={indeterminateNodes.has(node.id)}
+                                isLoading={loadingNodes.has(node.id)}
+                                hasChildren={!!node.children?.length || (!node.isLoaded && !node.isLeaf)}
+                                onToggleExpand={onToggleExpand}
+                                onToggleSelect={onToggleSelect}
+                                onToggleCheck={onToggleCheck}
+                                onRename={onNodeRename}
+                                showCheckboxes={showCheckboxes}
+                                allowEditing={allowEditing}
+                                searchTerm={searchTerm}
+                                onKeyDown={(e) => handleKeyDown(e, virtualRow.index, node)}
+                                style={{
+                                    position: 'absolute',
+                                    top: `${virtualRow.start}px`,
+                                    left: 0,
+                                    width: '100%',
+                                    height: `${virtualRow.size}px`,
+                                }}
+                                tabIndex={isFocused ? 0 : -1}
+                                autoFocus={isFocused}
+                                slots={slots}
+                                slotProps={slotProps}
+                                allowTextWrap={allowTextWrap}
+                                animation={animation}
+                                checkOnClick={checkOnClick}
+                                fullRowSelect={fullRowSelect}
+                                fullRowNavigable={fullRowNavigable}
+                                onNodeClicked={onNodeClicked}
+                                onDrawNode={onDrawNode}
+                                isEditing={editingNodeId === node.id}
+                                onEditingChange={(editing) => setEditingNodeId(editing ? node.id : null)}
+                                dir={dir}
+                            />
+                        );
+                    })}
+                </SortableContext>
             </div>
         </div>
     );

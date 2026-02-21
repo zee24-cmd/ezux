@@ -133,7 +133,7 @@ export interface EzSignatureRef {
      * Currently supports loading array of Point arrays.
      * @group Methods
      */
-    load: (data: any) => void;
+    load: (data: number[][][] | string) => void;
     /**
      * Checks if signature is empty.
      * @group Methods

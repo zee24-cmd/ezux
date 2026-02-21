@@ -5,11 +5,24 @@ import { Card } from '../../ui/card';
 import { Badge } from '../../ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '../../ui/avatar';
 import { StatusBadge } from '../../../shared/components/StatusBadge';
-import type { KanbanCard as KanbanCardType, CustomFieldDefinition } from '../EzKanban.types';
+import type { KanbanCard as KanbanCardType, CustomFieldDefinition, KanbanSlotConfig } from '../EzKanban.types';
 import { Calendar, Paperclip, MessageSquare, CheckSquare, Clock, List } from 'lucide-react';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { cn } from '../../../lib/utils';
 import { TooltipWrapper } from '../../../shared/components/TooltipWrapper';
 import { dateUtils } from '../../../shared/utils/dateUtils';
+
+/** @internal */
+export interface CardSlotProps extends Record<string, unknown> {
+    card: KanbanCardType;
+    defaultContent: React.ReactNode;
+}
+
+/** @internal */
+export interface CardContentSlotProps extends Record<string, unknown> {
+    card: KanbanCardType;
+}
 
 /**
  * Props for the KanbanCard component.
@@ -37,15 +50,9 @@ export interface KanbanCardProps {
     /** Custom field definitions for rendering values. @group Data */
     customFields?: CustomFieldDefinition[];
     /** Slots for modular composition. @group Extensibility */
-    slots?: {
-        card?: React.ComponentType<any>;
-        cardContent?: React.ComponentType<any>;
-    };
+    slots?: KanbanSlotConfig['slots'];
     /** Props for slots. @group Extensibility */
-    slotProps?: {
-        card?: any;
-        cardContent?: any;
-    };
+    slotProps?: KanbanSlotConfig['slotProps'];
     /** Custom class name for the card container. @group Appearance */
     className?: string;
     /** Text direction. @group Appearance */
@@ -60,9 +67,7 @@ const KanbanCardComponent: React.FC<KanbanCardProps> = ({
     card,
     onClick,
     onDoubleClick,
-    onDragStart,
-    onDragEnd,
-    isDragging,
+    isDragging: externalIsDragging,
     isHighlighted,
     enableTooltip,
     tooltipTemplate,
@@ -73,10 +78,23 @@ const KanbanCardComponent: React.FC<KanbanCardProps> = ({
     dir,
 }) => {
     const isRtl = dir === 'rtl';
-    const handleDragStart = (e: React.DragEvent) => {
-        e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('text/plain', card.id);
-        onDragStart?.(card);
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging: isSortableDragging
+    } = useSortable({
+        id: card.id,
+        data: { type: 'card', card }
+    });
+
+    const isDragging = externalIsDragging || isSortableDragging;
+
+    const style = {
+        transform: CSS.Translate.toString(transform),
+        transition,
     };
 
     // Map priority to status for StatusBadge
@@ -226,7 +244,7 @@ const KanbanCardComponent: React.FC<KanbanCardProps> = ({
                             <div key={field.id} className="text-xs bg-muted px-1.5 py-0.5 rounded flex items-center gap-1 max-w-full truncate">
                                 <span className="text-muted-foreground opacity-70">{field.name}:</span>
                                 <span className="font-medium truncate">
-                                    {field.type === 'date' ? dateUtils.formatDate(value) : String(value)}
+                                    {field.type === 'date' ? dateUtils.formatDate(value as string | number | Date) : String(value)}
                                 </span>
                             </div>
                         );
@@ -237,20 +255,21 @@ const KanbanCardComponent: React.FC<KanbanCardProps> = ({
     );
 
     const CardContentSlot = slots?.cardContent;
-    const cardContent = CardContentSlot ? <CardContentSlot card={card} {...slotProps?.cardContent} /> : defaultContent;
+    const cardContent = CardContentSlot ? <CardContentSlot card={card} {...(slotProps?.cardContent as Record<string, unknown>)} /> : defaultContent;
 
     const standardCard = (
         <Card
-            draggable
-            onDragStart={handleDragStart}
-            onDragEnd={onDragEnd}
+            ref={setNodeRef}
+            style={style}
+            {...attributes}
+            {...listeners}
             onClick={() => onClick?.(card)}
             onDoubleClick={() => onDoubleClick?.(card)}
             id={card.id}
             data-card-id={card.id}
             className={cn(
                 'cursor-pointer transition-all hover:shadow-md overflow-hidden',
-                isDragging && 'opacity-50',
+                isDragging && 'opacity-50 ring-2 ring-primary/50',
                 isHighlighted && 'ring-2 ring-primary bg-primary/5 transition-colors duration-300', // Highlight style
                 className
             )}
@@ -261,7 +280,7 @@ const KanbanCardComponent: React.FC<KanbanCardProps> = ({
 
     const CardSlot = slots?.card;
     if (CardSlot) {
-        return <CardSlot card={card} defaultContent={standardCard} {...slotProps?.card} />;
+        return <CardSlot card={card} defaultContent={standardCard} {...(slotProps?.card as Record<string, unknown>)} />;
     }
 
     return (

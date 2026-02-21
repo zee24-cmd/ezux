@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import type { EzKanbanProps, KanbanBoard, KanbanCard, IKanbanService } from '../EzKanban.types';
 import { globalServiceRegistry } from '../../../shared/services/ServiceRegistry';
+import type { NotificationService } from '../../../shared/services/NotificationService';
 
 /**
  * Hook for managing Kanban card operations with optimistic updates.
@@ -21,7 +22,7 @@ export const useKanbanCards = (props: EzKanbanProps, board: KanbanBoard) => {
     };
 
     const notify = (type: 'success' | 'error', message: string, duration = 3000) => {
-        const notificationService = globalServiceRegistry.get<any>('NotificationService');
+        const notificationService = globalServiceRegistry.get<NotificationService>('NotificationService');
         if (notificationService) {
             notificationService.add({ type, message, duration });
         }
@@ -55,7 +56,7 @@ export const useKanbanCards = (props: EzKanbanProps, board: KanbanBoard) => {
 
             return { previousBoard };
         },
-        onError: (_err: Error, _newCard: KanbanCard, context: any) => {
+        onError: (_err: Error, _newCard: KanbanCard, context: { previousBoard?: KanbanBoard } | undefined) => {
             if (context?.previousBoard) {
                 updateBoardCache(context.previousBoard);
             }
@@ -115,7 +116,7 @@ export const useKanbanCards = (props: EzKanbanProps, board: KanbanBoard) => {
 
             return { previousBoard };
         },
-        onError: (_err: Error, _variables: any, context: any) => {
+        onError: (_err: Error, _variables: { cardId: string; updates: Partial<KanbanCard> }, context: { previousBoard?: KanbanBoard } | undefined) => {
             if (context?.previousBoard) {
                 updateBoardCache(context.previousBoard);
             }
@@ -154,13 +155,13 @@ export const useKanbanCards = (props: EzKanbanProps, board: KanbanBoard) => {
 
             return { previousBoard, deletedCardTitle: previousBoard?.cards.find(c => c.id === cardId)?.title };
         },
-        onError: (_err: Error, _cardId: string, context: any) => {
+        onError: (_err: Error, _cardId: string, context: { previousBoard?: KanbanBoard; deletedCardTitle?: string } | undefined) => {
             if (context?.previousBoard) {
                 updateBoardCache(context.previousBoard);
             }
             notify('error', 'Failed to delete card', 5000);
         },
-        onSuccess: (_cardId, _variables, context: any) => {
+        onSuccess: (_cardId, _variables, context: { previousBoard?: KanbanBoard; deletedCardTitle?: string } | undefined) => {
             const title = context?.deletedCardTitle || 'Card';
             notify('success', `Card "${title}" deleted`);
         },
@@ -211,7 +212,7 @@ export const useKanbanCards = (props: EzKanbanProps, board: KanbanBoard) => {
 
             return { previousBoard };
         },
-        onError: (_err: Error, _variables: any, context: any) => {
+        onError: (_err: Error, _variables: { cardId: string; targetColumnId: string; targetSwimlaneId?: string; targetPosition?: number }, context: { previousBoard?: KanbanBoard } | undefined) => {
             if (context?.previousBoard) {
                 updateBoardCache(context.previousBoard);
             }

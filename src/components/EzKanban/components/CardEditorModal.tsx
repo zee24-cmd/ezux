@@ -155,7 +155,7 @@ export const CardEditorModal: React.FC<CardEditorModalProps> = ({
             if (cl.id === checklistId) {
                 return {
                     ...cl,
-                    items: cl.items.map((item: any) =>
+                    items: cl.items.map((item: { id: string; isChecked: boolean }) =>
                         item.id === itemId ? { ...item, isChecked: !item.isChecked } : item
                     )
                 };
@@ -237,7 +237,7 @@ export const CardEditorModal: React.FC<CardEditorModalProps> = ({
             userName: currentUser.name,
             createdAt: new Date()
         };
-        (form as any).pushFieldValue('activity' as any, act);
+        (form as unknown as { pushFieldValue: (path: string, val: unknown) => void }).pushFieldValue('activity', act);
     };
 
     // --- Subtask Handlers ---
@@ -256,7 +256,7 @@ export const CardEditorModal: React.FC<CardEditorModalProps> = ({
 
     const toggleSubtask = (subtaskId: string) => {
         const currentSubtasks = form.getFieldValue('subtasks') || [];
-        const updatedSubtasks = currentSubtasks.map((s: any) =>
+        const updatedSubtasks = currentSubtasks.map((s: { id: string; isCompleted: boolean }) =>
             s.id === subtaskId ? { ...s, isCompleted: !s.isCompleted } : s
         );
         (form as any).setFieldValue('subtasks', updatedSubtasks);
@@ -264,7 +264,7 @@ export const CardEditorModal: React.FC<CardEditorModalProps> = ({
 
     const deleteSubtask = (subtaskId: string) => {
         const currentSubtasks = form.getFieldValue('subtasks') || [];
-        (form as any).setFieldValue('subtasks', currentSubtasks.filter((s: any) => s.id !== subtaskId));
+        (form as any).setFieldValue('subtasks', currentSubtasks.filter((s: { id: string }) => s.id !== subtaskId));
     };
 
     // --- Alignment & Attachment Handlers ---
@@ -389,7 +389,7 @@ export const CardEditorModal: React.FC<CardEditorModalProps> = ({
                     children={(field) => (
                         <div className="space-y-2">
                             <Label>Priority</Label>
-                            <Select value={field.state.value} onValueChange={(val: any) => field.handleChange(val)}>
+                            <Select value={field.state.value} onValueChange={(val: 'low' | 'medium' | 'high' | 'critical') => field.handleChange(val)}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Priority" />
                                 </SelectTrigger>
@@ -452,7 +452,7 @@ export const CardEditorModal: React.FC<CardEditorModalProps> = ({
                     {customFields.map(cf => (
                         <form.Field
                             key={cf.id}
-                            name={`customFieldValues.${cf.id}` as any}
+                            name={`customFieldValues.${cf.id}` as never}
                             children={(field) => (
                                 <div className="space-y-2">
                                     <Label>{cf.name}</Label>
@@ -520,7 +520,7 @@ export const CardEditorModal: React.FC<CardEditorModalProps> = ({
                         name="subtasks"
                         children={(field) => (
                             <div className="space-y-2">
-                                {field.state.value?.map((subtask: any) => (
+                                {field.state.value?.map((subtask: { id: string; title: string; isCompleted: boolean }) => (
                                     <div key={subtask.id} className="flex items-center gap-2 border p-3 rounded-md">
                                         <Checkbox
                                             checked={subtask.isCompleted}
@@ -565,9 +565,9 @@ export const CardEditorModal: React.FC<CardEditorModalProps> = ({
                         name="checklists"
                         children={(field) => (
                             <div className="space-y-4">
-                                {field.state.value?.map((cl: any) => {
+                                {field.state.value?.map((cl: Checklist) => {
                                     const progress = cl.items.length > 0
-                                        ? Math.round((cl.items.filter((i: any) => i.isChecked).length / cl.items.length) * 100)
+                                        ? Math.round((cl.items.filter((i: { isChecked: boolean }) => i.isChecked).length / cl.items.length) * 100)
                                         : 0;
                                     return (
                                         <div key={cl.id} className="border rounded-md p-4 space-y-3">
@@ -579,7 +579,7 @@ export const CardEditorModal: React.FC<CardEditorModalProps> = ({
                                                 <div className="h-full bg-primary transition-all" style={{ width: `${progress}%` }} />
                                             </div>
                                             <div className="space-y-2">
-                                                {cl.items.map((item: any) => (
+                                                {cl.items.map((item: { id: string; text: string; isChecked: boolean }) => (
                                                     <div key={item.id} className="flex items-center gap-2">
                                                         <Checkbox
                                                             checked={item.isChecked}
@@ -636,7 +636,7 @@ export const CardEditorModal: React.FC<CardEditorModalProps> = ({
                         name="attachments"
                         children={(field) => (
                             <div className="grid grid-cols-2 gap-2">
-                                {field.state.value?.map((att: any) => (
+                                {field.state.value?.map((att: Attachment) => (
                                     <div key={att.id} className="border p-2 rounded flex items-center gap-2">
                                         <div className="w-10 h-10 bg-muted flex items-center justify-center rounded">
                                             <ImageIcon className="w-5 h-5 text-muted-foreground" />
@@ -666,7 +666,7 @@ export const CardEditorModal: React.FC<CardEditorModalProps> = ({
                         name="comments"
                         children={(field) => (
                             <div className="space-y-4">
-                                {field.state.value?.map((comment: any) => (
+                                {field.state.value?.map((comment: Comment) => (
                                     <div key={comment.id} className="flex gap-3">
                                         <Avatar className="w-8 h-8">
                                             <AvatarFallback>{comment.authorName[0]}</AvatarFallback>
@@ -756,7 +756,7 @@ export const CardEditorModal: React.FC<CardEditorModalProps> = ({
                         name="activity"
                         children={(field) => (
                             <div className="space-y-4">
-                                {field.state.value?.map((act: any) => (
+                                {field.state.value?.map((act: CardActivity) => (
                                     <div key={act.id} className="flex gap-3 text-sm">
                                         <div className="mt-1">
                                             <Activity className="w-4 h-4 text-muted-foreground" />

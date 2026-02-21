@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { EzSchedulerProps } from './EzScheduler.types';
+import { EzSchedulerProps, ViewType } from './EzScheduler.types';
 import { useBaseComponent } from '../../shared/hooks/useBaseComponent';
 import { useStore } from '@tanstack/react-store';
 import { createSchedulerStore, createSchedulerActions } from './state/scheduler.store';
@@ -41,7 +41,7 @@ export const useEzScheduler = (props: EzSchedulerProps) => {
     const store = useMemo(() => createSchedulerStore({
         events: props.events || [],
         resources: props.resources || [],
-        view: (props.view?.toLowerCase() as any) || 'week',
+        view: (props.view ? (props.view.toLowerCase() as ViewType) : 'week'),
         currentDate: props.selectedDate || new Date(),
         selectedDate: props.selectedDate || new Date(),
         slotDuration: props.slotDuration || 30,
@@ -63,7 +63,7 @@ export const useEzScheduler = (props: EzSchedulerProps) => {
     useEffect(() => {
         if (props.view) {
             const normalized = props.view.toLowerCase().replace(/[^a-z]/g, '');
-            const mapping: Record<string, any> = {
+            const mapping: Record<string, ViewType> = {
                 'day': 'day',
                 'week': 'week',
                 'workweek': 'workweek',
@@ -75,9 +75,9 @@ export const useEzScheduler = (props: EzSchedulerProps) => {
                 'agenda': 'agenda',
                 'timeline': 'timeline-day'
             };
-            actions.setView(mapping[normalized] || normalized);
+            actions.setView(mapping[normalized] || (normalized as ViewType));
         }
-    }, [props.view]);
+    }, [props.view, actions]);
 
     useEffect(() => {
         if (props.selectedDate) {
@@ -111,14 +111,14 @@ export const useEzScheduler = (props: EzSchedulerProps) => {
         daysInView,
         visibleEvents,
         allEvents
-    } = useSchedulerEvents({ ...props, events }, view, currentDate);
+    } = useSchedulerEvents({ ...props, events }, view as ViewType, currentDate);
 
     const {
         addEvent,
         updateEvent,
         deleteEvent,
         isUpdating
-    } = useSchedulerEvents({ ...props, events }, view, currentDate);
+    } = useSchedulerEvents({ ...props, events }, view as ViewType, currentDate);
 
     // 4. Virtualization
     const {
@@ -131,7 +131,7 @@ export const useEzScheduler = (props: EzSchedulerProps) => {
     const { next, prev, today } = useSchedulerNavigation(
         currentDate,
         actions.setCurrentDate,
-        view,
+        view as ViewType,
         props.onDateChange
     );
 

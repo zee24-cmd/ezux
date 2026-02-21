@@ -27,7 +27,7 @@ export default defineConfig({
                 signature: path.resolve(__dirname, 'src/components/EzSignature/index.tsx'),
             },
             name: 'Ezux',
-            fileName: (format, entryName) => `${entryName}.${format}.js`,
+            fileName: (format, entryName) => format === 'es' ? `${entryName}.es.js` : `${entryName}.cjs`,
         },
         rollupOptions: {
             external: [
@@ -41,7 +41,9 @@ export default defineConfig({
                 '@tanstack/react-virtual',
                 '@dnd-kit/core',
                 '@dnd-kit/modifiers',
+                '@dnd-kit/modifiers',
                 '@dnd-kit/utilities',
+                '@dnd-kit/sortable',
                 'class-variance-authority',
                 'clsx',
                 'tailwind-merge',
@@ -51,6 +53,7 @@ export default defineConfig({
                 '@dnd-kit/modifiers'
             ],
             output: {
+                exports: 'named',
                 globals: {
                     react: 'React',
                     'react-dom': 'ReactDOM',

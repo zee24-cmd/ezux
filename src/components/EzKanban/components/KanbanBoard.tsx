@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import type { KanbanBoard, KanbanCard } from '../EzKanban.types';
+import type { KanbanBoard, KanbanCard, KanbanColumn as KanbanColumnType, KanbanSlotConfig } from '../EzKanban.types';
+import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { KanbanColumn } from './KanbanColumn';
 import { KanbanSwimlane } from './KanbanSwimlane';
 import { KanbanTimelineView } from '../views/KanbanTimelineView';
@@ -39,7 +40,7 @@ export interface KanbanBoardProps {
     /** Callback to delete a column. @group Events */
     onDeleteColumn?: (columnId: string) => void;
     /** Callback to update column settings. @group Events */
-    onUpdateColumn?: (columnId: string, updates: any) => void;
+    onUpdateColumn?: (columnId: string, updates: Partial<KanbanColumnType>) => void;
     /** Callback when a column header is clicked. @group Events */
     onColumnClick?: (columnId: string) => void;
     /** Callback to create a new card from a draft. @group Events */
@@ -53,9 +54,9 @@ export interface KanbanBoardProps {
     /** Optional list of filtered cards to display instead of all board cards. @group Data */
     filteredCards?: KanbanCard[];
     /** Slots for modular composition. @group Extensibility */
-    slots?: any;
+    slots?: KanbanSlotConfig['slots'];
     /** Props for slots. @group Extensibility */
-    slotProps?: any;
+    slotProps?: KanbanSlotConfig['slotProps'];
     /** Custom class name for the board container. @group Appearance */
     className?: string;
     /** Current view mode of the board. @group State */
@@ -173,35 +174,40 @@ export const KanbanBoardComponent: React.FC<KanbanBoardProps> = ({
 
     return (
         <div className={cn('flex gap-4 overflow-x-auto p-4', className)}>
-            {board.columns
-                .sort((a, b) => a.position - b.position)
-                .map((column) => {
-                    const columnCards = cards.filter((card) => card.columnId === column.id);
+            <SortableContext
+                items={board.columns.map(col => col.id)}
+                strategy={horizontalListSortingStrategy}
+            >
+                {board.columns
+                    .sort((a, b) => a.position - b.position)
+                    .map((column) => {
+                        const columnCards = cards.filter((card) => card.columnId === column.id);
 
-                    return (
-                        <KanbanColumn
-                            key={column.id}
-                            column={column}
-                            cards={columnCards}
-                            onCardClick={onCardClick}
-                            onCardDoubleClick={onCardDoubleClick}
-                            onCardDragStart={onCardDragStart}
-                            onCardDragEnd={onCardDragEnd}
-                            onDrop={onCardDrop}
-                            onAddCard={onAddCard}
-                            onToggleCollapse={onToggleColumnCollapse}
-                            onDeleteColumn={onDeleteColumn}
-                            onUpdateColumn={onUpdateColumn}
-                            onColumnClick={onColumnClick}
-                            selectedColumnId={selectedColumnId}
-                            draggedCardId={draggedCardId}
-                            customFields={board.customFields}
-                            slots={slots}
-                            slotProps={slotProps}
-                            dir={dir}
-                        />
-                    );
-                })}
+                        return (
+                            <KanbanColumn
+                                key={column.id}
+                                column={column}
+                                cards={columnCards}
+                                onCardClick={onCardClick}
+                                onCardDoubleClick={onCardDoubleClick}
+                                onCardDragStart={onCardDragStart}
+                                onCardDragEnd={onCardDragEnd}
+                                onDrop={onCardDrop}
+                                onAddCard={onAddCard}
+                                onToggleCollapse={onToggleColumnCollapse}
+                                onDeleteColumn={onDeleteColumn}
+                                onUpdateColumn={onUpdateColumn}
+                                onColumnClick={onColumnClick}
+                                selectedColumnId={selectedColumnId}
+                                draggedCardId={draggedCardId}
+                                customFields={board.customFields}
+                                slots={slots}
+                                slotProps={slotProps}
+                                dir={dir}
+                            />
+                        );
+                    })}
+            </SortableContext>
 
             {/* Add Column Button */}
             {onAddColumn && (

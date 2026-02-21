@@ -19,9 +19,14 @@ interface DraggableHeaderProps {
 }
 
 export const EzDraggableHeader = memo(({ header, density, onAutoFit, columnPinning }: DraggableHeaderProps) => {
+    const meta = header.getContext().table.options.meta as any;
+    const canReorder = meta?.enableColumnReorder !== false;
+    const canGroup = header.column.getCanGroup();
+    const isDraggableDisabled = (!canGroup && !canReorder) || header.isPlaceholder;
+
     const { attributes, listeners, setNodeRef: setDraggableRef, isDragging } = useDraggable({
         id: header.column.id,
-        disabled: !header.column.getCanGroup() || header.isPlaceholder,
+        disabled: isDraggableDisabled,
         data: {
             type: 'column',
             columnId: header.column.id,
@@ -30,7 +35,7 @@ export const EzDraggableHeader = memo(({ header, density, onAutoFit, columnPinni
 
     const { setNodeRef: setDroppableRef, isOver } = useDroppable({
         id: `header-${header.column.id}`,
-        disabled: !header.column.getCanGroup() || header.isPlaceholder,
+        disabled: isDraggableDisabled,
         data: {
             type: 'header',
             columnId: header.column.id,
@@ -57,8 +62,6 @@ export const EzDraggableHeader = memo(({ header, density, onAutoFit, columnPinni
 
     const align = header.column.columnDef.meta?.align || 'left';
     const gridLines = header.column.columnDef.meta?.gridLines || header.getContext().table.options.meta?.gridLines;
-
-    const meta = header.getContext().table.options.meta as any;
     const isColumnFocused = meta?.focusedCell?.c === header.index;
 
     const content = (
@@ -98,7 +101,7 @@ export const EzDraggableHeader = memo(({ header, density, onAutoFit, columnPinni
                 align === 'center' && "justify-center relative",
                 align === 'right' && "justify-end"
             )}>
-                {header.column.getCanGroup() && !header.isPlaceholder && (
+                {!isDraggableDisabled && (
                     <div {...attributes} {...listeners} className={cn(
                         "cursor-grab active:cursor-grabbing p-1 text-zinc-400 opacity-0 group-hover/header:opacity-100 transition-opacity z-50",
                         align === 'center'

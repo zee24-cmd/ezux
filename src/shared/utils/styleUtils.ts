@@ -223,10 +223,3 @@ export const getGridLinesClasses = (
     }
     return dir === 'rtl' ? 'border-l border-border/50' : 'border-r border-border/50';
 };
-
-/**
- * Combine multiple style utilities
- */
-export const combineStyleClasses = (...classes: (string | undefined | false)[]): string => {
-    return cn(...classes.filter(Boolean));
-};

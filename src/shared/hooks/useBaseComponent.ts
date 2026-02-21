@@ -13,7 +13,6 @@ export interface BaseComponentProps extends ComponentEventCallbacks {
      * @group Services 
      */
     serviceRegistry?: ServiceRegistry;
-    [key: string]: any;
 }
 
 export type BaseComponentConfig = BaseComponentProps;
@@ -83,6 +82,8 @@ export const useBaseComponent = (props: BaseComponentProps) => {
             }
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
+        // onCreated/onDestroyed are intentionally excluded: they are lifecycle callbacks
+        // that should only fire once on mount/unmount regardless of reference changes.
     }, []);
 
     // 4. Base API

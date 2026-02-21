@@ -128,14 +128,14 @@ export interface KanbanCard {
   priority?: 'low' | 'medium' | 'high' | 'critical';
 
   // Metadata
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 
   // Advanced Features
   coverImage?: string;
   checklists?: Checklist[];
   attachments?: Attachment[];
   comments?: Comment[];
-  customFieldValues?: Record<string, any>;
+  customFieldValues?: Record<string, unknown>;
   timeTracking?: {
     estimated: number; // in hours
     actual: number;    // in hours
@@ -203,7 +203,7 @@ export interface CardActivity {
   userId: string;
   userName: string;
   createdAt: Date;
-  metadata?: Record<string, any>; // e.g., { fromColumn: 'A', toColumn: 'B' }
+  metadata?: Record<string, unknown>; // e.g., { fromColumn: 'A', toColumn: 'B' }
 }
 
 export interface CustomFieldDefinition {
@@ -248,8 +248,35 @@ export interface FilterConfig {
 }
 
 // ────────────────────────────────────────────────
-// Component Props
+// Component Props & Slots
 // ────────────────────────────────────────────────
+
+/**
+ * Configuration for component slots and their props.
+ * @group Extensibility
+ */
+export interface KanbanSlotConfig {
+  slots?: {
+    toolbar?: React.ComponentType<any>;
+    board?: React.ComponentType<any>;
+    column?: React.ComponentType<any>;
+    card?: React.ComponentType<any>;
+    cardContent?: React.ComponentType<any>;
+    swimlane?: React.ComponentType<any>;
+    cardEditor?: React.ComponentType<any>;
+    [key: string]: React.ComponentType<any> | undefined;
+  };
+  slotProps?: {
+    toolbar?: Record<string, unknown>;
+    board?: Record<string, unknown>;
+    column?: Record<string, unknown>;
+    card?: Record<string, unknown>;
+    cardContent?: Record<string, unknown>;
+    swimlane?: Record<string, unknown>;
+    cardEditor?: Record<string, unknown>;
+    [key: string]: Record<string, unknown> | undefined;
+  };
+}
 
 /**
  * Props for the EzKanban component.
@@ -344,29 +371,13 @@ export interface EzKanbanProps extends SharedBaseProps {
    * Slots for modular composition.
    * @group Extensibility
    */
-  slots?: {
-    toolbar?: React.ComponentType<any>;
-    board?: React.ComponentType<any>;
-    column?: React.ComponentType<any>;
-    card?: React.ComponentType<any>;
-    cardContent?: React.ComponentType<any>;
-    swimlane?: React.ComponentType<any>;
-    cardEditor?: React.ComponentType<any>;
-  };
+  slots?: KanbanSlotConfig['slots'];
 
   /**
    * Props for slots.
    * @group Extensibility
    */
-  slotProps?: {
-    toolbar?: any;
-    board?: any;
-    column?: any;
-    card?: any;
-    cardContent?: any;
-    swimlane?: any;
-    cardEditor?: any;
-  };
+  slotProps?: KanbanSlotConfig['slotProps'];
 
   // Events & Callbacks
   /** 
@@ -568,12 +579,12 @@ export interface EzKanbanRef<TCard = KanbanCard> {
    * Update an existing card.
    * @group Methods 
    */
-  updateCard(cardId: string, updates: Partial<TCard>): Promise<any>;
+  updateCard(cardId: string, updates: Partial<TCard>): Promise<unknown>;
   /** 
    * Delete a card by ID.
    * @group Methods 
    */
-  deleteCard(cardId: string): Promise<any>;
+  deleteCard(cardId: string): Promise<unknown>;
   /** 
    * Move a card to a new column/swimlane.
    * @group Methods 
@@ -583,7 +594,7 @@ export interface EzKanbanRef<TCard = KanbanCard> {
     targetColumnId: string,
     targetSwimlaneId?: string,
     targetPosition?: number
-  ): Promise<any>;
+  ): Promise<unknown>;
   /** 
    * Duplicate a card.
    * @group Methods 
@@ -593,12 +604,12 @@ export interface EzKanbanRef<TCard = KanbanCard> {
    * Archive a card.
    * @group Methods 
    */
-  archiveCard(cardId: string): Promise<any>;
+  archiveCard(cardId: string): Promise<unknown>;
   /** 
    * Restore an archived card.
    * @group Methods 
    */
-  restoreCard(cardId: string): Promise<any>;
+  restoreCard(cardId: string): Promise<unknown>;
   /** 
    * Get a card by ID.
    * @group Methods 
@@ -629,17 +640,17 @@ export interface EzKanbanRef<TCard = KanbanCard> {
    * Update a column.
    * @group Methods 
    */
-  updateColumn(columnId: string, updates: Partial<KanbanColumn>): Promise<any>;
+  updateColumn(columnId: string, updates: Partial<KanbanColumn>): Promise<unknown>;
   /** 
    * Delete a column.
    * @group Methods 
    */
-  deleteColumn(columnId: string): Promise<any>;
+  deleteColumn(columnId: string): Promise<unknown>;
   /** 
    * Reorder columns.
    * @group Methods 
    */
-  reorderColumns(columnIds: string[]): Promise<any>;
+  reorderColumns(columnIds: string[]): Promise<unknown>;
   /** 
    * Collapse a column.
    * @group Methods 
@@ -670,17 +681,17 @@ export interface EzKanbanRef<TCard = KanbanCard> {
    * Update a swimlane.
    * @group Methods 
    */
-  updateSwimlane(swimlaneId: string, updates: Partial<KanbanSwimlane>): Promise<any>;
+  updateSwimlane(swimlaneId: string, updates: Partial<KanbanSwimlane>): Promise<unknown>;
   /** 
    * Delete a swimlane.
    * @group Methods 
    */
-  deleteSwimlane(swimlaneId: string): Promise<any>;
+  deleteSwimlane(swimlaneId: string): Promise<unknown>;
   /** 
    * Reorder swimlanes.
    * @group Methods 
    */
-  reorderSwimlanes(swimlaneIds: string[]): Promise<any>;
+  reorderSwimlanes(swimlaneIds: string[]): Promise<unknown>;
   /** 
    * Collapse a swimlane.
    * @group Methods 

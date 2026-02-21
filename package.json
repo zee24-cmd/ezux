@@ -1,6 +1,6 @@
 {
     "name": "ezux",
-    "version": "1.1.3",
+    "version": "1.1.4",
     "description": "A comprehensive, type-safe TanStack First Advance component library designed for modern enterprise applications.",
     "keywords": [
         "react",
@@ -26,44 +26,44 @@
     "files": [
         "dist"
     ],
-    "main": "./dist/index.cjs.js",
+    "main": "./dist/index.cjs",
     "module": "./dist/index.es.js",
     "types": "./dist/index.d.ts",
     "exports": {
         ".": {
             "types": "./dist/index.d.ts",
             "import": "./dist/index.es.js",
-            "require": "./dist/index.cjs.js"
+            "require": "./dist/index.cjs"
         },
         "./scheduler": {
             "types": "./dist/scheduler.d.ts",
             "import": "./dist/scheduler.es.js",
-            "require": "./dist/scheduler.cjs.js"
+            "require": "./dist/scheduler.cjs"
         },
         "./kanban": {
             "types": "./dist/kanban.d.ts",
             "import": "./dist/kanban.es.js",
-            "require": "./dist/kanban.cjs.js"
+            "require": "./dist/kanban.cjs"
         },
         "./layout": {
             "types": "./dist/layout.d.ts",
             "import": "./dist/layout.es.js",
-            "require": "./dist/layout.cjs.js"
+            "require": "./dist/layout.cjs"
         },
         "./table": {
             "types": "./dist/table.d.ts",
             "import": "./dist/table.es.js",
-            "require": "./dist/table.cjs.js"
+            "require": "./dist/table.cjs"
         },
         "./treeview": {
             "types": "./dist/treeview.d.ts",
             "import": "./dist/treeview.es.js",
-            "require": "./dist/treeview.cjs.js"
+            "require": "./dist/treeview.cjs"
         },
         "./signature": {
             "types": "./dist/signature.d.ts",
             "import": "./dist/signature.es.js",
-            "require": "./dist/signature.cjs.js"
+            "require": "./dist/signature.cjs"
         },
         "./dist/ezux.css": "./dist/ezux.css"
     },
@@ -88,9 +88,9 @@
         "@radix-ui/react-switch": "^1.2.6",
         "@radix-ui/react-tooltip": "^1.2.8",
         "@tanstack/react-form": "^1.28.0",
+        "@tanstack/react-store": "^0.9.1",
         "@tanstack/react-table": "^8.21.3",
         "@tanstack/react-virtual": "^3.13.18",
-        "@tanstack/react-store": "^0.9.1",
         "@tanstack/store": "^0.9.1",
         "@tanstack/virtual-core": "^3.13.18",
         "dompurify": "^3.3.1",
@@ -100,15 +100,20 @@
     },
     "dependencies": {
         "@dnd-kit/core": "^6.3.1",
+        "@dnd-kit/sortable": "^10.0.0",
         "@types/dompurify": "^3.2.0",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "cmdk": "^1.1.1",
         "country-flag-icons": "^1.6.13",
         "date-fns": "^4.1.0",
-        "lucide-react": "^0.568.0",
-        "tailwind-merge": "^3.4.1",
+        "lucide-react": "^0.575.0",
+        "tailwind-merge": "^3.5.0",
         "tailwindcss-animate": "^1.0.7"
+    },
+    "overrides": {
+        "minimatch": "10.2.1",
+        "ajv": "8.18.0"
     },
     "devDependencies": {
         "@changesets/cli": "^2.29.8",
@@ -123,30 +128,31 @@
         "@radix-ui/react-slot": "^1.2.4",
         "@radix-ui/react-switch": "^1.2.6",
         "@radix-ui/react-tooltip": "^1.2.8",
-        "@tailwindcss/postcss": "^4.1.18",
+        "@tailwindcss/postcss": "^4.2.0",
         "@tanstack/react-form": "^1.28.3",
         "@tanstack/react-query": "^5.90.21",
+        "@tanstack/react-store": "^0.9.1",
         "@tanstack/react-table": "^8.21.3",
         "@tanstack/react-virtual": "^3.13.18",
-        "@tanstack/react-store": "^0.9.1",
         "@tanstack/store": "^0.9.1",
         "@tanstack/virtual-core": "^3.13.18",
         "@testing-library/jest-dom": "^6.9.1",
         "@testing-library/react": "^16.3.2",
         "@testing-library/user-event": "^14.6.1",
         "@types/file-saver": "^2.0.7",
-        "@types/node": "^25.2.3",
+        "@types/node": "^25.3.0",
         "@types/react": "^19.2.14",
         "@types/react-dom": "^19.2.3",
         "@vitejs/plugin-react": "^5.1.4",
+        "@vitest/coverage-v8": "^4.0.18",
         "autoprefixer": "^10.4.24",
         "concurrently": "^9.2.1",
         "dompurify": "^3.3.1",
         "file-saver": "^2.0.5",
-        "happy-dom": "^20.6.1",
+        "happy-dom": "^20.6.3",
         "postcss": "^8.5.6",
         "rrule": "^2.8.1",
-        "tailwindcss": "^4.1.18",
+        "tailwindcss": "^4.2.0",
         "tw-animate-css": "^1.4.0",
         "typescript": "^5.9.3",
         "vite": "^7.3.1",

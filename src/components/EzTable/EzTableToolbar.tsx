@@ -107,7 +107,7 @@ export const EzTableToolbar = memo(({
                         <Button
                             variant="default"
                             size="sm"
-                            className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm font-bold gap-1.5"
+                            className="h-8 bg-success hover:bg-success/90 text-success-foreground shadow-sm font-bold gap-1.5"
                             onClick={onSave}
                         >
                             <Save className="h-3.5 w-3.5" />
@@ -116,7 +116,7 @@ export const EzTableToolbar = memo(({
                         <Button
                             variant="outline"
                             size="sm"
-                            className="h-8 border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700 font-bold gap-1.5"
+                            className="h-8 border-error/20 text-error hover:bg-error/5 hover:text-error font-bold gap-1.5"
                             onClick={onDiscard}
                         >
                             <XCircle className="h-3.5 w-3.5" />

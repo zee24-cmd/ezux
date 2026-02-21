@@ -16,7 +16,8 @@ import {
     DndContext,
     DragEndEvent,
     DragOverlay,
-    DragStartEvent
+    DragStartEvent,
+    closestCenter
 } from '@dnd-kit/core';
 import { useImperativeAPI, useDndHandlers, useDialogState, useFieldValidation, useInitCoreServices } from '../../shared/hooks';
 import { EzHeaderDragPreview } from './components/EzHeaderDragPreview';
@@ -281,7 +282,6 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
 
     const { handleDragEnd, handleKeyDown, handleDragStart } = useEventHandlers({
         onDragStart: (event: DragStartEvent) => {
-            console.log("[EzTable] DragStart", event);
             setActiveDragHeaderId(event.active.id as string);
         },
         onDragEnd: (event: DragEndEvent) => {
@@ -289,20 +289,39 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
             const { active, over } = event;
             if (!over) return;
             const columnId = active.id as string;
-            console.log(`[EzTable] DragEnd active=${active.id} over=${over.id} columnId=${columnId}`);
             const currentGrouping = [...table.getState().grouping];
 
             if (over.id === 'grouping-panel') {
-                if (!currentGrouping.includes(columnId)) table.setGrouping([...currentGrouping, columnId]);
+                if (!currentGrouping.includes(columnId) && props.enableGrouping) {
+                    table.setGrouping([...currentGrouping, columnId]);
+                }
             } else if (typeof over.id === 'string' && over.id.startsWith('header-')) {
                 const overColumnId = over.id.replace('header-', '');
                 if (columnId !== overColumnId) {
-                    let newGrouping = [...currentGrouping];
-                    if (!newGrouping.includes(overColumnId)) newGrouping.push(overColumnId);
-                    if (newGrouping.includes(columnId)) newGrouping = newGrouping.filter(id => id !== columnId);
-                    const overIndex = newGrouping.indexOf(overColumnId);
-                    newGrouping.splice(overIndex + 1, 0, columnId);
-                    table.setGrouping(newGrouping);
+                    // Try Column Reorder first (default behavior unless explicitly disabled)
+                    if (props.enableColumnReorder !== false) {
+                        const currentOrder = table.getState().columnOrder.length > 0
+                            ? table.getState().columnOrder
+                            : table.getAllLeafColumns().map((c: any) => c.id);
+
+                        const activeIndex = currentOrder.indexOf(columnId);
+                        const overIndex = currentOrder.indexOf(overColumnId);
+
+                        if (activeIndex !== -1 && overIndex !== -1) {
+                            const newOrder = [...currentOrder];
+                            newOrder.splice(activeIndex, 1);
+                            newOrder.splice(overIndex, 0, columnId);
+                            table.setColumnOrder(newOrder);
+                        }
+                    } else if (props.enableGrouping) {
+                        // Fallback to legacy grouping reorder if Column Reorder is disabled
+                        let newGrouping = [...currentGrouping];
+                        if (!newGrouping.includes(overColumnId)) newGrouping.push(overColumnId);
+                        if (newGrouping.includes(columnId)) newGrouping = newGrouping.filter(id => id !== columnId);
+                        const overIndex = newGrouping.indexOf(overColumnId);
+                        newGrouping.splice(overIndex + 0, 0, columnId);
+                        table.setGrouping(newGrouping);
+                    }
                 }
             }
         },
@@ -337,6 +356,7 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
     const { sensors, onDragEnd, onDragStart } = useDndHandlers({
         onDragStart: handleDragStart,
         onDragEnd: handleDragEnd,
+        collisionDetection: closestCenter,
         distance: 5
     });
 
@@ -344,7 +364,7 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
     return (
         <EzErrorBoundary fallback={<EzTableErrorFallback />}>
             <TooltipProvider>
-                <DndContext sensors={sensors} onDragEnd={onDragEnd} onDragStart={onDragStart}>
+                <DndContext sensors={sensors} onDragEnd={onDragEnd} onDragStart={onDragStart} collisionDetection={closestCenter}>
                     <div className={cn(flexColumn, "w-full min-h-0 gap-3", props.className, props.classNames?.root)} dir={dir}>
 
                         {props.enableGrouping && (
@@ -357,12 +377,14 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
                         {/* Modular Slot: Toolbar */}
                         {props.slots?.toolbar ? (
                             <props.slots.toolbar
-                                table={table}
-                                globalFilter={globalFilter}
-                                setGlobalFilter={setGlobalFilter}
-                                isPending={isPending}
-                                columns={table.getAllColumns()}
-                                {...props.slotProps?.toolbar}
+                                {...({
+                                    table: table,
+                                    globalFilter: globalFilter,
+                                    setGlobalFilter: setGlobalFilter,
+                                    isPending: isPending,
+                                    columns: table.getAllColumns(),
+                                    ...(props.slotProps?.toolbar || {})
+                                } as any)}
                             />
                         ) : (
                             <React.Suspense fallback={<div className="h-10 w-full animate-pulse bg-muted/20 rounded-md" />}>
@@ -466,7 +488,7 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
                                 />
 
                                 {props.slots?.footer ? (
-                                    <props.slots.footer table={table} {...props.slotProps?.footer} />
+                                    <props.slots.footer {...({ table: table, ...(props.slotProps?.footer || {}) } as any)} />
                                 ) : (
                                     <React.Suspense fallback={null}>
                                         <EzTableFooter table={table} columnVirtualizer={columnVirtualizer} density={density} />

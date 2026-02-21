@@ -37,10 +37,10 @@ export const EditorTemplate: React.FC<EditorTemplateProps> = ({
     onCancel,
     onDelete
 }) => {
-    const [title, setTitle] = useState(event?.title || event?.subject || '');
-    const [start, setStart] = useState(event?.start ? new Date(event.start).toISOString().slice(0, 16) : '');
-    const [end, setEnd] = useState(event?.end ? new Date(event.end).toISOString().slice(0, 16) : '');
-    const [description, setDescription] = useState(event?.description || '');
+    const [title, setTitle] = useState<string>((event?.title || event?.subject || '') as string);
+    const [start, setStart] = useState<string>(event?.start ? new Date(event.start).toISOString().slice(0, 16) : '');
+    const [end, setEnd] = useState<string>(event?.end ? new Date(event.end).toISOString().slice(0, 16) : '');
+    const [description, setDescription] = useState<string>((event?.description || '') as string);
 
     const handleSave = () => {
         if (!title || !start || !end) return;
@@ -57,7 +57,7 @@ export const EditorTemplate: React.FC<EditorTemplateProps> = ({
     };
 
     return (
-        <div className="ez-event-editor p-4 bg-white rounded shadow-lg dark:bg-slate-800">
+        <div className="ez-event-editor p-4 bg-background rounded shadow-lg border border-border">
             <h3 className="text-lg font-bold mb-4">{event?.id ? 'Edit Event' : 'New Event'}</h3>
 
             <div className="grid gap-4">
@@ -65,7 +65,7 @@ export const EditorTemplate: React.FC<EditorTemplateProps> = ({
                     <label className="block text-sm font-medium mb-1">Title</label>
                     <input
                         type="text"
-                        className="w-full border rounded p-2 dark:bg-slate-700 dark:border-slate-600"
+                        className="w-full border rounded p-2 dark:bg-muted dark:border-border"
                         value={title}
                         onChange={e => setTitle(e.target.value)}
                     />
@@ -76,7 +76,7 @@ export const EditorTemplate: React.FC<EditorTemplateProps> = ({
                         <label className="block text-sm font-medium mb-1">Start</label>
                         <input
                             type="datetime-local"
-                            className="w-full border rounded p-2 dark:bg-slate-700 dark:border-slate-600"
+                            className="w-full border rounded p-2 dark:bg-muted dark:border-border"
                             value={start}
                             onChange={e => setStart(e.target.value)}
                         />
@@ -85,7 +85,7 @@ export const EditorTemplate: React.FC<EditorTemplateProps> = ({
                         <label className="block text-sm font-medium mb-1">End</label>
                         <input
                             type="datetime-local"
-                            className="w-full border rounded p-2 dark:bg-slate-700 dark:border-slate-600"
+                            className="w-full border rounded p-2 dark:bg-muted dark:border-border"
                             value={end}
                             onChange={e => setEnd(e.target.value)}
                         />
@@ -95,7 +95,7 @@ export const EditorTemplate: React.FC<EditorTemplateProps> = ({
                 <div>
                     <label className="block text-sm font-medium mb-1">Description</label>
                     <textarea
-                        className="w-full border rounded p-2 dark:bg-slate-700 dark:border-slate-600"
+                        className="w-full border rounded p-2 dark:bg-muted dark:border-border"
                         value={description}
                         onChange={e => setDescription(e.target.value)}
                     />
@@ -117,7 +117,7 @@ export const EditorTemplate: React.FC<EditorTemplateProps> = ({
                         Cancel
                     </button>
                     <button
-                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                        className="px-4 py-2 bg-primary hover:bg-primary/90"
                         onClick={handleSave}
                     >
                         Save

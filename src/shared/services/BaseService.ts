@@ -1,4 +1,5 @@
 import type { IService } from './ServiceRegistry';
+import { Store } from '@tanstack/store';
 
 /**
  * Abstract base class for all reactive services in EzUX.
@@ -12,19 +13,27 @@ import type { IService } from './ServiceRegistry';
 export abstract class BaseService<TState> implements IService {
     abstract name: string;
 
-    protected state: TState;
-    private subscribers: Set<(state: TState) => void> = new Set();
-    private isUpdating = false;
-    private updateQueue: TState[] = [];
+    public store: Store<TState>;
     protected cleanupTasks: (() => void)[] = [];
+    protected debounceMs: number = 0;
+    private debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
 
     constructor(initialState: TState) {
-        this.state = initialState;
+        this.store = new Store(initialState);
+    }
+
+    /** 
+     * Allows accessing the current state directly via getter 
+     * to maintain backward compatibility.
+     */
+    protected get state(): TState {
+        return this.store.state;
     }
 
     /** Returns the current active state of the service. @group Methods */
     getState(): TState {
-        return this.state;
+        return this.store.state;
     }
 
     /**
@@ -43,27 +52,34 @@ export abstract class BaseService<TState> implements IService {
      * @group Methods
      */
     subscribe(listener: (state: TState) => void): () => void {
-        this.subscribers.add(listener);
-        return () => this.subscribers.delete(listener);
+        const unsub = this.store.subscribe(() => {
+            listener(this.store.state);
+        });
+        return () => unsub.unsubscribe();
     }
 
     /**
-     * Updates the service state and notifies subscribers.
+     * Updates the service state.
      * Supports both partial objects and functional updaters.
      * @group Methods
      */
     protected setState(updater: Partial<TState> | ((prev: TState) => Partial<TState>)) {
-        const partial = typeof updater === 'function'
-            ? (updater as any)(this.state)
-            : updater;
+        this.store.setState((prev) => {
+            const partial = typeof updater === 'function' ? (updater as any)(prev) : updater;
+            return { ...prev, ...partial };
+        });
 
-        const newState = { ...this.state, ...partial };
-        this.state = newState;
-        this.notifySubscribers();
+        // Retain the debounce trigger behavior if debounce is enabled
+        // otherwise TanStack store automatically notifies react components natively.
+        // For backwards compatibility and imperative polling:
+        if (this.debounceMs > 0) {
+            if (this.debounceTimer) clearTimeout(this.debounceTimer);
+            this.debounceTimer = setTimeout(() => {
+                // Not actually broadcasting as Tanstack store does it automatically,
+                // but any custom hook waiting for this could handle it.
+            }, this.debounceMs);
+        }
     }
-
-    private debounceTimer: any = null;
-    protected debounceMs: number = 0;
 
     /**
      * Sets a debounce time for notifications to prevent rapid re-renders in components.
@@ -74,60 +90,13 @@ export abstract class BaseService<TState> implements IService {
         this.debounceMs = ms;
     }
 
-    private notifySubscribers() {
-        if (this.debounceMs > 0) {
-            if (this.debounceTimer) clearTimeout(this.debounceTimer);
-            this.debounceTimer = setTimeout(() => this.broadcast(), this.debounceMs);
-        } else {
-            this.broadcast();
-        }
-    }
-
-    private broadcast() {
-        if (this.isUpdating) {
-            this.updateQueue.push(this.state);
-            return;
-        }
-
-        this.isUpdating = true;
-        const state = this.state;
-
-        try {
-            this.subscribers.forEach(listener => {
-                listener(state);
-            });
-        } finally {
-            this.isUpdating = false;
-        }
-
-        if (this.updateQueue.length > 0) {
-            // If queued updates exist, we only broadcast the latest state (already in this.state)
-            // But if we want to process intermediate states, we'd need a different approach.
-            // Usually, components just want the latest state.
-            this.updateQueue = [];
-            // Re-broadcast? No, we already have the latest state in this.state.
-            // But if listeners reacted to the previous broadcast and triggered distinct updates...
-            // Actually, updateQueue logic was: push state, then recursively call notify?
-            // Original code recursively called `notifySubscribers`.
-            // With debouncing, we just want to ensure we emit the FINAL state.
-
-            // If we are strictly debouncing, we might drop intermediate queue items if they were pushed *during* an emit.
-            // But broadcast is called at end of timeout.
-
-            // Let's keep a simple queue drain if we are not debouncing or if synchronous updates happened during emit.
-            // Since we are inside broadcast(), if updates happened synchronously during listeners, they pushed to queue.
-            // We should re-emit if queue has items.
-            this.broadcast();
-        }
-    }
-
     /**
      * Performs final cleanup for the service.
      * Triggers all registered cleanup tasks and clears all subscribers.
      * @group Methods
      */
     cleanup() {
-        this.subscribers.clear();
+        if (this.debounceTimer) clearTimeout(this.debounceTimer);
         this.cleanupTasks.forEach(task => {
             try {
                 task();

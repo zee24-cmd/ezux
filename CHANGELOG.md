@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.4] - 2026-02-21
+
+### Changed
+- **Type Safety**: Updated all components to use proper TypeScript types instead of `any` throughout the codebase.
+- **EzKanban**: Improved type definitions in `EzKanban.types.ts`, `CardEditorModal`, `KanbanBoard`, `KanbanCard`, `KanbanColumn`, `KanbanSwimlane`, and `KanbanToolbar`.
+- **EzScheduler**: Enhanced type safety in `EzScheduler.types.ts`, `EzEventModal`, `EzSchedulerQuickAdd`, `RecurrenceEditor`, and view components.
+- **EzTable**: Replaced `any` types with proper interfaces in `EzTable.types.ts`, `EzTableCell`, `EzTableRow`, `EzDraggableHeader`, and related hooks.
+- **EzLayout**: Updated `EzLayout.types.ts`, authentication components, and layout hooks with strict typing.
+- **EzTreeView**: Improved type definitions in `EzTreeView.types.ts`, `EzTreeViewItem`, and `EzVirtualTree`.
+- **EzSignature**: Enhanced type safety in `EzSignature.tsx` and `EzSignature.types.ts`.
+- **Shared Utilities**: Updated common types, hooks, and services with proper TypeScript types.
+
+### Fixed
+- Build process now completes successfully with strict TypeScript checking.
+- All 28 unit tests passing.
+
 ## [1.1.0] - 2026-02-17
 
 ### Added

@@ -1,7 +1,7 @@
 import { memo, useMemo } from 'react';
+import { cn } from '../../../lib/utils';
 import {
-    getDensityClasses,
-    combineStyleClasses
+    getDensityClasses
 } from '../../../shared/utils/styleUtils';
 import { Density } from '../../../shared/types/common';
 import { EzContextMenu } from '../../../shared/components/EzContextMenu';
@@ -125,7 +125,7 @@ export const EzTableRow = memo(({
                 onMouseEnter={(e) => onRowMouseEnter?.(row.index, e)}
                 onMouseLeave={(e) => onRowMouseLeave?.(row.index, e)}
             >
-                <div className={combineStyleClasses(
+                <div className={cn(
                     "flex items-stretch w-full min-w-max hover:bg-muted/50 transition-[background-color] duration-200",
                     row.getIsSelected() && "bg-muted",
                     getDensityClasses(density as Density),
