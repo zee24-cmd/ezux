@@ -55,7 +55,7 @@ export abstract class BaseService<TState> implements IService {
         const unsub = this.store.subscribe(() => {
             listener(this.store.state);
         });
-        return () => unsub.unsubscribe();
+        return unsub;
     }
 
     /**

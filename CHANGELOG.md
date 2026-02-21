@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [1.1.6] - 2026-02-21
+
+### Changed
+- **EzTable**: Drag handle (grip icon) in column headers is now always visible when `enableColumnReorder` or `enableGrouping` is enabled, providing clear visual indication that columns are draggable.
+
+## [1.1.5] - 2026-02-21
+
+### Changed
+- **Dependencies**: Updated `happy-dom` from `^20.6.3` to `^20.7.0`.
+- **Dependencies**: Aligned `@tanstack/store` and `@tanstack/react-store` to `^0.8.1` to match `@tanstack/react-form@1.28.3` internal dependencies.
+### Removed
+- **Dependencies**: Removed deprecated `@types/dompurify` package - `dompurify` provides its own type definitions.
+
+### Fixed
+- **TanStack Form**: Fixed `atom?.get is not a function` error in `useField` hook by aligning store versions.
+- **BaseService**: Fixed `subscribe` method to correctly return unsubscribe function for `@tanstack/store@0.8.1`.
 
 ## [1.1.4] - 2026-02-21
 

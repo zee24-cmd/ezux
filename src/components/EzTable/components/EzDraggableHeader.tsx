@@ -103,7 +103,7 @@ export const EzDraggableHeader = memo(({ header, density, onAutoFit, columnPinni
             )}>
                 {!isDraggableDisabled && (
                     <div {...attributes} {...listeners} className={cn(
-                        "cursor-grab active:cursor-grabbing p-1 text-zinc-400 opacity-0 group-hover/header:opacity-100 transition-opacity z-50",
+                        "cursor-grab active:cursor-grabbing p-1 text-muted-foreground hover:text-foreground transition-colors z-50",
                         align === 'center'
                             ? (meta?.dir === 'rtl' ? "absolute right-1 top-1/2 -translate-y-1/2" : "absolute left-1 top-1/2 -translate-y-1/2")
                             : (meta?.dir === 'rtl' ? "-mr-2 ml-1" : "-ml-2 mr-1")
