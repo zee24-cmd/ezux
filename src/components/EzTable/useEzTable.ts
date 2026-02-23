@@ -97,7 +97,7 @@ export const useEzTable = <TData extends object>(
     // 3. Resolve Service
     const service = useMemo(() => {
         if (props.service) return props.service;
-        if (props.serviceName) return globalServiceRegistry.get(props.serviceName) as ITableService<TData>;
+        if (props.serviceName) return globalServiceRegistry.get(props.serviceName) as unknown as ITableService<TData>;
         return null;
     }, [props.service, props.serviceName]);
 
@@ -124,13 +124,13 @@ export const useEzTable = <TData extends object>(
         queryKey,
         queryFn: async () => {
             if (!service) return { data: initialData, totalCount: initialData.length };
-            return service.getData({
-                page: paginationState.pageIndex,
-                pageSize: paginationState.pageSize,
-                sorting: sortingState,
-                filters: columnFiltersState,
-                globalFilter: globalFilterState ? String(globalFilterState) : undefined
+            const response = await service.getData({
+                ...props,
+                state: table.getState(),
+                data: [], // Required by interface
+                columns: [], // Required by interface
             });
+            return response;
         },
         // Enable query only if service is present
         enabled: !!service,

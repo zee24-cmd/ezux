@@ -52,10 +52,10 @@ const FilterRuleRow = React.memo(({
 
             {!['empty', 'notEmpty'].includes(rule.operator) && (
                 <Input
-                    value={rule.value}
+                    value={rule.value as string}
                     onChange={(e) => onUpdate({ ...rule, value: e.target.value })}
-                    className="h-7 text-xs w-[120px]"
-                    placeholder="Value..."
+                    className="w-full flex-grow mx-1 text-sm h-8"
+                    placeholder="Value"
                 />
             )}
 

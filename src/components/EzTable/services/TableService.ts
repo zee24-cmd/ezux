@@ -1,4 +1,3 @@
-import { RowData } from '@tanstack/react-table';
 import { ITableService, TableParams } from '../EzTable.types';
 
 /**
@@ -10,7 +9,7 @@ const MOCK_DB = new Map<string, Record<string, unknown>[]>();
  * TableService implementation following the ServiceRegistry pattern.
  * Provides mock server-side operations like sorting, filtering, and pagination.
  */
-export class TableService<T extends RowData = Record<string, unknown>> implements ITableService<T> {
+export class TableService<T extends Record<string, unknown>> implements ITableService<T> {
     name = 'TableService';
 
     async init(): Promise<void> {
@@ -31,13 +30,19 @@ export class TableService<T extends RowData = Record<string, unknown>> implement
     /**
      * Simulates fetching data from a server with support for sorting, filtering, and pagination.
      */
-    async getData(params: TableParams): Promise<{ data: T[]; totalCount: number }> {
+    async getData(params: TableParams<T>): Promise<{ data: T[]; totalCount: number }> {
         await this.simulateLatency();
         let data = MOCK_DB.get('default') || [];
 
+        const state = params.state || {};
+        const columnFilters = state.columnFilters || [];
+        const globalFilter = state.globalFilter;
+        const sorting = state.sorting || [];
+        const pagination = state.pagination;
+
         // Apply filters
-        if (params.filters && params.filters.length > 0) {
-            params.filters.forEach(filter => {
+        if (columnFilters.length > 0) {
+            columnFilters.forEach(filter => {
                 data = data.filter((row) => {
                     const value = (row as Record<string, unknown>)[filter.id];
                     if (value === undefined || value === null) return false;
@@ -47,8 +52,8 @@ export class TableService<T extends RowData = Record<string, unknown>> implement
         }
 
         // Apply global filter
-        if (params.globalFilter) {
-            const search = params.globalFilter.toLowerCase();
+        if (globalFilter) {
+            const search = String(globalFilter).toLowerCase();
             data = data.filter((row) => {
                 return Object.values(row as Record<string, unknown>).some(val =>
                     val !== null && val !== undefined && String(val).toLowerCase().includes(search)
@@ -57,8 +62,8 @@ export class TableService<T extends RowData = Record<string, unknown>> implement
         }
 
         // Apply sorting
-        if (params.sorting && params.sorting.length > 0) {
-            const sort = params.sorting[0];
+        if (sorting.length > 0) {
+            const sort = sorting[0];
             data = [...data].sort((a, b) => {
                 const aVal = (a as Record<string, unknown>)[sort.id];
                 const bVal = (b as Record<string, unknown>)[sort.id];
@@ -75,9 +80,9 @@ export class TableService<T extends RowData = Record<string, unknown>> implement
         const totalCount = data.length;
 
         // Apply pagination
-        if (params.page !== undefined && params.pageSize !== undefined) {
-            const start = params.page * params.pageSize;
-            data = data.slice(start, start + params.pageSize);
+        if (pagination) {
+            const start = pagination.pageIndex * pagination.pageSize;
+            data = data.slice(start, start + pagination.pageSize);
         }
 
         return {
@@ -86,13 +91,17 @@ export class TableService<T extends RowData = Record<string, unknown>> implement
         };
     }
 
+    async fetchData(query: unknown): Promise<{ data: T[]; rowCount?: number }> {
+        return this.getData(query as TableParams<T>);
+    }
+
     async createRow(row: Partial<T>): Promise<T> {
         await this.simulateLatency();
         const data = MOCK_DB.get('default') || [];
         const newRow = {
             id: (row as Record<string, unknown>).id || Math.random().toString(36).substring(2, 9),
             ...row
-        } as T;
+        } as unknown as T;
         data.push(newRow as Record<string, unknown>);
         MOCK_DB.set('default', data);
         return newRow;

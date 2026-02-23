@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [1.1.7] - 2026-02-24
+
+### Added
+- **Theming**: Extracted CSS theme variables into a standalone `dist/theme-vars.css` for consumers who want tokens without the Tailwind CSS runtime.
+- **Exports**: Added explicit exports for orchestrator hooks (`useEzTable`, `useEzScheduler`, `useEzKanban`) and shared hooks (`useEzTheme`, `useMediaQuery`, `useDebounce`, `useDialogState`, `useRowSelectionEvents`).
+
+### Changed
+- **Dependencies**: Massively reduced `peerDependencies` to only require `react`, `react-dom`, and `@tanstack/*` packages. `lucide-react`, `date-fns`, `dompurify`, `@radix-ui/*` and `@dnd-kit/*` are now bundled dependencies.
+- **Dependencies**: Made `rrule` an optional peer dependency via `peerDependenciesMeta`.
+- **Dependencies**: Ensured internal styling helpers (`clsx`, `class-variance-authority`, `tailwind-merge`) are bundled correctly and not externalized.
+- **Exports**: Replaced wildcard exports (`export *`) with explicit named exports in the main entry point to improve tree-shaking and avoid namespace collisions.
+- **Exports**: Defined a formal public API surface using `/** @public */` and `/** @internal */` TSDoc tags in `src/index.ts` to document which exports are stable versus internal details.
+- **Documentation**: Formally documented in `README.md` that consumers must provide their own **Tailwind CSS v4** installation to use `ezux`.
+
+### Removed
+- **CSS**: Completely removed `@import "tailwindcss"` from the distributed CSS so the library no longer imposes the full Tailwind runtime on consumers.
+- **CSS**: Removed all global layout resets (`html`, `body`, `#root` styles) from `dist/ezux.css` to guarantee the library never imposes structural CSS constraints on the host application.
+
 ## [1.1.6] - 2026-02-21
 
 ### Changed

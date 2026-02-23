@@ -1,5 +1,5 @@
 import { SharedBaseProps } from '../../shared/types/BaseProps';
-import { TreeNode as SharedTreeNode } from '../../shared/types/commonTypes';
+import { TreeNode as SharedTreeNode } from '../../shared/types/common';
 import { IService } from '../../shared/services/ServiceRegistry';
 
 /**

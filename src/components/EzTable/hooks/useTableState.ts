@@ -88,10 +88,10 @@ export const useTableState = <TData extends object>(props: EzTableProps<TData>, 
             setTimeout(() => {
                 props.onSortingChange?.(newSorting);
                 props.onSort?.({
-                    columns: newSorting.map(s => ({
-                        field: s.id,
-                        direction: s.desc ? 'desc' : 'asc'
-                    }))
+                    columns: newSorting.map((s: any) => ({
+                        direction: s.desc ? 'Descending' : 'Ascending',
+                        name: s.id
+                    })) as any
                 });
             }, 0);
             return { ...prev, sorting: newSorting };
@@ -105,9 +105,9 @@ export const useTableState = <TData extends object>(props: EzTableProps<TData>, 
             setTimeout(() => {
                 props.onPaginationChange?.(newPagination);
                 props.onPageChange?.({
-                    currentPage: newPagination.pageIndex + 1,
-                    pageSize: newPagination.pageSize
-                });
+                    action: 'page',
+                    currentPage: newPagination.pageIndex + 1
+                } as any);
             }, 0);
             return { ...prev, pagination: newPagination };
         });

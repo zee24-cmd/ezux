@@ -22,6 +22,12 @@
 - **EzTreeView**: Virtualized tree handling unlimited nesting.
 - **EzLayout**: A fluid orchestration engine for complex interfaces.
 
+## Prerequisites
+
+`ezux` is styled using **Tailwind CSS v4**. The library deliberately does **not** bundle Tailwind to avoid bloating your application or causing version conflicts. 
+
+You must have [Tailwind CSS v4](https://tailwindcss.com/docs/installation) installed and configured in your consumer application to use `ezux` components.
+
 ## Installation
 
 ```bash

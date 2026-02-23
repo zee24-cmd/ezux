@@ -1,4 +1,4 @@
-import { TreeNode, FilterGroup, FilterRule } from '../types/commonTypes';
+import { TreeNode, FilterGroup, FilterRule } from '../types/common';
 import { validateRequired as vReq } from './validationUtils';
 import * as formatters from './formatUtils';
 
@@ -114,13 +114,13 @@ export const checkGroup = (
 
     if (group.logic === 'AND') {
         return group.filters.every(item => {
-            if (item.kind === 'group') return checkGroup(item, getValue);
-            return checkRule(item, getValue);
+            if ('logic' in item) return checkGroup(item, getValue);
+            return checkRule(item as FilterRule, getValue);
         });
     } else {
         return group.filters.some(item => {
-            if (item.kind === 'group') return checkGroup(item, getValue);
-            return checkRule(item, getValue);
+            if ('logic' in item) return checkGroup(item, getValue);
+            return checkRule(item as FilterRule, getValue);
         });
     }
 };

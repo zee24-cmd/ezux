@@ -438,7 +438,7 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
                             role="table"
                             style={{
                                 overflowAnchor: 'none', // Disable browser scroll anchoring to prevent jitter with virtualizer
-                                scrollBehavior: props.scrollBehavior ?? 'smooth',
+                                scrollBehavior: (props.scrollBehavior ?? 'smooth') as any,
                                 height: '100%',
                                 position: 'relative',
                                 minHeight: '0'
@@ -482,7 +482,7 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
                                     onCellMouseEnter={onCellMouseEnter}
                                     onCellClick={onCellClick}
                                     onCellDoubleClick={onCellDoubleClick}
-                                    renderDetailPanel={props.renderDetailPanel}
+                                    renderDetailPanel={props.renderDetailPanel as any}
                                     onRowClick={onRowClick}
                                     onRowDoubleClick={onRowDoubleClick}
                                 />

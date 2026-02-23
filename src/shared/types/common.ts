@@ -2,28 +2,46 @@
  * Shared type definitions used across components
  */
 
+import React from 'react';
+
+/**
+ * Base Component Types
+ */
+export interface BaseComponentProps {
+    /** Unique identifier for the component instance @group Properties */
+    id?: string;
+    /** Custom class names for styling @group Properties */
+    className?: string;
+    /** Inline styles @group Properties */
+    style?: React.CSSProperties;
+    /** Data attribute for testing @group Properties */
+    dataTestId?: string;
+    /** Direction of the text (ltr, rtl, auto) @group Properties */
+    dir?: 'ltr' | 'rtl' | 'auto';
+}
+
 /**
  * Common class names for component styling
  */
-export interface ComponentClassNames {
+export interface ComponentClassNames<TData = unknown> {
     root?: string;
     header?: string;
     body?: string;
     footer?: string;
     toolbar?: string;
-    row?: string | ((row: any) => string);
-    cell?: string | ((cell: any) => string);
+    row?: string | ((row: TData) => string);
+    cell?: string | ((cell: unknown) => string);
 }
 
 /**
  * Common slots for component customization
  */
-export interface ComponentSlots<TData = any> {
-    header?: React.ComponentType<{ data?: TData;[key: string]: any }>;
-    footer?: React.ComponentType<{ data?: TData;[key: string]: any }>;
-    toolbar?: React.ComponentType<{ data?: TData;[key: string]: any }>;
-    noData?: React.ComponentType<{ [key: string]: any }>;
-    loading?: React.ComponentType<{ [key: string]: any }>;
+export interface ComponentSlots<TData = unknown> {
+    header?: React.ComponentType<{ data?: TData;[key: string]: unknown }>;
+    footer?: React.ComponentType<{ data?: TData;[key: string]: unknown }>;
+    toolbar?: React.ComponentType<{ data?: TData;[key: string]: unknown }>;
+    noData?: React.ComponentType<{ [key: string]: unknown }>;
+    loading?: React.ComponentType<{ [key: string]: unknown }>;
 }
 
 /**
@@ -69,31 +87,45 @@ export type PinnedPosition = 'left' | 'right' | false;
 export type SortDirection = 'asc' | 'desc' | false;
 
 /**
- * Common filter operator
+ * Filter Utilities Types
  */
 export type FilterOperator =
+    | 'contains'
+    | 'doesNotContain'
+    | 'shouldContain'
     | 'equals'
     | 'notEquals'
-    | 'contains'
-    | 'notContains'
+    | 'doesNotEqual'
     | 'startsWith'
     | 'endsWith'
+    | 'empty'
+    | 'notEmpty'
+    | 'gt'
     | 'greaterThan'
+    | 'lt'
     | 'lessThan'
+    | 'gte'
     | 'greaterThanOrEqual'
+    | 'lte'
     | 'lessThanOrEqual'
     | 'between'
     | 'in'
     | 'notIn';
 
-/**
- * Common filter model
- */
-export interface FilterModel {
+export interface FilterRule<TValue = unknown> {
+    kind?: 'rule';
+    id?: string;
     field: string;
     operator: FilterOperator;
-    value: any;
+    value: TValue;
     condition?: 'and' | 'or';
+}
+
+export interface FilterGroup {
+    kind?: 'group';
+    id?: string;
+    logic: 'AND' | 'OR';
+    filters: (FilterRule | FilterGroup)[];
 }
 
 /**
@@ -146,11 +178,82 @@ export interface ValidationResult {
 }
 
 /**
+ * Represents a structured request for data fetching/filtering.
+ */
+export interface DataQuery {
+    filters?: FilterRule[] | FilterGroup;
+    sort?: SortModel[];
+    pagination?: PaginationModel;
+    search?: string;
+    [key: string]: any;
+}
+
+/**
+ * State Types
+ */
+export interface State<T> {
+    data: T;
+    loading: boolean;
+    error: Error | null;
+    initialized: boolean;
+}
+
+/**
+ * Event Types
+ */
+export interface BaseEvent {
+    timestamp: Date;
+    source: string;
+}
+
+export interface SelectionEvent<T> extends BaseEvent {
+    selected: T[];
+    deselected: T[];
+    changed: boolean;
+}
+
+/**
+ * Service Types
+ */
+export interface Service<T> {
+    name: string;
+    initialize(): Promise<void>;
+    cleanup(): void;
+    getState(): T;
+    setState(state: T): void;
+}
+
+/**
+ * Utility Types
+ */
+export type DeepPartial<T> = {
+    [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
+};
+
+export type PickPartial<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
+/**
+ * Tree Manipulation Types
+ */
+export interface TreeNode {
+    id: string;
+    label: string;
+    children?: TreeNode[];
+    icon?: React.ReactNode;
+    level?: number;
+    parentId?: string;
+    isLeaf?: boolean;
+    isLoading?: boolean;
+    isLoaded?: boolean;
+    [key: string]: unknown;
+}
+
+/**
  * Common event callback types
  * Contains ONLY events that are truly shared across components with identical signatures.
  * Component-specific events (onCellClick, onRowClick, etc) should be defined in each component's types.
  */
-export interface ComponentEventCallbacks<TData = any> {
+export interface ComponentEventCallbacks<TData = unknown> {
     // Lifecycle Events (truly universal)
     /** 
      * Callback when component is created.
@@ -190,7 +293,7 @@ export interface ComponentEventCallbacks<TData = any> {
      * Callback when data is requested.
      * @group Events 
      */
-    onDataRequest?: (query: any) => void;
+    onDataRequest?: (query: DataQuery) => void;
     /** 
      * Callback when data change starts.
      * @group Events 
@@ -205,7 +308,7 @@ export interface ComponentEventCallbacks<TData = any> {
      * Callback when data change is cancelled.
      * @group Events 
      */
-    onDataChangeCancel?: (args: { action: 'add' | 'edit' | 'delete'; row?: any }) => void;
+    onDataChangeCancel?: (args: { action: 'add' | 'edit' | 'delete'; row?: TData }) => void;
     /** 
      * Callback when data change is requested.
      * @group Events 
@@ -215,7 +318,7 @@ export interface ComponentEventCallbacks<TData = any> {
      * Callback on error.
      * @group Events 
      */
-    onError?: (error: any) => void;
+    onError?: (error: Error | unknown) => void;
     /** 
      * Callback on refresh.
      * @group Events 
@@ -236,7 +339,7 @@ export interface ExportOptions {
 /**
  * Common clipboard data
  */
-export interface ClipboardData<TData = any> {
+export interface ClipboardData<TData = unknown> {
     data: TData;
     action: 'copy' | 'cut';
     timestamp: number;
@@ -245,7 +348,7 @@ export interface ClipboardData<TData = any> {
 /**
  * Common drag and drop data
  */
-export interface DragDropData<TData = any> {
+export interface DragDropData<TData = unknown> {
     item: TData;
     sourceIndex: number;
     targetIndex?: number;

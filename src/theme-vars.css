@@ -1,0 +1,156 @@
+/*
+  Initial theme variables (Blue light mode as default).
+  These MUST be defined before @theme so Tailwind can reference them.
+  They are overridden dynamically by ThemeService.ts based on user preferences.
+*/
+:root {
+    /* Light Mode - High Contrast */
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.145 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0 0);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.145 0 0);
+    --primary: oklch(0.205 0 0);
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.97 0 0);
+    --secondary-foreground: oklch(0.205 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.556 0 0);
+    --accent: oklch(0.97 0 0);
+    --accent-foreground: oklch(0.205 0 0);
+    --destructive: oklch(0.577 0.245 27.325);
+    --destructive-foreground: oklch(100% 0 0deg);
+    --border: oklch(0.922 0 0);
+    --input: oklch(0.922 0 0);
+    --ring: oklch(0.708 0 0);
+    /* Status Badge Tokens - Light Mode */
+    --ez-status-success-bg: oklch(0.962 0.044 156.74);
+    --ez-status-success-text: oklch(0.208 0.042 165.74);
+    --ez-status-success-border: oklch(0.895 0.051 163.22);
+    --ez-status-success-dot: oklch(0.527 0.154 160.06);
+
+    --ez-status-warning-bg: oklch(0.962 0.059 95.617);
+    --ez-status-warning-text: oklch(0.25 0.05 90);
+    --ez-status-warning-border: oklch(0.89 0.06 90);
+    --ez-status-warning-dot: oklch(0.65 0.18 85);
+
+    --ez-status-error-bg: oklch(0.941 0.03 12.58);
+    --ez-status-error-text: oklch(0.25 0.04 15);
+    --ez-status-error-border: oklch(0.88 0.04 15);
+    --ez-status-error-dot: oklch(0.6 0.18 20);
+
+    --ez-status-info-bg: oklch(0.94 0.03 240);
+    --ez-status-info-text: oklch(0.25 0.04 245);
+    --ez-status-info-border: oklch(0.88 0.04 245);
+    --ez-status-info-dot: oklch(0.55 0.18 250);
+
+    --ez-status-neutral-bg: oklch(0.96 0 0);
+    --ez-status-neutral-text: oklch(0.2 0 0);
+    --ez-status-neutral-border: oklch(0.92 0 0);
+    --ez-status-neutral-dot: oklch(0.6 0 0);
+
+    --radius: 0.625rem;
+    --chart-1: oklch(0.646 0.222 41.116);
+    --chart-2: oklch(0.6 0.118 184.704);
+    --chart-3: oklch(0.398 0.07 227.392);
+    --chart-4: oklch(0.828 0.189 84.429);
+    --chart-5: oklch(0.769 0.188 70.08);
+    --sidebar: oklch(0.985 0 0);
+    --sidebar-foreground: oklch(0.145 0 0);
+    --sidebar-primary: oklch(0.205 0 0);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.97 0 0);
+    --sidebar-accent-foreground: oklch(0.205 0 0);
+    --sidebar-border: oklch(0.922 0 0);
+    --sidebar-ring: oklch(0.708 0 0);
+
+    /* White Label Selection & Highlights */
+    --ez-selection: oklch(0.92 0.04 240);
+    --ez-selection-foreground: oklch(0.25 0.04 245);
+    --ez-highlight: oklch(0.97 0.01 240);
+    --ez-highlight-foreground: oklch(0.3 0.02 240);
+    --ez-success: oklch(0.627 0.154 160.06);
+    --ez-success-foreground: oklch(1 0 0);
+    --ez-error: oklch(0.577 0.245 27.325);
+    --ez-error-foreground: oklch(1 0 0);
+    --ez-warning: oklch(0.85 0.15 85);
+    --ez-warning-foreground: oklch(0.2 0.05 90);
+    --ez-background-secondary: oklch(0.98 0 0);
+}
+
+.dark {
+    /* Dark Mode - Low Glare */
+    --background: oklch(0.145 0 0);
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.205 0 0);
+    --card-foreground: oklch(0.985 0 0);
+    --popover: oklch(0.205 0 0);
+    --popover-foreground: oklch(0.985 0 0);
+    --primary: oklch(0.922 0 0);
+    --primary-foreground: oklch(0.205 0 0);
+    --secondary: oklch(0.269 0 0);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.269 0 0);
+    --muted-foreground: oklch(0.708 0 0);
+    --accent: oklch(0.269 0 0);
+    --accent-foreground: oklch(0.985 0 0);
+    --destructive: oklch(0.704 0.191 22.216);
+    --destructive-foreground: oklch(90% 0.01 240deg);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.556 0 0);
+    /* Status Badge Tokens - Dark Mode */
+    --ez-status-success-bg: oklch(0.85 0.1 160);
+    --ez-status-success-text: black;
+    --ez-status-success-border: oklch(0.7 0.08 160);
+    --ez-status-success-dot: oklch(0.3 0.05 160);
+
+    --ez-status-warning-bg: oklch(0.88 0.15 90);
+    --ez-status-warning-text: black;
+    --ez-status-warning-border: oklch(0.75 0.1 90);
+    --ez-status-warning-dot: oklch(0.4 0.08 90);
+
+    --ez-status-error-bg: oklch(0.85 0.12 25);
+    --ez-status-error-text: black;
+    --ez-status-error-border: oklch(0.7 0.1 25);
+    --ez-status-error-dot: oklch(0.35 0.08 25);
+
+    --ez-status-info-bg: oklch(0.85 0.1 250);
+    --ez-status-info-text: black;
+    --ez-status-info-border: oklch(0.7 0.08 250);
+    --ez-status-info-dot: oklch(0.3 0.05 250);
+
+    --ez-status-neutral-bg: oklch(0.2 0 0);
+    --ez-status-neutral-text: oklch(0.9 0 0);
+    --ez-status-neutral-border: oklch(1 0 0 / 20%);
+    --ez-status-neutral-dot: oklch(0.7 0 0);
+
+    --radius: 0.5rem;
+    --chart-1: oklch(0.488 0.243 264.376);
+    --chart-2: oklch(0.696 0.17 162.48);
+    --chart-3: oklch(0.769 0.188 70.08);
+    --chart-4: oklch(0.627 0.265 303.9);
+    --chart-5: oklch(0.645 0.246 16.439);
+    --sidebar: oklch(0.205 0 0);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.488 0.243 264.376);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-ring: oklch(0.556 0 0);
+
+    /* White Label Selection & Highlights - Dark Mode */
+    --ez-selection: oklch(0.3 0.04 240);
+    --ez-selection-foreground: oklch(0.9 0.02 240);
+    --ez-highlight: oklch(0.2 0.02 240);
+    --ez-highlight-foreground: oklch(0.8 0.02 240);
+    --ez-success: oklch(0.6 0.15 160);
+    --ez-success-foreground: oklch(0.1 0 0);
+    --ez-error: oklch(0.6 0.2 25);
+    --ez-error-foreground: oklch(0.1 0 0);
+    --ez-warning: oklch(0.7 0.15 85);
+    --ez-warning-foreground: oklch(0.1 0.05 90);
+    --ez-background-secondary: oklch(0.2 0 0);
+}

@@ -100,7 +100,7 @@ describe('useEzTable', () => {
                 useEzTable({
                     data: mockData,
                     columns: mockColumns,
-                    enableColumnFiltering: true,
+                    enableColumnPinning: true,
                 }),
                 { wrapper: createWrapper() }
             );

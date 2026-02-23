@@ -1,66 +1,82 @@
 import './style.css';
 
-// --- Core Components ---
+// --- STABLE PUBLIC API ---
+// The following exports constitute the formal, stable public API surface of ezux.
 
-/** @group Core Components */
-export * from './components/EzLayout';
+// --- Core Layout & Shell ---
+/** @public @group Core Components */
+export { EzLayout, EzLanguageSwitcher, EzThemeSwitcher, EzThemeColorChanger, EzHeader, EzUserProfile, SignInForm, SignUpForm } from './components/EzLayout';
 
-/** @group Core Components */
+// --- Data Grid (EzTable) ---
+/** @public @group Core Components */
 export { EzTable, EzTablePrimitive } from './components/EzTable';
+/** @public @group Methods */
+export { useEzTable } from './components/EzTable/useEzTable';
+/** @internal @group Core Components */
 export { EzTableToolbar } from './components/EzTable/EzTableToolbar';
+/** @internal @group Core Components */
 export { EzTableFooter } from './components/EzTable/EzTableFooter';
 
-/** @group Core Components */
+// --- Scheduler ---
+/** @public @group Core Components */
 export { EzScheduler } from './components/EzScheduler';
+/** @public @group Methods */
+export { useEzScheduler } from './components/EzScheduler/useEzScheduler';
+/** @internal @group Core Components */
 export { EzSchedulerToolbar } from './components/EzScheduler/EzSchedulerToolbar';
+/** @internal @group Core Components */
 export { EzEventModal } from './components/EzScheduler/components/EzEventModal';
+/** @internal @group Core Components */
 export { EzSchedulerQuickAdd } from './components/EzScheduler/components/EzSchedulerQuickAdd';
+/** @internal @group Core Components */
 export { EzResourceSidebar } from './components/EzScheduler/components/EzResourceSidebar';
 
-/** @group Core Components */
+// --- TreeView ---
+/** @public @group Core Components */
 export { EzTreeView } from './components/EzTreeView';
 
-/** @group Core Components */
+// --- Kanban ---
+/** @public @group Core Components */
 export { EzKanban } from './components/EzKanban';
-export { KanbanToolbar as EzKanbanToolbar } from './components/EzKanban/components/KanbanToolbar';
+/** @public @group Methods */
+export { useEzKanban } from './components/EzKanban/useEzKanban';
+/** @internal @group Core Components */
 export { CardEditorModal as EzKanbanCardEditor } from './components/EzKanban/components/CardEditorModal';
 export { KanbanBoardComponent as EzKanbanBoard } from './components/EzKanban/components/KanbanBoard';
 export { KanbanColumn as EzKanbanColumn } from './components/EzKanban/components/KanbanColumn';
 export { KanbanCard as EzKanbanCard } from './components/EzKanban/components/KanbanCard';
 
-/** @group Core Components */
+/** @public @group Core Components */
 export { EzSignature } from './components/EzSignature';
 
-/** @group Core Components */
-export { SignInForm } from './components/EzLayout/Authentication/SignInForm';
-
 // --- Services ---
+// The following services are stable and intended for imperative state management.
 
-/** @group Services */
+/** @public @group Services */
 export { TableService } from './components/EzTable/services/TableService';
 
-/** @group Services */
+/** @public @group Services */
 export { SchedulerService } from './components/EzScheduler/services/SchedulerService';
 
-/** @group Services */
+/** @public @group Services */
 export { TreeService } from './components/EzTreeView/services/TreeService';
 
-/** @group Services */
+/** @public @group Services */
 export { KanbanService } from './components/EzKanban/services/KanbanService';
 
-/** @group Services */
+/** @public @group Services */
 export { EzServiceRegistry, globalServiceRegistry } from './shared/services/ServiceRegistry';
 
-/** @group Services */
+/** @public @group Services */
 export { LayoutService } from './shared/services/LayoutService';
 
-/** @group Services */
+/** @public @group Services */
 export { I18nService } from './shared/services/I18nService';
 
-/** @group Services */
+/** @public @group Services */
 export { ThemeService } from './shared/services/ThemeService';
 
-/** @group Services */
+/** @public @group Services */
 export { NotificationService } from './shared/services/NotificationService';
 
 // --- Interfaces & Types ---
@@ -89,21 +105,33 @@ export type { AnimatedTextProps } from './shared/components/AnimatedText';
 /** @group Types */
 export * from './shared/types/BaseProps';
 
-// --- Utils & Hooks ---
+// --- Shared Utility Hooks ---
+// Selectively exposed reusable hooks.
 
-/** @group Methods */
+/** @public @group Methods */
 export { useI18n } from './shared/hooks/useI18n';
+/** @public @group Methods */
+export { useEzTheme } from './shared/hooks/useEzTheme';
+/** @public @group Methods */
+export { useMediaQuery } from './shared/hooks/useMediaQuery';
+/** @public @group Methods */
+export { useDebounce } from './shared/hooks/useDebounce';
+/** @public @group Methods */
+export { useDialogState } from './shared/hooks/useDialogState';
+/** @public @group Methods */
+export { useRowSelectionEvents } from './shared/hooks/useRowSelectionEvents';
 
-/** @group Methods */
+// --- Utilities ---
+
+/** @public @group Methods */
 export { cn } from './lib/utils';
-
-/** @group Methods */
+/** @public @group Methods */
 export { formatNumber, formatDate, formatCurrency, formatPercent, formatDateTime } from './shared/utils/formatUtils';
-
-/** @group Methods */
+/** @public @group Methods */
 export { convertToCSV } from './shared/utils/csvUtils';
 
-/** @group Core Components */
+// --- INTERNAL & ADVANCED API ---
+// These components are primarily implementations details, but exported for advanced sub-component overrides.
 
 
 /** @group Core Components */
@@ -122,4 +150,29 @@ export { EzNotificationDropdown } from './shared/components/EzNotificationDropdo
 export * from './components/EzTable/renderers';
 
 /** @group UI Components */
-export * from './components/ui';
+export { Avatar, AvatarImage, AvatarFallback } from './components/ui/avatar';
+export { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator, BreadcrumbEllipsis } from './components/ui/breadcrumb';
+export { Button, buttonVariants } from './components/ui/button';
+export { Calendar } from './components/ui/calendar';
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent } from './components/ui/card';
+export { Checkbox } from './components/ui/checkbox';
+export { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem, CommandShortcut, CommandSeparator } from './components/ui/command';
+export { ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuItem, ContextMenuCheckboxItem, ContextMenuRadioItem, ContextMenuLabel, ContextMenuSeparator, ContextMenuShortcut, ContextMenuGroup, ContextMenuPortal, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuRadioGroup } from './components/ui/context-menu';
+export { DateTimePicker } from './components/ui/date-time-picker';
+export { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuCheckboxItem, DropdownMenuRadioItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuGroup, DropdownMenuPortal, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuRadioGroup } from './components/ui/dropdown-menu';
+export { Input } from './components/ui/input';
+export { Label } from './components/ui/label';
+export { PasswordInput } from './components/ui/password-input';
+export { Popover, PopoverTrigger, PopoverContent } from './components/ui/popover';
+export { Select, SelectValue, SelectTrigger, SelectContent, SelectItem } from './components/ui/select';
+export { Skeleton } from './components/ui/skeleton';
+export { Switch } from './components/ui/switch';
+export { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell, TableCaption } from './components/ui/table';
+export { Tabs, TabsList, TabsTrigger, TabsContent } from './components/ui/tabs';
+export { Textarea } from './components/ui/textarea';
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from './components/ui/tooltip';
+export { ScrollArea, ScrollBar } from './components/ui/scroll-area';
+export { RadioGroup, RadioGroupItem } from './components/ui/radio-group';
+export { Badge, badgeVariants } from './components/ui/badge';
+export { Progress } from './components/ui/progress';
+export { Modal } from './components/ui/modal';

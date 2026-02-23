@@ -1,8 +1,8 @@
 import { ServiceRegistry } from '../services/ServiceRegistry';
-import { BaseComponentProps } from './commonTypes';
+import { BaseComponentProps } from './common';
 import { ComponentEventCallbacks } from './common';
 
-export interface SharedBaseProps extends BaseComponentProps, ComponentEventCallbacks {
+export interface SharedBaseProps<TData = unknown> extends BaseComponentProps, ComponentEventCallbacks<TData> {
     /**
      * The shared service registry instance.
      * This is required to access shared services like HierarchyService, FocusManagerService, etc.
