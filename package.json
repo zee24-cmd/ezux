@@ -74,6 +74,15 @@
         "./kanban/types": {
             "types": "./dist/components/EzKanban/types/index.d.ts"
         },
+        "./layout/types": {
+            "types": "./dist/components/EzLayout/EzLayout.types.d.ts"
+        },
+        "./treeview/types": {
+            "types": "./dist/components/EzTreeView/EzTreeView.types.d.ts"
+        },
+        "./signature/types": {
+            "types": "./dist/components/EzSignature/EzSignature.types.d.ts"
+        },
         "./dist/theme-vars.css": "./dist/theme-vars.css",
         "./dist/ezux.css": "./dist/ezux.css"
     },
