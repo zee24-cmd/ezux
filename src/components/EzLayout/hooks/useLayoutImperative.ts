@@ -104,5 +104,5 @@ export const useLayoutImperative = (
 
     }), [layoutService, serviceRegistry, onModeChange, onSidebarToggle, onAuthPageChange]);
 
-    useComponentImperativeAPI(ref, api);
+    useComponentImperativeAPI(ref as any, api);
 };

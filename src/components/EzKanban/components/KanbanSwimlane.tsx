@@ -7,6 +7,37 @@ import { ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '../../ui/button';
 import { useI18n } from '../../../shared/hooks/useI18n';
 import { cn } from '../../../lib/utils';
+import { useDroppable } from '@dnd-kit/core';
+
+const SwimlaneCell = ({
+    swimlaneId,
+    columnId,
+    children,
+    className
+}: {
+    swimlaneId: string;
+    columnId: string;
+    children: React.ReactNode;
+    className?: string;
+}) => {
+    const { isOver, setNodeRef } = useDroppable({
+        id: `swimlane-cell-${swimlaneId}-${columnId}`,
+        data: {
+            type: 'swimlane-cell',
+            swimlaneId,
+            columnId
+        }
+    });
+
+    return (
+        <div
+            ref={setNodeRef}
+            className={cn(className, isOver && "bg-primary/5 transition-colors")}
+        >
+            {children}
+        </div>
+    );
+};
 
 /**
  * Props for the KanbanSwimlane component.
@@ -60,7 +91,6 @@ export const KanbanSwimlane: React.FC<KanbanSwimlaneProps> = ({
     onCardDoubleClick,
     onCardDragStart,
     onCardDragEnd,
-    onDrop,
     onToggleCollapse,
     draggedCardId,
     highlightedCardId, // Added
@@ -73,16 +103,6 @@ export const KanbanSwimlane: React.FC<KanbanSwimlaneProps> = ({
     const isRtl = dir === 'rtl';
     const { t } = useI18n();
     const CardComponent = slots?.card || KanbanCardComponent;
-
-    const handleDragOver = (e: React.DragEvent) => {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-    };
-
-    const handleDrop = (e: React.DragEvent, columnId: string) => {
-        e.preventDefault();
-        onDrop?.(columnId, swimlane.id);
-    };
 
     return (
         <div className={cn('flex flex-col border rounded-lg bg-card text-card-foreground shadow-sm mb-4', className)}>
@@ -111,11 +131,11 @@ export const KanbanSwimlane: React.FC<KanbanSwimlaneProps> = ({
                         const cellCards = cards.filter(c => c.columnId === column.id);
 
                         return (
-                            <div
+                            <SwimlaneCell
                                 key={column.id}
+                                swimlaneId={swimlane.id}
+                                columnId={column.id}
                                 className="flex-1 min-w-[280px] p-2 min-h-[100px]"
-                                onDragOver={handleDragOver}
-                                onDrop={(e) => handleDrop(e, column.id)}
                             >
                                 <div className="space-y-2">
                                     {cellCards.map((card) => (
@@ -134,7 +154,7 @@ export const KanbanSwimlane: React.FC<KanbanSwimlaneProps> = ({
                                         />
                                     ))}
                                 </div>
-                            </div>
+                            </SwimlaneCell>
                         );
                     })}
                 </div>

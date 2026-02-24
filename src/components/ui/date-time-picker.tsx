@@ -87,7 +87,7 @@ export function DateTimePicker({ date, setDate, disabled, id, locale, className,
     };
 
     const timeOptions = useMemo(() => {
-        const options = [];
+        const options: Array<{ label: string; hh: number; mm: number; }> = [];
         let curr = startOfDay(new Date());
         for (let i = 0; i < 48; i++) {
             options.push({

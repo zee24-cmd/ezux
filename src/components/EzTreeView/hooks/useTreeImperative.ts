@@ -273,5 +273,5 @@ export const useTreeImperative = (
         updateCheckState, flattenedNodes, setEditingNodeId, baseApi
     ]);
 
-    useComponentImperativeAPI(ref, api);
+    useComponentImperativeAPI(ref as any, api);
 };

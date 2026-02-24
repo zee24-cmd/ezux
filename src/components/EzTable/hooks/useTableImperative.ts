@@ -378,6 +378,6 @@ export const useTableImperative = <TData extends object>(
         };
     }, [props, table, data, rows, methods, extraApi]);
 
-    useComponentImperativeAPI(ref, api);
+    useComponentImperativeAPI(ref as any, api);
     return api;
 };

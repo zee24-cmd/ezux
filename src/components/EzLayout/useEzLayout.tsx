@@ -32,7 +32,7 @@ export const useEzLayout = (props: EzLayoutProps, ref: React.Ref<EzLayoutRef>) =
     } = layout;
 
     // 3. Imperative API
-    useLayoutImperative(ref, props, { layoutService, serviceRegistry });
+    useLayoutImperative(ref as any, props, { layoutService, serviceRegistry });
 
     return {
         state: {

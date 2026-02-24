@@ -130,5 +130,5 @@ export const useSchedulerImperative = (
         } as EzSchedulerRef;
     }, [view, currentDate, visibleEvents, methods, schedulerService, extraApi]);
 
-    useComponentImperativeAPI(ref, api);
+    useComponentImperativeAPI(ref as any, api);
 };

@@ -120,61 +120,65 @@ export const KanbanBoardComponent: React.FC<KanbanBoardProps> = ({
         );
     }
 
-    if (view === 'swimlane' && board.swimlanes && board.swimlanes.length > 0) {
+    // Swimlane view content
+    const renderSwimlaneView = () => {
+        if (!board.swimlanes || board.swimlanes.length === 0) return null;
         return (
             <div className={cn('flex flex-col p-4 overflow-y-auto h-full', className)}>
-                {board.swimlanes
-                    .sort((a, b) => a.position - b.position)
-                    .map((swimlane) => {
-                        const swimlaneCards = cards.filter((card) => card.swimlaneId === swimlane.id);
-                        return (
-                            <KanbanSwimlane
-                                key={swimlane.id}
-                                swimlane={swimlane}
-                                columns={board.columns.sort((a, b) => a.position - b.position)}
-                                cards={swimlaneCards}
-                                onCardClick={onCardClick}
-                                onCardDoubleClick={onCardDoubleClick}
-                                onCardDragStart={onCardDragStart}
-                                onCardDragEnd={onCardDragEnd}
-                                onDrop={onCardDrop}
-                                onToggleCollapse={onToggleSwimlaneCollapse}
-                                draggedCardId={draggedCardId}
-                                customFields={board.customFields}
-                                slots={slots}
-                                slotProps={slotProps}
-                                dir={dir}
-                            />
-                        );
-                    })}
-                {/* Uncategorized Cards Swimlane (if any) */}
-                {cards.some(c => !c.swimlaneId) && (
-                    <KanbanSwimlane
-                        swimlane={{
-                            id: 'uncategorized',
-                            name: t('uncategorized'),
-                            type: 'custom',
-                            position: 9999,
-                            isCollapsed: false
-                        }}
-                        columns={board.columns.sort((a, b) => a.position - b.position)}
-                        cards={cards.filter(c => !c.swimlaneId)}
-                        onCardClick={onCardClick}
-                        onCardDoubleClick={onCardDoubleClick}
-                        onCardDragStart={onCardDragStart}
-                        onCardDragEnd={onCardDragEnd}
-                        onDrop={onCardDrop}
-                        onToggleCollapse={() => { }} // Cannot collapse 'uncategorized' for now
-                        draggedCardId={draggedCardId}
-                        customFields={board.customFields}
-                        slots={slots}
-                        slotProps={slotProps}
-                        dir={dir}
-                    />
-                )}
+                <SortableContext items={cards.map(c => c.id)}>
+                    {board.swimlanes
+                        .sort((a, b) => a.position - b.position)
+                        .map((swimlane) => {
+                            const swimlaneCards = cards.filter((card) => card.swimlaneId === swimlane.id);
+                            return (
+                                <KanbanSwimlane
+                                    key={swimlane.id}
+                                    swimlane={swimlane}
+                                    columns={board.columns.sort((a, b) => a.position - b.position)}
+                                    cards={swimlaneCards}
+                                    onCardClick={onCardClick}
+                                    onCardDoubleClick={onCardDoubleClick}
+                                    onCardDragStart={onCardDragStart}
+                                    onCardDragEnd={onCardDragEnd}
+                                    onDrop={onCardDrop}
+                                    onToggleCollapse={onToggleSwimlaneCollapse}
+                                    draggedCardId={draggedCardId}
+                                    customFields={board.customFields}
+                                    slots={slots}
+                                    slotProps={slotProps}
+                                    dir={dir}
+                                />
+                            );
+                        })}
+                    {/* Uncategorized Cards Swimlane (if any) */}
+                    {cards.some(c => !c.swimlaneId) && (
+                        <KanbanSwimlane
+                            swimlane={{
+                                id: 'uncategorized',
+                                name: t('uncategorized'),
+                                type: 'custom',
+                                position: 9999,
+                                isCollapsed: false
+                            }}
+                            columns={board.columns.sort((a, b) => a.position - b.position)}
+                            cards={cards.filter(c => !c.swimlaneId)}
+                            onCardClick={onCardClick}
+                            onCardDoubleClick={onCardDoubleClick}
+                            onCardDragStart={onCardDragStart}
+                            onCardDragEnd={onCardDragEnd}
+                            onDrop={onCardDrop}
+                            onToggleCollapse={() => { }} // Cannot collapse 'uncategorized' for now
+                            draggedCardId={draggedCardId}
+                            customFields={board.customFields}
+                            slots={slots}
+                            slotProps={slotProps}
+                            dir={dir}
+                        />
+                    )}
+                </SortableContext>
             </div>
         );
-    }
+    };
 
     // Set up sensors for DnD - 5px activation distance prevents accidental drags on click
     const sensors = useSensors(
@@ -201,6 +205,8 @@ export const KanbanBoardComponent: React.FC<KanbanBoardProps> = ({
             setOverColumnId(over.data.current.column.id);
         } else if (over.data.current?.type === 'card') {
             setOverColumnId(over.data.current.card.columnId);
+        } else if (over.data.current?.type === 'swimlane-cell') {
+            setOverColumnId(over.data.current.columnId);
         } else {
             setOverColumnId(null);
         }
@@ -221,25 +227,33 @@ export const KanbanBoardComponent: React.FC<KanbanBoardProps> = ({
             // Determine target column and position based on what was dropped on
             let targetColumnId: string | undefined;
             let targetPosition: number | undefined;
+            let targetSwimlaneId: string | undefined;
 
             if (over.data.current?.type === 'column') {
                 // Dropped directly on a column header/body — append at end
                 targetColumnId = over.data.current.column.id;
                 targetPosition = undefined; // will default to append in moveCard
+            } else if (over.data.current?.type === 'swimlane-cell') {
+                // Dropped squarely on an empty swimlane cell
+                targetColumnId = over.data.current.columnId;
+                targetSwimlaneId = over.data.current.swimlaneId;
             } else if (over.data.current?.type === 'card') {
                 // Dropped on another card — insert at that card's position
                 const overCard: KanbanCard = over.data.current.card;
                 targetColumnId = overCard.columnId;
+                targetSwimlaneId = overCard.swimlaneId;
                 // Find the position of the over card in its sorted column
-                const columnCards = board.cards
-                    .filter(c => c.columnId === targetColumnId)
-                    .sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+                let columnCards = board.cards.filter(c => c.columnId === targetColumnId);
+                if (targetSwimlaneId) {
+                    columnCards = columnCards.filter(c => c.swimlaneId === targetSwimlaneId);
+                }
+                columnCards.sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
                 const overIndex = columnCards.findIndex(c => c.id === overCard.id);
                 targetPosition = overIndex >= 0 ? overIndex : undefined;
             }
 
             if (targetColumnId) {
-                onCardDrop?.(targetColumnId, undefined, targetPosition);
+                onCardDrop?.(targetColumnId, targetSwimlaneId, targetPosition);
             } else {
                 onCardDragEnd?.();
             }
@@ -258,57 +272,61 @@ export const KanbanBoardComponent: React.FC<KanbanBoardProps> = ({
             onDragOver={handleDndDragOver}
             onDragEnd={handleDndDragEnd}
         >
-            <div className={cn('flex gap-4 overflow-x-auto p-4', className)}>
-                <SortableContext
-                    items={board.columns.map(col => col.id)}
-                    strategy={horizontalListSortingStrategy}
-                >
-                    {board.columns
-                        .sort((a, b) => a.position - b.position)
-                        .map((column) => {
-                            const columnCards = cards.filter((card) => card.columnId === column.id);
+            {view === 'swimlane' ? (
+                renderSwimlaneView()
+            ) : (
+                <div className={cn('flex gap-4 overflow-x-auto p-4', className)}>
+                    <SortableContext
+                        items={board.columns.map(col => col.id)}
+                        strategy={horizontalListSortingStrategy}
+                    >
+                        {board.columns
+                            .sort((a, b) => a.position - b.position)
+                            .map((column) => {
+                                const columnCards = cards.filter((card) => card.columnId === column.id);
 
-                            return (
-                                <KanbanColumn
-                                    key={column.id}
-                                    column={column}
-                                    cards={columnCards}
-                                    onCardClick={onCardClick}
-                                    onCardDoubleClick={onCardDoubleClick}
-                                    onCardDragStart={onCardDragStart}
-                                    onCardDragEnd={onCardDragEnd}
-                                    onDrop={onCardDrop}
-                                    onAddCard={onAddCard}
-                                    onToggleCollapse={onToggleColumnCollapse}
-                                    onDeleteColumn={onDeleteColumn}
-                                    onUpdateColumn={onUpdateColumn}
-                                    onColumnClick={onColumnClick}
-                                    selectedColumnId={selectedColumnId}
-                                    draggedCardId={draggedCardId}
-                                    isDropTarget={overColumnId === column.id}
-                                    customFields={board.customFields}
-                                    slots={slots}
-                                    slotProps={slotProps}
-                                    dir={dir}
-                                />
-                            );
-                        })}
-                </SortableContext>
+                                return (
+                                    <KanbanColumn
+                                        key={column.id}
+                                        column={column}
+                                        cards={columnCards}
+                                        onCardClick={onCardClick}
+                                        onCardDoubleClick={onCardDoubleClick}
+                                        onCardDragStart={onCardDragStart}
+                                        onCardDragEnd={onCardDragEnd}
+                                        onDrop={onCardDrop}
+                                        onAddCard={onAddCard}
+                                        onToggleCollapse={onToggleColumnCollapse}
+                                        onDeleteColumn={onDeleteColumn}
+                                        onUpdateColumn={onUpdateColumn}
+                                        onColumnClick={onColumnClick}
+                                        selectedColumnId={selectedColumnId}
+                                        draggedCardId={draggedCardId}
+                                        isDropTarget={overColumnId === column.id}
+                                        customFields={board.customFields}
+                                        slots={slots}
+                                        slotProps={slotProps}
+                                        dir={dir}
+                                    />
+                                );
+                            })}
+                    </SortableContext>
 
-                {/* Add Column Button */}
-                {onAddColumn && (
-                    <div className="w-80 shrink-0">
-                        <Button
-                            variant="outline"
-                            className="w-full h-12 border-dashed"
-                            onClick={onAddColumn}
-                        >
-                            <Plus className="me-2 h-4 w-4" />
-                            {t('add_column') || 'Add Column'}
-                        </Button>
-                    </div>
-                )}
-            </div>
+                    {/* Add Column Button */}
+                    {onAddColumn && (
+                        <div className="w-80 shrink-0">
+                            <Button
+                                variant="outline"
+                                className="w-full h-12 border-dashed"
+                                onClick={onAddColumn}
+                            >
+                                <Plus className="me-2 h-4 w-4" />
+                                {t('add_column') || 'Add Column'}
+                            </Button>
+                        </div>
+                    )}
+                </div>
+            )}
             {/* Floating drag overlay — shows ghost of card being dragged */}
             <DragOverlay dropAnimation={{ duration: 200, easing: 'ease' }}>
                 {activeCard ? (
