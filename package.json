@@ -19,7 +19,7 @@
         "type": "git",
         "url": "git+https://github.com/zee24-cmd/ezux.git"
     },
-    "author": "zee24-cmd",
+    "author": "Zeeshan Sayed",
     "license": "MIT",
     "type": "module",
     "sideEffects": false,
