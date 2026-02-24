@@ -5,7 +5,7 @@
 > 🔗 **[View ezux-showcase on GitHub](https://github.com/zee24-cmd/ezux-showcase)** | 🌐 **[Live Showcase](https://ezux-showcase.vercel.app)**
 ![NPM Version](https://img.shields.io/npm/v/ezux?style=flat-square)
 ![License](https://img.shields.io/npm/l/ezux?style=flat-square)
-![Build Status](https://img.shields.io/github/actions/workflow/status/ezux-org/ezux/main?style=flat-square)
+![Build Status](https://img.shields.io/github/actions/workflow/status/zee24-cmd/ezux/main?style=flat-square)
 
 ## Features
 
@@ -60,4 +60,4 @@ Visit the [Live Showcase](https://ezux-showcase.vercel.app) for full documentati
 
 ## License
 
-MIT © [Zeeshan Sayed](https://github.com/ezux)
+MIT © [zee24-cmd](https://github.com/zee24-cmd)
