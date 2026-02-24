@@ -1,7 +1,8 @@
 # ezUX
 
 > A comprehensive, type-safe TanStack First component library designed for modern enterprise applications.
-
+> 
+> 🔗 **[View ezux-showcase on GitHub](https://github.com/zee24-cmd/ezux-showcase)** | 🌐 **[Live Showcase](https://ezux-showcase.vercel.app)**
 ![NPM Version](https://img.shields.io/npm/v/ezux?style=flat-square)
 ![License](https://img.shields.io/npm/l/ezux?style=flat-square)
 ![Build Status](https://img.shields.io/github/actions/workflow/status/ezux-org/ezux/main?style=flat-square)
