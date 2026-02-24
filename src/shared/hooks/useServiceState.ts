@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useStore } from '@tanstack/react-store';
 import { Store } from '@tanstack/store';
 import { BaseService } from '../services/BaseService';
-import { globalServiceRegistry } from '../services/ServiceRegistry';
+import { useEzServiceRegistry } from '../contexts/EzProvider';
 
 /**
  * Hook for subscribing to a service's state in a reactive way.
@@ -25,19 +25,20 @@ export const useServiceState = <TState, TSelected = TState>(
     selector?: (state: TState) => TSelected
 ): TSelected | undefined => {
     // We must track the service reference to know when it mounts.
-    // However, globalServiceRegistry is not inherently reactive right now,
+    // However, the service registry is not inherently reactive right now,
     // so we will re-check if service exists on mount and on serviceName change.
+    const registry = useEzServiceRegistry();
     const [serviceRef, setServiceRef] = useState(() =>
-        globalServiceRegistry.get<BaseService<TState>>(serviceName)
+        registry.get<BaseService<TState>>(serviceName)
     );
 
     useEffect(() => {
-        let currentService = globalServiceRegistry.get<BaseService<TState>>(serviceName);
+        let currentService = registry.get<BaseService<TState>>(serviceName);
         if (currentService !== serviceRef) setServiceRef(currentService);
 
         // This subscription handles lazy initializations in the same app lifecycle
         const interval = setInterval(() => {
-            const svc = globalServiceRegistry.get<BaseService<TState>>(serviceName);
+            const svc = registry.get<BaseService<TState>>(serviceName);
             if (svc && !currentService) {
                 currentService = svc;
                 setServiceRef(svc);

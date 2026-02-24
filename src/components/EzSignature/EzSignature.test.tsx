@@ -4,6 +4,7 @@ import { render, fireEvent, act } from '@testing-library/react';
 import { EzSignature } from './index';
 import { EzSignatureRef } from './EzSignature.types';
 import React from 'react';
+import { EzProvider } from '../../shared/contexts/EzProvider';
 
 // Mock getStroke since it's math-heavy and we care about component logic
 vi.mock('../../lib/perfect-freehand', () => ({
@@ -18,7 +19,11 @@ if (typeof window !== 'undefined') {
 
 describe('EzSignature', () => {
     it('renders without crashing', () => {
-        render(<EzSignature />);
+        render(
+            <EzProvider>
+                <EzSignature />
+            </EzProvider>
+        );
         const container = document.querySelector('.ez-signature-container');
         expect(container).toBeInTheDocument();
         const svg = container?.querySelector('svg');
@@ -27,7 +32,11 @@ describe('EzSignature', () => {
 
     it('exposes imperative API via ref', () => {
         const ref = React.createRef<EzSignatureRef>();
-        render(<EzSignature ref={ref} />);
+        render(
+            <EzProvider>
+                <EzSignature ref={ref} />
+            </EzProvider>
+        );
 
         expect(ref.current).toBeDefined();
         expect(ref.current?.clear).toBeInstanceOf(Function);
@@ -39,7 +48,11 @@ describe('EzSignature', () => {
     it('interaction updates state (simulated)', () => {
         const onChange = vi.fn();
         const ref = React.createRef<EzSignatureRef>();
-        render(<EzSignature ref={ref} onChange={onChange} />);
+        render(
+            <EzProvider>
+                <EzSignature ref={ref} onChange={onChange} />
+            </EzProvider>
+        );
 
         const svg = document.querySelector('svg')!;
 
@@ -54,7 +67,11 @@ describe('EzSignature', () => {
 
     it('clear resets state', () => {
         const ref = React.createRef<EzSignatureRef>();
-        render(<EzSignature ref={ref} />);
+        render(
+            <EzProvider>
+                <EzSignature ref={ref} />
+            </EzProvider>
+        );
 
         // Simulate drawing
         act(() => {
@@ -72,7 +89,11 @@ describe('EzSignature', () => {
 
     it('undo/redo works', () => {
         const ref = React.createRef<EzSignatureRef>();
-        render(<EzSignature ref={ref} />);
+        render(
+            <EzProvider>
+                <EzSignature ref={ref} />
+            </EzProvider>
+        );
 
         // 1st stroke
         act(() => {

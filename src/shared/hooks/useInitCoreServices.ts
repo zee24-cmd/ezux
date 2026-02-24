@@ -1,4 +1,4 @@
-import { globalServiceRegistry } from '../services/ServiceRegistry';
+import { useEzServiceRegistry } from '../contexts/EzProvider';
 import { I18nService } from '../services/I18nService';
 import { NotificationService } from '../services/NotificationService';
 
@@ -7,15 +7,16 @@ import { NotificationService } from '../services/NotificationService';
  * This is crucial for isolated environments like Storybook or unit tests.
  */
 export const useInitCoreServices = () => {
+    const registry = useEzServiceRegistry();
     // We register services immediately if they are missing to avoid crashes 
     // during the first render of components that use getOrThrow.
 
-    if (!globalServiceRegistry.get('I18nService')) {
-        globalServiceRegistry.register('I18nService', new I18nService());
+    if (!registry.get('I18nService')) {
+        registry.register('I18nService', new I18nService());
     }
 
-    if (!globalServiceRegistry.get('NotificationService')) {
-        globalServiceRegistry.register('NotificationService', new NotificationService());
+    if (!registry.get('NotificationService')) {
+        registry.register('NotificationService', new NotificationService());
     }
 
     // You can add other core services here if needed (ThemeService, etc.)

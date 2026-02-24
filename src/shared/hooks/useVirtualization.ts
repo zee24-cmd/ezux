@@ -1,7 +1,7 @@
 import { useRef, useMemo, useState, useEffect, useCallback } from 'react';
 import { useVirtualizer, VirtualizerOptions, Virtualizer, elementScroll } from '@tanstack/react-virtual';
 import { defaultRangeExtractor, Range } from '@tanstack/react-virtual';
-import { globalServiceRegistry } from '../services/ServiceRegistry';
+import { useEzServiceRegistry } from '../contexts/EzProvider';
 import { VirtualizationService } from '../services/VirtualizationService';
 import { getOrRegisterService } from '../utils/serviceUtils';
 
@@ -231,8 +231,10 @@ export const useVirtualization = (config: VirtualizationConfig): VirtualizationR
     }, [rowVirtualizer, debug]);
 
     // Virtualization Service integration
+    const registry = useEzServiceRegistry();
+
     const virtualizationService = useMemo(() => getOrRegisterService(
-        globalServiceRegistry,
+        registry,
         'VirtualizationService',
         () => new VirtualizationService()
     ) as VirtualizationService, []);

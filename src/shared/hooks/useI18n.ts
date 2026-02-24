@@ -1,6 +1,5 @@
-import { useMemo } from 'react';
-import { globalServiceRegistry } from '../services/ServiceRegistry';
-import { I18nService } from '../services/I18nService';
+
+import { useI18nService } from '../contexts/EzProvider';
 
 /**
  * Hook for accessing the internationalization service.
@@ -10,8 +9,5 @@ import { I18nService } from '../services/I18nService';
  * @group Hooks
  */
 export const useI18n = () => {
-    return useMemo(
-        () => globalServiceRegistry.getOrThrow<I18nService>('I18nService'),
-        []
-    );
+    return useI18nService();
 };

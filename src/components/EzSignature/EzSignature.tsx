@@ -4,7 +4,7 @@ import { useBaseComponent } from '../../shared/hooks/useBaseComponent';
 import { useImperativeAPI } from '../../shared/hooks';
 import { EzSignatureProps, EzSignatureRef } from './EzSignature.types';
 import { cn } from '../../lib/utils';
-import { globalServiceRegistry } from '../../shared/services/ServiceRegistry';
+import { useEzServiceRegistry } from '../../shared/contexts/EzProvider';
 import { NotificationService } from '../../shared/services/NotificationService';
 import { useInitCoreServices } from '../../shared/hooks';
 
@@ -75,6 +75,7 @@ const MemoizedStroke = React.memo(({ stroke, options, color }: { stroke: number[
  * @group Core Components
  */
 const EzSignature = React.forwardRef<EzSignatureRef, EzSignatureProps>((props, ref) => {
+    const registry = useEzServiceRegistry();
     const {
         width = '100%',
         height = 300,
@@ -114,8 +115,7 @@ const EzSignature = React.forwardRef<EzSignatureRef, EzSignatureProps>((props, r
 
     const svgRef = useRef<SVGSVGElement>(null);
 
-    // Derived theme color default
-    const effectiveStrokeColor = strokeColor || '#000f55'; // Ink Blue default
+    const effectiveStrokeColor = strokeColor || '#2342cd';
 
     // Helper to add to history
     const pushToHistory = useCallback((newStrokes: number[][][]) => {
@@ -158,7 +158,7 @@ const EzSignature = React.forwardRef<EzSignatureRef, EzSignatureProps>((props, r
             setStrokes([]);
             setPoints([]);
             pushToHistory([]);
-            globalServiceRegistry.get<NotificationService>('NotificationService')?.show({
+            registry.get<NotificationService>('NotificationService')?.show({
                 type: 'info',
                 message: 'Signature Cleared',
                 duration: 2000
@@ -228,7 +228,7 @@ const EzSignature = React.forwardRef<EzSignatureRef, EzSignatureProps>((props, r
                         ctx.drawImage(img, 0, 0);
                         const dataUrl = canvas.toDataURL(`image/${format}`);
                         if (onSave) onSave(dataUrl, format);
-                        globalServiceRegistry.get<NotificationService>('NotificationService')?.show({
+                        registry.get<NotificationService>('NotificationService')?.show({
                             type: 'success',
                             message: 'Signature Saved Successfully',
                             duration: 3000
@@ -236,7 +236,7 @@ const EzSignature = React.forwardRef<EzSignatureRef, EzSignatureProps>((props, r
                         resolve(dataUrl);
                     } else {
                         const error = new Error("Canvas context not defined");
-                        globalServiceRegistry.get<NotificationService>('NotificationService')?.show({
+                        registry.get<NotificationService>('NotificationService')?.show({
                             type: 'error',
                             message: 'Failed to Save Signature',
                             duration: 3000
@@ -245,7 +245,7 @@ const EzSignature = React.forwardRef<EzSignatureRef, EzSignatureProps>((props, r
                     }
                 };
                 img.onerror = (e) => {
-                    globalServiceRegistry.get<NotificationService>('NotificationService')?.show({
+                    registry.get<NotificationService>('NotificationService')?.show({
                         type: 'error',
                         message: 'Failed to Process Signature Image',
                         duration: 3000
@@ -265,7 +265,7 @@ const EzSignature = React.forwardRef<EzSignatureRef, EzSignatureProps>((props, r
         thinning,
         smoothing,
         start: { cap: true, taper: false },
-        end: { cap: true, taper: true }
+        end: { cap: true, taper: 10 } // Subtle tapering for natural end without being "too thin"
     }), [maxStrokeWidth, thinning, smoothing]);
 
     // Rendering strokes
@@ -285,6 +285,8 @@ const EzSignature = React.forwardRef<EzSignatureRef, EzSignatureProps>((props, r
                 size: maxStrokeWidth,
                 thinning,
                 smoothing,
+                start: { cap: true, taper: false },
+                end: { cap: true, taper: 10 },
                 simulatePressure: points.length > 2, // only simulate if we have some movement
             }))}
             fill={effectiveStrokeColor}

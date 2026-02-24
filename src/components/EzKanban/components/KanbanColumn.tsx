@@ -53,6 +53,8 @@ export interface KanbanColumnProps {
     customFields?: CustomFieldDefinition[];
     /** Custom class name for the column container. @group Appearance */
     className?: string;
+    /** Whether this column is the current drop target. @group State */
+    isDropTarget?: boolean;
     /** Text direction. @group Appearance */
     dir?: 'ltr' | 'rtl' | 'auto';
     /** Slots for modular composition. @group Extensibility */
@@ -79,6 +81,7 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
     selectedColumnId, // Added
     draggedCardId,
     highlightedCardId, // Added
+    isDropTarget,
     customFields,
     className,
     dir,
@@ -145,9 +148,10 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
             ref={setNodeRef}
             style={style}
             className={cn(
-                'flex flex-col w-80 shrink-0 transition-colors',
+                'flex flex-col w-80 shrink-0 transition-all duration-200',
                 selectedColumnId === column.id ? 'ring-2 ring-primary border-primary' : '',
                 isDragging ? 'opacity-50' : '',
+                isDropTarget ? 'ring-2 ring-primary/70 border-primary/50 bg-primary/5' : '',
                 className
             )}
             onClick={() => onColumnClick?.(column.id)}
@@ -327,8 +331,13 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
                         </SortableContext>
 
                         {cards.length === 0 && (
-                            <div className="flex h-32 items-center justify-center rounded-lg border border-dashed text-sm text-muted-foreground">
-                                {t('no_cards')}
+                            <div className={cn(
+                                "flex h-32 items-center justify-center rounded-lg border border-dashed text-sm transition-all duration-150",
+                                isDropTarget
+                                    ? "border-primary/60 bg-primary/5 text-primary/70"
+                                    : "text-muted-foreground"
+                            )}>
+                                {isDropTarget ? '✦ Drop here' : t('no_cards')}
                             </div>
                         )}
                     </CardContent>

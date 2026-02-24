@@ -1,7 +1,8 @@
 import { useCallback } from 'react';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import type { EzKanbanProps, KanbanBoard, KanbanCard, IKanbanService } from '../EzKanban.types';
-import { globalServiceRegistry } from '../../../shared/services/ServiceRegistry';
+import { useEzServiceRegistry } from '../../../shared/contexts/EzProvider';
+
 import type { NotificationService } from '../../../shared/services/NotificationService';
 
 /**
@@ -15,14 +16,15 @@ import type { NotificationService } from '../../../shared/services/NotificationS
  * @group Hooks
  */
 export const useKanbanCards = (props: EzKanbanProps, board: KanbanBoard) => {
+    const registry = useEzServiceRegistry();
     const queryClient = useQueryClient();
 
     const getService = (): IKanbanService | undefined => {
-        return globalServiceRegistry.get<IKanbanService>('KanbanService');
+        return registry.get<IKanbanService>('KanbanService');
     };
 
     const notify = (type: 'success' | 'error', message: string, duration = 3000) => {
-        const notificationService = globalServiceRegistry.get<NotificationService>('NotificationService');
+        const notificationService = registry.get<NotificationService>('NotificationService');
         if (notificationService) {
             notificationService.add({ type, message, duration });
         }
@@ -196,17 +198,41 @@ export const useKanbanCards = (props: EzKanbanProps, board: KanbanBoard) => {
             await queryClient.cancelQueries({ queryKey: ['board', board.id] });
             const previousBoard = queryClient.getQueryData<KanbanBoard>(['board', board.id]);
 
-            const updatedCards = board.cards.map(card =>
-                card.id === cardId
-                    ? {
-                        ...card,
-                        columnId: targetColumnId,
-                        swimlaneId: targetSwimlaneId,
-                        position: targetPosition ?? card.position,
-                        updatedAt: new Date()
-                    }
-                    : card
+            const movingCard = board.cards.find(c => c.id === cardId);
+            if (!movingCard) return { previousBoard };
+
+            // Remove the card from the current board card list
+            const cardsWithoutMoved = board.cards.filter(c => c.id !== cardId);
+
+            // Sort cards in the target column to find insertion point
+            const targetColumnCards = cardsWithoutMoved
+                .filter(c => c.columnId === targetColumnId)
+                .sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+
+            // Determine insertion index
+            const insertAt = targetPosition !== undefined
+                ? Math.min(targetPosition, targetColumnCards.length)
+                : targetColumnCards.length; // append at end if no position given
+
+            // Splice the moved card in at the right position
+            const updatedTargetCards = [
+                ...targetColumnCards.slice(0, insertAt),
+                { ...movingCard, columnId: targetColumnId, swimlaneId: targetSwimlaneId, updatedAt: new Date() },
+                ...targetColumnCards.slice(insertAt),
+            ].map((c, i) => ({ ...c, position: i })); // renumber sequentially
+
+            // Renumber the source column cards too (fills the gap left by removal)
+            const sourceColumnId = movingCard.columnId;
+            const updatedSourceCards = cardsWithoutMoved
+                .filter(c => c.columnId === sourceColumnId)
+                .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+                .map((c, i) => ({ ...c, position: i }));
+
+            // Merge: unaffected cards + renumbered source + renumbered target
+            const unaffectedCards = cardsWithoutMoved.filter(
+                c => c.columnId !== targetColumnId && c.columnId !== sourceColumnId
             );
+            const updatedCards = [...unaffectedCards, ...updatedSourceCards, ...updatedTargetCards];
             const updatedBoard = { ...board, cards: updatedCards };
             updateBoardCache(updatedBoard);
 

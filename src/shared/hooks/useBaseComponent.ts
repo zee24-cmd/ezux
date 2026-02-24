@@ -1,6 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { globalServiceRegistry, ServiceRegistry } from '../services/ServiceRegistry';
+import { ServiceRegistry } from '../services/ServiceRegistry';
+import { useEzServiceRegistry } from '../contexts/EzProvider';
 import { ComponentEventCallbacks } from '../types/common';
 
 /**
@@ -52,7 +53,8 @@ export interface BaseComponentAPI {
  */
 export const useBaseComponent = (props: BaseComponentProps) => {
     // 1. Service Registry
-    const [serviceRegistry] = useState(() => props.serviceRegistry || globalServiceRegistry);
+    const contextRegistry = useEzServiceRegistry();
+    const [serviceRegistry] = useState(() => props.serviceRegistry || contextRegistry);
 
     // 2. Base State
     const [state, setState] = useState<BaseComponentState>({

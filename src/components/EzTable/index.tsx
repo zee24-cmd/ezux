@@ -7,7 +7,7 @@ import { useDialogStateInitialization } from './hooks/useDialogStateInitializati
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { EzErrorBoundary } from '../shared/components/EzErrorBoundary';
 import { EzTableErrorFallback } from '../shared/components/EzTableErrorFallback';
-import { globalServiceRegistry } from '../../shared/services/ServiceRegistry';
+import { useEzServiceRegistry } from '../../shared/contexts/EzProvider';
 import { NotificationService } from '../../shared/services/NotificationService';
 import { flexColumn, borderStyles } from '../../shared/utils/ezStyleUtils';
 import { EzTableProps, EzTableRef } from './EzTable.types';
@@ -17,7 +17,7 @@ import {
     DragEndEvent,
     DragOverlay,
     DragStartEvent,
-    closestCenter
+    pointerWithin
 } from '@dnd-kit/core';
 import { useImperativeAPI, useDndHandlers, useDialogState, useFieldValidation, useInitCoreServices } from '../../shared/hooks';
 import { EzHeaderDragPreview } from './components/EzHeaderDragPreview';
@@ -36,6 +36,7 @@ import { useColumnSizeVars } from './hooks/useColumnSizeVars';
 import { TooltipProvider } from '../ui/tooltip';
 
 const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<TData>, ref: React.ForwardedRef<EzTableRef<TData>>) => {
+    const registry = useEzServiceRegistry();
     const tableRes = useEzTable(props);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const containerSizeRef = useRef({ width: 0, height: 0 });
@@ -55,40 +56,49 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
 
 
     const {
-        parentRef,
-        rowVirtualizer,
-        rows,
+        state: {
+            rows,
+            rangeSelection,
+            canUndo,
+            canRedo,
+            changes,
+            batchChanges,
+            density,
+            isPending,
+            focusedCell,
+            globalFilter,
+            pagerMessage,
+        },
+        actions: {
+            undo,
+            redo,
+            resetData,
+            toggleRowEditing,
+            autoFitColumn,
+            onCellMouseDown,
+            onCellMouseEnter,
+            setGlobalFilter,
+            getData,
+            onRowClick: onRowClickProp,
+            onRowDoubleClick: onRowDoubleClickProp,
+        },
+        refs: {
+            parentRef,
+            rowVirtualizer,
+            columnVirtualizer,
+        },
+        config: {
+            enableStickyHeader,
+            enableChangeTracking,
+            enableEditing,
+            editSettings,
+        },
         table,
         dir,
-
-        rangeSelection,
-        onCellMouseDown,
-        onCellMouseEnter,
-        globalFilter,
-        setGlobalFilter,
-        enableStickyHeader,
-        enableChangeTracking,
-        undo,
-        redo,
-        canUndo,
-        canRedo,
-        changes,
-        batchChanges,
-        resetData,
-        enableEditing,
-        toggleRowEditing,
-        density,
-        isPending,
-        autoFitColumn,
-        columnVirtualizer,
-        pagerMessage,
-        addRecord,
-        updateRecord,
-        getData,
-        onRowClick: onRowClickProp,
-        onRowDoubleClick: onRowDoubleClickProp,
-        focusedCell,
-        editSettings
+        imperativeAPI: {
+            addRecord,
+            updateRecord
+        }
     } = tableRes;
 
 
@@ -181,7 +191,7 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
             props.onBatchSave(batchChanges);
 
             // Send Notification
-            const service = globalServiceRegistry.get<NotificationService>('NotificationService');
+            const service = registry.get<NotificationService>('NotificationService');
             if (service) {
                 service.add({
                     type: 'success',
@@ -223,9 +233,9 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
 
 
     const api = React.useMemo(() => {
-        const { ...api } = tableRes;
         return {
-            ...api,
+            ...tableRes.imperativeAPI,
+            ...tableRes.baseApi,
             validateField: (field: string) => {
                 let rowData: any = {};
                 if (editSettings?.mode === 'Dialog' && dialogState.isOpen) {
@@ -307,7 +317,7 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
                         const activeIndex = currentOrder.indexOf(columnId);
                         const overIndex = currentOrder.indexOf(overColumnId);
 
-                        if (activeIndex !== -1 && overIndex !== -1) {
+                        if (activeIndex !== -1 && overIndex !== -1 && activeIndex !== overIndex) {
                             const newOrder = [...currentOrder];
                             newOrder.splice(activeIndex, 1);
                             newOrder.splice(overIndex, 0, columnId);
@@ -353,10 +363,10 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
             colIndex >= Math.min(start.c, end.c) && colIndex <= Math.max(start.c, end.c);
     }, [rangeSelection]);
 
-    const { sensors, onDragEnd, onDragStart } = useDndHandlers({
+    const { sensors, onDragEnd: onDndEnd, onDragStart: onDndStart } = useDndHandlers({
         onDragStart: handleDragStart,
         onDragEnd: handleDragEnd,
-        collisionDetection: closestCenter,
+        collisionDetection: pointerWithin,
         distance: 5
     });
 
@@ -364,7 +374,7 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
     return (
         <EzErrorBoundary fallback={<EzTableErrorFallback />}>
             <TooltipProvider>
-                <DndContext sensors={sensors} onDragEnd={onDragEnd} onDragStart={onDragStart} collisionDetection={closestCenter}>
+                <DndContext sensors={sensors} onDragEnd={onDndEnd} onDragStart={onDndStart} collisionDetection={pointerWithin}>
                     <div className={cn(flexColumn, "w-full min-h-0 gap-3", props.className, props.classNames?.root)} dir={dir}>
 
                         {props.enableGrouping && (
@@ -459,6 +469,7 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
                                     sorting={table.getState().sorting}
                                     grouping={table.getState().grouping}
                                     columnVisibility={table.getState().columnVisibility}
+                                    columnOrder={table.getState().columnOrder}
                                 />
 
                                 <EzTableBodySection
@@ -510,7 +521,10 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
 
                         <EzTableStatusBar
                             table={table}
+                            totalRows={table.getPrePaginationRowModel().rows.length || table.options.rowCount || table.getRowModel().rows.length}
                             selectionInfo={(changes.added + changes.edited + changes.deleted) > 0 ? `${changes.added + changes.edited + changes.deleted} pending changes` : undefined}
+                            // Pass selection state directly to force re-render when selection changes (since table ref is stable)
+                            rowSelection={table.getState().rowSelection}
                         />
 
                         {editSettings?.mode === 'Dialog' && (

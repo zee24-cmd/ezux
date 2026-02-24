@@ -65,7 +65,7 @@ export { TreeService } from './components/EzTreeView/services/TreeService';
 export { KanbanService } from './components/EzKanban/services/KanbanService';
 
 /** @public @group Services */
-export { EzServiceRegistry, globalServiceRegistry } from './shared/services/ServiceRegistry';
+export { EzServiceRegistry } from './shared/services/ServiceRegistry';
 
 /** @public @group Services */
 export { LayoutService } from './shared/services/LayoutService';
@@ -78,6 +78,10 @@ export { ThemeService } from './shared/services/ThemeService';
 
 /** @public @group Services */
 export { NotificationService } from './shared/services/NotificationService';
+
+// --- Context & Providers ---
+/** @public @group Core Components */
+export { EzProvider, useEzServiceRegistry, useThemeService, useI18nService, useNotificationService } from './shared/contexts/EzProvider';
 
 // --- Interfaces & Types ---
 

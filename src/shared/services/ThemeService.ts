@@ -30,6 +30,7 @@ export class ThemeService implements IService {
      * @group Methods
      */
     static setGlobalColorTheme(mode: ThemeMode, color: ThemeName) {
+        if (typeof document === 'undefined') return;
         const theme = themes[color][mode] as Record<string, string>;
         const root = document.documentElement;
 

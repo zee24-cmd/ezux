@@ -1,13 +1,9 @@
 #!/bin/bash
 set -e
 
-echo "🔨 Building ezux package..."
-cd /Users/zed/Documents/ezux/packages/ezux
-npm run build
+echo "🚀 Starting ezux-showcase with LOCAL ezux source..."
+echo "   (ezux imports will resolve from ../ezux/src via Vite alias)"
+echo ""
 
-echo "📦 Pushing to yalc..."
-yalc push
-
-echo "🚀 Starting showcase dev server..."
 cd /Users/zed/Documents/ezux-showcase
-npm run dev
+EZUX_LOCAL=true npm run dev

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { globalServiceRegistry } from '../services/ServiceRegistry';
+import { useEzServiceRegistry } from '../contexts/EzProvider';
 import { Notification, NotificationService } from '../services/NotificationService';
 import { Bell, X, CheckCircle, AlertCircle, Info, AlertTriangle, Trash2 } from 'lucide-react';
 import { Button } from '../../components/ui/button';
@@ -11,6 +11,7 @@ import {
 import { ScrollArea } from "../../components/ui/scroll-area";
 
 export const EzNotificationDropdown = () => {
+    const registry = useEzServiceRegistry();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [isOpen, setIsOpen] = useState(false);
 
@@ -18,14 +19,14 @@ export const EzNotificationDropdown = () => {
         let unsubscribeService: (() => void) | undefined;
 
         const connectService = () => {
-            const service = globalServiceRegistry.get<NotificationService>('NotificationService');
+            const service = registry.get<NotificationService>('NotificationService');
             if (service && !unsubscribeService) {
                 unsubscribeService = service.subscribe((n: Notification[]) => setNotifications(n));
             }
         };
 
         connectService();
-        const unsubscribeRegistry = globalServiceRegistry.subscribe(() => {
+        const unsubscribeRegistry = registry.subscribe(() => {
             connectService();
         });
 
@@ -36,13 +37,13 @@ export const EzNotificationDropdown = () => {
     }, []);
 
     const clearAll = () => {
-        const service = globalServiceRegistry.get<NotificationService>('NotificationService');
+        const service = registry.get<NotificationService>('NotificationService');
         service?.clearAll();
     };
 
     const remove = (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        const service = globalServiceRegistry.get<NotificationService>('NotificationService');
+        const service = registry.get<NotificationService>('NotificationService');
         service?.remove(id);
     };
 

@@ -7,10 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.7] - 2026-02-24
 
 ### Added
+- **Service Architecture**: Introduced `<EzProvider>` context to manage a localized `ServiceRegistry` via React Context, for improved SSR compatibility.
+- **Service Architecture**: Added factory hooks (`useThemeService`, `useI18nService`, `useNotificationService`, `useEzServiceRegistry`) to simplify service consumption.
+- **Type Definitions**: Configured `vite-plugin-dts` with `rollupTypes: true` to generate standalone, properly consolidated `.d.ts` files for all sub-module entries.
 - **Theming**: Extracted CSS theme variables into a standalone `dist/theme-vars.css` for consumers who want tokens without the Tailwind CSS runtime.
 - **Exports**: Added explicit exports for orchestrator hooks (`useEzTable`, `useEzScheduler`, `useEzKanban`) and shared hooks (`useEzTheme`, `useMediaQuery`, `useDebounce`, `useDialogState`, `useRowSelectionEvents`).
 
 ### Changed
+- **API Standardization**: Refactored the orchestrator hooks (`useEzScheduler`, `useEzTable`, `useEzKanban`, `useEzLayout`, `useEzTreeView`) to consistently return an object separated into `{ state, actions, services, config, refs }`. 
+- **Service Architecture**: Added SSR guards (`typeof window !== 'undefined'`) to DOM-dependent services (`ThemeService`, `I18nService`, `NotificationService`).
+- **Service Architecture**: Refactored legacy hooks and internal components to consume the new Context-based registry instead of the deprecated singleton `globalServiceRegistry`.
 - **Dependencies**: Massively reduced `peerDependencies` to only require `react`, `react-dom`, and `@tanstack/*` packages. `lucide-react`, `date-fns`, `dompurify`, `@radix-ui/*` and `@dnd-kit/*` are now bundled dependencies.
 - **Dependencies**: Made `rrule` an optional peer dependency via `peerDependenciesMeta`.
 - **Dependencies**: Ensured internal styling helpers (`clsx`, `class-variance-authority`, `tailwind-merge`) are bundled correctly and not externalized.
@@ -19,8 +25,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Documentation**: Formally documented in `README.md` that consumers must provide their own **Tailwind CSS v4** installation to use `ezux`.
 
 ### Removed
+- **Service Architecture**: Removed `globalServiceRegistry` export entirely to enforce React Context service boundaries instead of singletons.
+- **API Cleanups**: Removed `useSchedulerImperative` from the returned values in `useEzScheduler` as it is an internal implementation detail, and removed raw `store`/`actions` from orchestrator hook returns.
 - **CSS**: Completely removed `@import "tailwindcss"` from the distributed CSS so the library no longer imposes the full Tailwind runtime on consumers.
 - **CSS**: Removed all global layout resets (`html`, `body`, `#root` styles) from `dist/ezux.css` to guarantee the library never imposes structural CSS constraints on the host application.
+
+### Dependencies
+- **Dependencies**: Updated `tailwindcss` and `@tailwindcss/postcss` to `4.2.1`.
+- **Dependencies**: Upgraded `@tanstack/react-store` and `@tanstack/store` to `0.9.1` (minor).
+- **Dependencies**: Updated `@tanstack/react-virtual` and `@tanstack/virtual-core` to `3.13.19`.
+- **Dependencies**: Updated `country-flag-icons` to `1.6.14`.
+
+### Fixed
+- **EzTable**: Fixed drag handle (grip icon) visibility in column headers to properly respect `allowReordering` definitions on individual columns and prevent dragging special/internal columns like `select` and `actions`.
 
 ## [1.1.6] - 2026-02-21
 

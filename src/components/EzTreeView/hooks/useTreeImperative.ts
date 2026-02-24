@@ -4,7 +4,8 @@ import { EzTreeViewProps, TreeNode, EzTreeViewApi } from '../EzTreeView.types';
 import { HierarchyService } from '../../../shared/services/HierarchyService';
 import { findNodeById, updateNodeInNodes } from '../utils/treeUtils';
 import { useComponentImperativeAPI } from '../../../shared/hooks/useComponentImperativeAPI';
-import { globalServiceRegistry } from '../../../shared/services/ServiceRegistry';
+import { useEzServiceRegistry } from '../../../shared/contexts/EzProvider';
+
 import { NotificationService } from '../../../shared/services/NotificationService';
 
 /**
@@ -46,6 +47,7 @@ export const useTreeImperative = (
     ref: React.Ref<EzTreeViewApi>,
     baseApi: any = {}
 ) => {
+    const registry = useEzServiceRegistry();
     const {
         expandedNodes: controlledExpandedNodes,
         checkedNodes: controlledCheckedNodes,
@@ -134,7 +136,7 @@ export const useTreeImperative = (
                     };
                     setTreeData(prev => addRecursive(prev));
                 }
-                globalServiceRegistry.get<NotificationService>('NotificationService')?.show({
+                registry.get<NotificationService>('NotificationService')?.show({
                     type: 'success',
                     message: `${nodes.length} Node(s) Added`,
                     duration: 2000
@@ -152,7 +154,7 @@ export const useTreeImperative = (
                         }));
                 };
                 setTreeData(prev => removeRecursive(prev));
-                globalServiceRegistry.get<NotificationService>('NotificationService')?.show({
+                registry.get<NotificationService>('NotificationService')?.show({
                     type: 'success',
                     message: `${ids.length} Node(s) Removed`,
                     duration: 2000
@@ -161,7 +163,7 @@ export const useTreeImperative = (
 
             updateNode: (id: string, updates: Partial<TreeNode>) => {
                 setTreeData(prev => updateNodeInNodes(prev, id, updates));
-                globalServiceRegistry.get<NotificationService>('NotificationService')?.show({
+                registry.get<NotificationService>('NotificationService')?.show({
                     type: 'success',
                     message: 'Node Updated Successfully',
                     duration: 2000
@@ -203,7 +205,7 @@ export const useTreeImperative = (
                 };
 
                 setTreeData(addToTarget(withoutMoved));
-                globalServiceRegistry.get<NotificationService>('NotificationService')?.show({
+                registry.get<NotificationService>('NotificationService')?.show({
                     type: 'success',
                     message: 'Nodes Moved Successfully',
                     duration: 2000

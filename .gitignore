@@ -15,8 +15,7 @@ dist-ssr/
 !.env.example
 
 # Documentation
-docs/api/
-docs/out/
+docs/
 
 # IDE and OS files
 .DS_Store
@@ -51,3 +50,5 @@ npm_token.txt
 *.token
 docs/npm_token.txt
 
+# Python files
+*.py

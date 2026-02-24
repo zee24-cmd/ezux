@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { globalServiceRegistry } from '../../shared/services/ServiceRegistry';
-import { ThemeService, ThemeColor } from '../../shared/services/ThemeService';
-import { I18nService } from '../../shared/services/I18nService';
+import { useThemeService, useI18nService } from '../../shared/contexts/EzProvider';
+
+import { ThemeColor } from '../../shared/services/ThemeService';
 import { cn } from '../../lib/utils';
 import { User, Settings, LogOut } from 'lucide-react';
 import { Button } from '../ui/button';
@@ -40,19 +40,17 @@ export interface EzUserProfileProps {
 
 export const EzUserProfile: React.FC<EzUserProfileProps> = ({ user, onLogout, className }) => {
     // Theme Service logic for Color Changer
-    if (!globalServiceRegistry.get('ThemeService')) {
-        globalServiceRegistry.register('ThemeService', new ThemeService());
-    }
-    const themeService = globalServiceRegistry.getOrThrow<ThemeService>('ThemeService');
-    const i18nService = globalServiceRegistry.getOrThrow<I18nService>('I18nService');
+
+    const themeService = useThemeService();
+    const i18nService = useI18nService();
     const [currentColor, setCurrentColor] = useState<ThemeColor>(themeService.getState().themeColor);
     const [_, setTick] = useState(0);
 
     useEffect(() => {
-        const unsubTheme = themeService.subscribe((state) => {
+        const unsubTheme = themeService.subscribe((state: any) => {
             setCurrentColor(state.themeColor);
         });
-        const unsubI18n = i18nService.subscribe(() => setTick(t => t + 1));
+        const unsubI18n = i18nService.subscribe((_state: any) => setTick(t => t + 1));
         return () => { unsubTheme(); unsubI18n(); };
     }, [themeService, i18nService]);
 

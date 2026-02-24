@@ -1,14 +1,20 @@
 import { memo } from 'react';
 import { cn } from '../../lib/utils';
+import { Table } from '@tanstack/react-table';
 
 interface EzTableStatusBarProps {
-    table: any;
+    table: Table<any>;
     selectionInfo?: string;
+    rowSelection?: any;
 }
 
-export const EzTableStatusBar = memo(({ table, selectionInfo }: EzTableStatusBarProps) => {
-    const rowCount = table.getPrePaginationRowModel().rows.length;
-    const selectedCount = Object.keys(table.getState().rowSelection).length;
+export const EzTableStatusBar = memo(({ table, totalRows, selectionInfo, rowSelection }: EzTableStatusBarProps & { totalRows?: number }) => {
+    // Robust row count: Use explicit prop if available, otherwise try TanStack models
+    const rawRowCount = totalRows ?? (table.getPrePaginationRowModel().rows.length || table.options.rowCount || table.getRowModel().rows.length);
+    const rowCount = typeof rawRowCount === 'number' ? rawRowCount : 0;
+
+    // Selection count: Ensure we get a number
+    const selectedCount = Object.keys(rowSelection || {}).length;
 
     return (
         <div className={cn(
@@ -22,7 +28,7 @@ export const EzTableStatusBar = memo(({ table, selectionInfo }: EzTableStatusBar
                         {selectedCount} selected
                     </span>
                 )}
-                {selectionInfo && <span>| {selectionInfo}</span>}
+                {typeof selectionInfo === 'string' && <span>| {selectionInfo}</span>}
             </div>
             <div className="flex gap-2">
                 {/* Placeholder for future status icons/info */}

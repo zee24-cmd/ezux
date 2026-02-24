@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { globalServiceRegistry } from '../../shared/services/ServiceRegistry';
-import { ThemeService, ThemeMode } from '../../shared/services/ThemeService';
+import { useThemeService } from '../../shared/contexts/EzProvider';
+
+import { ThemeMode } from '../../shared/services/ThemeService';
 import { cn } from '../../lib/utils';
 import { Sun, Moon } from 'lucide-react';
 import { Button } from '../ui/button';
@@ -11,10 +12,8 @@ import { Button } from '../ui/button';
  */
 export const EzThemeSwitcher: React.FC<{ className?: string }> = ({ className }) => {
     // Ensure service is registered
-    if (!globalServiceRegistry.get('ThemeService')) {
-        globalServiceRegistry.register('ThemeService', new ThemeService());
-    }
-    const themeService = globalServiceRegistry.getOrThrow<ThemeService>('ThemeService');
+    
+    const themeService = useThemeService();
     const [mode, setMode] = useState<ThemeMode>(themeService.getState().mode);
 
     useEffect(() => {

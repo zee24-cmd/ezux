@@ -7,7 +7,8 @@ import { useTreeExpansion } from './hooks/useTreeExpansion';
 import { useTreeSelection } from './hooks/useTreeSelection';
 import { useTreeVirtualization } from './hooks/useTreeVirtualization';
 import { useTreeImperative } from './hooks/useTreeImperative';
-import { globalServiceRegistry } from '../../shared/services/ServiceRegistry';
+import { useEzServiceRegistry } from '../../shared/contexts/EzProvider';
+
 import { useService } from '../../shared/hooks/useService';
 import { useServiceState } from '../../shared/hooks/useServiceState';
 import { I18nState } from '../../shared/services/I18nService';
@@ -22,6 +23,7 @@ import { I18nState } from '../../shared/services/I18nService';
  * @group Hooks
  */
 export const useEzTreeView = (props: EzTreeViewProps) => {
+    const registry = useEzServiceRegistry();
     // Reactively track I18n state for global direction
     const i18nState = useServiceState<I18nState>('I18nService');
     const globalDir = i18nState?.dir || 'ltr';
@@ -46,7 +48,7 @@ export const useEzTreeView = (props: EzTreeViewProps) => {
     // 2b. Service Integration
     const service = useMemo(() => {
         if (props.service) return props.service;
-        if (props.serviceName) return globalServiceRegistry.get(props.serviceName) as ITreeService;
+        if (props.serviceName) return registry.get(props.serviceName) as ITreeService;
         return null;
     }, [props.service, props.serviceName]);
 
@@ -63,7 +65,7 @@ export const useEzTreeView = (props: EzTreeViewProps) => {
     const hierarchyService = useService(
         'HierarchyService',
         () => new HierarchyService(),
-        serviceRegistry || globalServiceRegistry
+        serviceRegistry || registry
     );
 
     // Populate HierarchyService
@@ -139,51 +141,34 @@ export const useEzTreeView = (props: EzTreeViewProps) => {
     );
 
     return {
-        /** The current state of the tree nodes. @group State */
-        treeData,
-        /** Set of IDs for currently expanded nodes. @group State */
-        expandedNodes,
-        /** Set of IDs for currently selected nodes. @group State */
-        selectedNodes,
-        /** Set of IDs for currently checked nodes. @group State */
-        checkedNodes,
-        /** Set of IDs for nodes in an indeterminate check state. @group State */
-        indeterminateNodes,
-        /** Map of nodes currently being loaded (async). @group State */
-        loadingNodes,
-        /** Flattened list of visible nodes for rendering. @group State */
-        flattenedNodes,
-        /** Toggle expansion state of a node. @group Methods */
-        toggleExpand,
-        /** Toggle selection state of a node. @group Methods */
-        toggleSelect,
-        /** Toggle check state of a node. @group Methods */
-        toggleCheck,
-        /** Rename a node. @group Methods */
-        handleNodeRename,
-        /** Text direction (ltr/rtl). @group Properties */
+        state: {
+            treeData,
+            expandedNodes,
+            selectedNodes,
+            checkedNodes,
+            indeterminateNodes,
+            loadingNodes,
+            flattenedNodes,
+            editingNodeId,
+        },
+        actions: {
+            toggleExpand,
+            toggleSelect,
+            toggleCheck,
+            handleNodeRename,
+            setEditingNodeId,
+        },
+        config: {
+            allowTextWrap: props.allowTextWrap,
+            animation: props.animation,
+            checkOnClick: props.checkOnClick,
+            fullRowSelect: props.fullRowSelect,
+            fullRowNavigable: props.fullRowNavigable,
+            onKeyPress: props.onKeyPress,
+            onNodeClicked: props.onNodeClicked,
+            onDrawNode: props.onDrawNode,
+        },
         dir: effectiveDir,
-        // Prop forwarding/computed
-        /** Whether text wrapping is allowed. @group Properties */
-        allowTextWrap: props.allowTextWrap,
-        /** Animation configuration. @group Properties */
-        animation: props.animation,
-        /** Whether to check on click. @group Properties */
-        checkOnClick: props.checkOnClick,
-        /** Whether full row selection is enabled. @group Properties */
-        fullRowSelect: props.fullRowSelect,
-        /** Whether full row navigation is enabled. @group Properties */
-        fullRowNavigable: props.fullRowNavigable,
-        /** Key press handler. @group Events */
-        onKeyPress: props.onKeyPress,
-        /** Node click handler. @group Events */
-        onNodeClicked: props.onNodeClicked,
-        /** Draw node callback. @group Events */
-        onDrawNode: props.onDrawNode,
-        // Editing
-        /** ID of the node currently being edited. @group State */
-        editingNodeId,
-        /** Handler to set the editing node. @group Methods */
-        setEditingNodeId,
+        baseApi,
     };
 };

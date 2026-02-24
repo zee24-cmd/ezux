@@ -1,7 +1,5 @@
-import { useEffect } from 'react';
-import { globalServiceRegistry } from '../services/ServiceRegistry';
-import { NotificationService } from '../services/NotificationService';
 
+import { useNotificationService as useNotifContext } from '../contexts/EzProvider';
 /**
  * Internal hook to ensure the `NotificationService` is registered and initialized.
  * 
@@ -10,9 +8,6 @@ import { NotificationService } from '../services/NotificationService';
  * @group Hooks
  */
 export const useNotificationService = () => {
-    useEffect(() => {
-        if (!globalServiceRegistry.get('NotificationService')) {
-            globalServiceRegistry.register('NotificationService', new NotificationService());
-        }
-    }, []);
+    // Context handles initialization now
+    return useNotifContext();
 };

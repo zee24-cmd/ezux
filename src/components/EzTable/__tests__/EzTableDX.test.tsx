@@ -4,6 +4,7 @@ import React from 'react';
 import { EzTable } from '../index';
 import { EzTableRef } from '../EzTable.types';
 import { ColumnDef } from '@tanstack/react-table';
+import { EzProvider } from '../../../shared/contexts/EzProvider';
 import '@testing-library/jest-dom';
 
 // Mock ResizeObserver
@@ -55,7 +56,11 @@ describe('EzTable DX Improvements', () => {
             );
         };
 
-        render(<ControlledTable />);
+        render(
+            <EzProvider>
+                <ControlledTable />
+            </EzProvider>
+        );
         // Check if sorted descending by Name (User 5 should be first if desc, but logic depends on data)
         // Default sort is ASCII. User 5 vs User 1.
         // Let's verify via class name or indicator if possible, or ref logic.
@@ -66,7 +71,11 @@ describe('EzTable DX Improvements', () => {
     });
 
     it('should expose scrollToIndex in ref', () => {
-        render(<EzTable ref={tableRef} data={data} columns={columns} />);
+        render(
+            <EzProvider>
+                <EzTable ref={tableRef} data={data} columns={columns} />
+            </EzProvider>
+        );
         expect(tableRef.current?.scrollToIndex).toBeDefined();
 
         act(() => {
@@ -76,7 +85,11 @@ describe('EzTable DX Improvements', () => {
     });
 
     it('should expose forceUpdate in ref', () => {
-        render(<EzTable ref={tableRef} data={data} columns={columns} />);
+        render(
+            <EzProvider>
+                <EzTable ref={tableRef} data={data} columns={columns} />
+            </EzProvider>
+        );
         expect(tableRef.current?.forceUpdate).toBeDefined();
 
         act(() => {
@@ -85,21 +98,27 @@ describe('EzTable DX Improvements', () => {
     });
 
     it('should expose exportDataAsCsv in ref', () => {
-        render(<EzTable ref={tableRef} data={data} columns={columns} />);
+        render(
+            <EzProvider>
+                <EzTable ref={tableRef} data={data} columns={columns} />
+            </EzProvider>
+        );
         expect(tableRef.current?.exportDataAsCsv).toBeDefined();
     });
 
     it('should support classNames prop', () => {
         render(
-            <EzTable
-                data={data.slice(0, 1)}
-                columns={columns}
-                classNames={{
-                    root: 'custom-root-class',
-                    header: 'custom-header-class',
-                    row: 'custom-row-class'
-                }}
-            />
+            <EzProvider>
+                <EzTable
+                    data={data.slice(0, 1)}
+                    columns={columns}
+                    classNames={{
+                        root: 'custom-root-class',
+                        header: 'custom-header-class',
+                        row: 'custom-row-class'
+                    }}
+                />
+            </EzProvider>
         );
 
         // We need to verify these classes are applied. 
@@ -113,11 +132,13 @@ describe('EzTable DX Improvements', () => {
     it('should support slots.toolbar', () => {
         const CustomToolbar = () => <div data-testid="custom-toolbar">Custom Toolbar</div>;
         render(
-            <EzTable
-                data={data}
-                columns={columns}
-                slots={{ toolbar: CustomToolbar }}
-            />
+            <EzProvider>
+                <EzTable
+                    data={data}
+                    columns={columns}
+                    slots={{ toolbar: CustomToolbar }}
+                />
+            </EzProvider>
         );
         expect(screen.getByTestId('custom-toolbar')).toBeInTheDocument();
     });

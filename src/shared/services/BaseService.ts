@@ -52,10 +52,11 @@ export abstract class BaseService<TState> implements IService {
      * @group Methods
      */
     subscribe(listener: (state: TState) => void): () => void {
-        const unsub = this.store.subscribe(() => {
+        const sub = this.store.subscribe(() => {
             listener(this.store.state);
         });
-        return unsub;
+        // @tanstack/store >=0.9 returns a Subscription object; wrap for API compat
+        return typeof sub === 'function' ? sub : () => sub.unsubscribe();
     }
 
     /**

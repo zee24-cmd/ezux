@@ -8,7 +8,7 @@ import {
     ContextMenuShortcut
 } from '../../components/ui/context-menu';
 import { Row } from '@tanstack/react-table';
-import { globalServiceRegistry } from '../services/ServiceRegistry';
+import { useEzServiceRegistry } from '../contexts/EzProvider';
 import { ContextMenuService, MenuItem } from '../services/ContextMenuService';
 
 interface EzContextMenuProps<TData> {
@@ -21,6 +21,7 @@ interface EzContextMenuProps<TData> {
 }
 
 export const EzContextMenu = <TData,>({ row, data, contextId, children, enabled = true, onAction }: EzContextMenuProps<TData>) => {
+    const registry = useEzServiceRegistry();
     if (!enabled) {
         return <>{children}</>;
     }
@@ -29,7 +30,7 @@ export const EzContextMenu = <TData,>({ row, data, contextId, children, enabled 
 
     const getServiceItems = (): MenuItem[] => {
         if (!contextId) return [];
-        const service = globalServiceRegistry.get<ContextMenuService>('ContextMenuService');
+        const service = registry.get<ContextMenuService>('ContextMenuService');
         return service ? service.getItems(contextId, effectiveData) : [];
     };
 

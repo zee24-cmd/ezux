@@ -4,7 +4,8 @@ import { EzLayoutProps } from '../EzLayout.types';
 import { LayoutService, LayoutState } from '../../../shared/services/LayoutService';
 import { I18nService, I18nState } from '../../../shared/services/I18nService';
 import { FocusManagerService } from '../../../shared/services/FocusManagerService';
-import { globalServiceRegistry } from '../../../shared/services/ServiceRegistry';
+import { useEzServiceRegistry } from '../../../shared/contexts/EzProvider';
+
 import { NotificationService } from '../../../shared/services/NotificationService';
 
 import { ensureServices } from '../../../shared/utils/serviceUtils';
@@ -19,8 +20,9 @@ import { ensureServices } from '../../../shared/utils/serviceUtils';
  * @group Hooks
  */
 export const useLayoutState = (props: EzLayoutProps) => {
+    const contextRegistry = useEzServiceRegistry();
     const {
-        serviceRegistry = globalServiceRegistry,
+        serviceRegistry = contextRegistry,
         headerHeight,
         sidebarWidth,
         breakpoint,

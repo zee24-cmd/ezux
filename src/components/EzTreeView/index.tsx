@@ -54,29 +54,36 @@ import { cn } from '../../lib/utils';
 export const EzTreeView: React.FC<EzTreeViewProps> = (props) => {
     // Initialize core services (I18n, Notifications, etc.)
     useInitCoreServices();
+    const treeRes = useEzTreeView(props);
     const {
-        expandedNodes,
-        selectedNodes,
-        checkedNodes,
-        indeterminateNodes,
-        loadingNodes,
-        flattenedNodes,
-        toggleExpand,
-        toggleSelect,
-        toggleCheck,
-        handleNodeRename,
-        dir,
-        allowTextWrap,
-        animation,
-        checkOnClick,
-        fullRowSelect,
-        fullRowNavigable,
-        onKeyPress,
-        onNodeClicked,
-        onDrawNode,
-        editingNodeId,
-        setEditingNodeId,
-    } = useEzTreeView(props);
+        state: {
+            expandedNodes,
+            selectedNodes,
+            checkedNodes,
+            indeterminateNodes,
+            loadingNodes,
+            flattenedNodes,
+            editingNodeId,
+        },
+        actions: {
+            toggleExpand,
+            toggleSelect,
+            toggleCheck,
+            handleNodeRename,
+            setEditingNodeId,
+        },
+        config: {
+            allowTextWrap,
+            animation,
+            checkOnClick,
+            fullRowSelect,
+            fullRowNavigable,
+            onKeyPress,
+            onNodeClicked,
+            onDrawNode,
+        },
+        dir
+    } = treeRes;
 
     const { handleDragEnd, sensors } = useTreeDragDrop({
         onDragEnd: (draggedNode, targetNode, position) => {

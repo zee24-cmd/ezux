@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { I18nService } from '../../shared/services/I18nService';
-import { globalServiceRegistry } from '../../shared/services/ServiceRegistry';
+import { useI18nService } from '../../shared/contexts/EzProvider';
+
 import { cn } from '../../lib/utils';
 import * as Flags from 'country-flag-icons/react/3x2';
 import { Button } from '../ui/button';
@@ -13,7 +13,7 @@ import {
 import { Globe } from 'lucide-react';
 
 export const EzLanguageSwitcher: React.FC<{ className?: string }> = ({ className }) => {
-    const i18nService = globalServiceRegistry.getOrThrow<I18nService>('I18nService');
+    const i18nService = useI18nService();
     const [currentLocale, setCurrentLocale] = useState(i18nService.locale);
 
     useEffect(() => {

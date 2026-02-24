@@ -18,6 +18,7 @@ interface EzTableHeaderSectionProps<TData extends object> {
     sorting?: any;
     grouping?: any;
     columnVisibility?: any;
+    columnOrder?: any;
 }
 
 export const EzTableHeaderSection = React.memo(_EzTableHeaderSection) as typeof _EzTableHeaderSection;

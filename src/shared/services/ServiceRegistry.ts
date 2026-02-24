@@ -26,6 +26,8 @@ export interface ServiceRegistry {
   unregister(name: string): void;
   /** Triggers cleanup for all registered services. @group Methods */
   cleanupAll(): void;
+  /** Subscribes to registry state changes (e.g. services added or removed). @group Methods */
+  subscribe(listener: (state: ServiceRegistryState) => void): () => void;
 }
 
 interface ServiceRegistryState {
@@ -95,5 +97,3 @@ export class EzServiceRegistry extends BaseService<ServiceRegistryState> impleme
   }
 
 }
-
-export const globalServiceRegistry = new EzServiceRegistry();

@@ -6,7 +6,7 @@ import { createSchedulerStore, createSchedulerActions } from './state/scheduler.
 import { useSchedulerEvents } from './hooks/useSchedulerEvents';
 import { useSchedulerVirtualization } from './hooks/useSchedulerVirtualization';
 import { useSchedulerNavigation } from './hooks/useSchedulerNavigation';
-import { useSchedulerImperative } from './hooks/useSchedulerImperative';
+
 import { HistoryService } from './services/HistoryService';
 import { SearchService } from './services/SearchService';
 import { TimezoneService } from './services/TimezoneService';
@@ -101,19 +101,14 @@ export const useEzScheduler = (props: EzSchedulerProps) => {
     // Derived State from Store
     const { view, currentDate, events } = state;
 
-    // 3. Events Logic (Simplified wrapper around store events for now, or keep useSchedulerEvents if it handles complex logic)
-    // For now, we will keep useSchedulerEvents but pass store values to it if needed, 
-    // OR ideally move useSchedulerEvents logic INTO the store actions or a derived store.
-    // To minimize breakage, we'll keep useSchedulerEvents but feed it state from store.
+    // 3. Events Logic
+    // We consolidate the useSchedulerEvents call to avoid duplicate subscriptions and state
     const {
         schedulerService,
         recurrenceEngine,
         daysInView,
         visibleEvents,
-        allEvents
-    } = useSchedulerEvents({ ...props, events }, view as ViewType, currentDate);
-
-    const {
+        allEvents,
         addEvent,
         updateEvent,
         deleteEvent,
@@ -176,115 +171,80 @@ export const useEzScheduler = (props: EzSchedulerProps) => {
     const reminderService = getOrRegisterService(serviceRegistry, 'ReminderService', () => new ReminderService());
 
     return {
-        // --- State ---
         /** 
-         * Current view mode. 
+         * Namespaced state properties
          * @group State
          */
-        currentView: state.view,
-        /** 
-         * Selected date. 
-         * @group State
-         */
-        selectedDate: state.selectedDate,
-        /** 
-         * List of events. 
-         * @group State
-         */
-        events: state.events,
-        /** 
-         * List of resources. 
-         * @group State
-         */
-        resources: state.resources,
-        /** 
-         * View-specific events. 
-         * @group State
-         */
-        viewEvents: visibleEvents,
+        state: {
+            currentView: state.view,
+            selectedDate: state.selectedDate,
+            currentDate,
+            events: state.events,
+            resources: state.resources,
+            viewEvents: visibleEvents,
+            daysInView,
+            allEvents,
+            slotDuration: state.slotDuration,
+            is24Hour: state.is24Hour,
+            isUpdating,
+            selectedIndex,
+            highlightedEventId
+        },
 
-        // --- Actions ---
         /** 
-         * Navigates to the next period. 
-         * @group Methods
+         * Namespaced action methods
+         * @group Actions
          */
-        nextPeriod: next,
-        /** 
-         * Navigates to the previous period. 
-         * @group Methods
-         */
-        prevPeriod: prev,
-        /** 
-         * Sets the current view. 
-         * @group Methods
-         */
-        setView: actions.setView,
-        /** 
-         * Sets the selected date. 
-         * @group Methods
-         */
-        setDate: actions.setSelectedDate,
-        /** 
-         * Adds a new event. 
-         * @group Methods
-         */
-        addEvent,
-        /** 
-         * Updates an existing event. 
-         * @group Methods
-         */
-        updateEvent,
-        /** 
-         * Deletes an event. 
-         * @group Methods
-         */
-        deleteEvent,
+        actions: {
+            nextPeriod: next,
+            prevPeriod: prev,
+            today,
+            setView: actions.setView,
+            setDate: actions.setSelectedDate,
+            setCurrentDate: actions.setCurrentDate,
+            addEvent,
+            updateEvent,
+            deleteEvent,
+            setSlotDuration: actions.setSlotDuration,
+            setIs24Hour: actions.setIs24Hour,
+            setSelectedIndex,
+            setHighlightedEventId
+        },
 
-        // --- Other Hooks/State ---
-        isUpdating,
-        selectedIndex,
-        setSelectedIndex,
-        highlightedEventId,
-        setHighlightedEventId,
+        /** 
+         * Namespaced core services
+         * @group Services
+         */
+        services: {
+            schedulerService,
+            recurrenceEngine,
+            historyService,
+            searchService,
+            timezoneService,
+            attendeeService,
+            reminderService,
+            serviceRegistry
+        },
+
+        /** 
+         * Scheduler configuration properties
+         * @group Config
+         */
+        config: schedulerConfig,
+
+        /** 
+         * DOM and component references
+         * @group Refs
+         */
+        refs: {
+            parentRef,
+            rowVirtualizer,
+            columnVirtualizer
+        },
 
         // --- Base API ---
         baseState,
         baseApi,
-
-        // --- Config ---
-        ...schedulerConfig,
-
-        // --- Imperative API ---
-        useSchedulerImperative,
-
-        // --- Original Returns (Legacy/Internal) ---
-        store,
-        actions,
-        view,
-        visibleEvents,
-        currentDate,
-        setCurrentDate: actions.setCurrentDate,
-        next,
-        prev,
-        daysInView,
-        allEvents,
-        slotDuration: state.slotDuration,
-        setSlotDuration: actions.setSlotDuration,
-        is24Hour: state.is24Hour,
-        setIs24Hour: actions.setIs24Hour,
-        today,
-        parentRef,
-        rowVirtualizer,
-        columnVirtualizer,
-
-        // --- Services ---
-        schedulerService,
-        recurrenceEngine,
-        historyService,
-        searchService,
-        timezoneService,
-        attendeeService,
-        reminderService,
-        serviceRegistry,
+        dir
     };
 };

@@ -20,8 +20,11 @@ interface DraggableHeaderProps {
 
 export const EzDraggableHeader = memo(({ header, density, onAutoFit, columnPinning }: DraggableHeaderProps) => {
     const meta = header.getContext().table.options.meta as any;
-    const canReorder = meta?.enableColumnReorder !== false;
-    const canGroup = header.column.getCanGroup();
+    const isSpecialColumn = header.id === 'select' || header.id === 'actions';
+    const columnMeta = header.column.columnDef.meta as any;
+    const columnDef = header.column.columnDef as any;
+    const canReorder = meta?.enableColumnReorder !== false && !isSpecialColumn && columnMeta?.allowReordering !== false && columnDef?.allowReordering !== false;
+    const canGroup = header.column.getCanGroup() && !isSpecialColumn;
     const isDraggableDisabled = (!canGroup && !canReorder) || header.isPlaceholder;
 
     const { attributes, listeners, setNodeRef: setDraggableRef, isDragging } = useDraggable({
@@ -74,7 +77,7 @@ export const EzDraggableHeader = memo(({ header, density, onAutoFit, columnPinni
                 "relative h-full font-semibold text-foreground flex items-center select-none group/header transition-all flex-shrink-0 px-4",
                 meta?.dir === 'rtl' ? "border-l border-border/50" : "border-r border-border/50",
                 getDensityClass(density as any),
-                isDragging && "opacity-50 bg-muted",
+                isDragging && "opacity-50 bg-muted pointer-events-none",
                 isOver && "ring-2 ring-inset ring-primary bg-accent/50",
                 header.column.getIsGrouped() && "bg-accent/30",
                 isColumnFocused && "bg-primary/5 text-primary border-b-2 border-primary",

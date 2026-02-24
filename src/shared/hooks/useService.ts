@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
-import { IService, globalServiceRegistry, ServiceRegistry } from '../services/ServiceRegistry';
+import { IService, ServiceRegistry } from '../services/ServiceRegistry';
+import { useEzServiceRegistry } from '../contexts/EzProvider';
 import { getOrRegisterService } from '../utils/serviceUtils';
 
 /**
@@ -18,8 +19,8 @@ export const useService = <T extends IService>(
     factory: () => T,
     registry?: ServiceRegistry | null
 ): T => {
-    // Determine which registry to use. Default to global.
-    const targetRegistry = registry || globalServiceRegistry;
+    const contextRegistry = useEzServiceRegistry();
+    const targetRegistry = registry || contextRegistry;
 
     // Use useState to ensure lazy initialization and stability across renders
     const [service] = useState(() => {

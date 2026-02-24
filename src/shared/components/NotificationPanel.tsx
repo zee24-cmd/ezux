@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { globalServiceRegistry } from '../services/ServiceRegistry';
+import { useEzServiceRegistry } from '../contexts/EzProvider';
 import { Notification, NotificationService } from '../services/NotificationService';
 import { cn } from '../../lib/utils';
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react';
 
 export const NotificationPanel: React.FC = () => {
+    const registry = useEzServiceRegistry();
     const [notifications, setNotifications] = useState<Notification[]>([]);
 
     useEffect(() => {
         let unsubscribeService: (() => void) | undefined;
 
         const connectService = () => {
-            const service = globalServiceRegistry.get<NotificationService>('NotificationService');
+            const service = registry.get<NotificationService>('NotificationService');
             if (service && !unsubscribeService) {
                 unsubscribeService = service.subscribe(setNotifications);
             }
@@ -21,7 +22,7 @@ export const NotificationPanel: React.FC = () => {
         connectService();
 
         // Listen for registry changes in case service is added later
-        const unsubscribeRegistry = globalServiceRegistry.subscribe(() => {
+        const unsubscribeRegistry = registry.subscribe(() => {
             connectService();
         });
 
@@ -32,7 +33,7 @@ export const NotificationPanel: React.FC = () => {
     }, []);
 
     const remove = (id: string) => {
-        const service = globalServiceRegistry.get<NotificationService>('NotificationService');
+        const service = registry.get<NotificationService>('NotificationService');
         if (service) {
             service.remove(id);
         }

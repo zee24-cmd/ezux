@@ -35,13 +35,19 @@ export const useEzLayout = (props: EzLayoutProps, ref: React.Ref<EzLayoutRef>) =
     useLayoutImperative(ref, props, { layoutService, serviceRegistry });
 
     return {
-        ...baseApi,
-        layoutState,
-        i18nState,
-        isPending,
-        layoutService,
-        serviceRegistry,
-        focusManager,
-        renderInjected
+        state: {
+            layoutState,
+            i18nState,
+            isPending,
+        },
+        actions: {
+            renderInjected
+        },
+        services: {
+            layoutService,
+            serviceRegistry,
+            focusManager,
+        },
+        baseApi
     };
 };

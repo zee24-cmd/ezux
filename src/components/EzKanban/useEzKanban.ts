@@ -239,123 +239,62 @@ export const useEzKanban = <TCard = KanbanCard>(
     ]);
 
     return useMemo(() => ({
-        // Base API / State
-        /** The imperative API object. @group Methods */
-        ...imperativeAPI,
-
-        // Board State
-        /** Current board data. @group State */
-        board,
-        /** Handler to update the board. @group Methods */
-        setBoard,
-        /** IDs of currently selected cards. @group State */
-        selectedCards,
-        /** Handler to set selected cards. @group Methods */
-        setSelectedCards,
-        /** ID of the currently highlighted card. @group State */
-        highlightedCardId,
-        /** ID of the currently selected column. @group State */
-        selectedColumnId,
-        /** Handler to set the selected column. @group Methods */
-        setSelectedColumnId,
-        /** Current view mode (standard, swimlane, timeline). @group State */
-        view,
-        /** Handler to change the view mode. @group Methods */
-        setView,
-        /** Text direction. @group State */
+        state: {
+            board,
+            selectedCards,
+            highlightedCardId,
+            selectedColumnId,
+            view,
+            draggedCard,
+            dragOverColumn,
+            filteredCards,
+            searchQuery,
+            activeFilters,
+            selectedIndex,
+            canUndo,
+            canRedo,
+        },
+        actions: {
+            setBoard,
+            setSelectedCards,
+            setSelectedColumnId,
+            setView,
+            createCard,
+            updateCard,
+            deleteCard,
+            moveCard,
+            duplicateCard,
+            archiveCard,
+            restoreCard,
+            createColumn,
+            updateColumn,
+            deleteColumn,
+            reorderColumns,
+            collapseColumn,
+            expandColumn,
+            createSwimlane,
+            updateSwimlane,
+            deleteSwimlane,
+            reorderSwimlanes,
+            collapseSwimlane,
+            expandSwimlane,
+            handleDragStart,
+            handleDragOver,
+            handleDragEnd,
+            handleDrop,
+            setSearchQuery,
+            setActiveFilters,
+            clearFilters,
+            setSelectedIndex,
+            undo,
+            redo,
+        },
+        services: {
+            serviceRegistry,
+        },
+        imperativeAPI,
         dir: effectiveDir,
-
-        // Card Management
-        /** Create a new card. @group Methods */
-        createCard,
-        /** Update a card by ID. @group Methods */
-        updateCard,
-        /** Delete a card by ID. @group Methods */
-        deleteCard,
-        /** Move a card within the board. @group Methods */
-        moveCard,
-        /** Duplicate a card. @group Methods */
-        duplicateCard,
-        /** Archive a card. @group Methods */
-        archiveCard,
-        /** Restore an archived card. @group Methods */
-        restoreCard,
-
-        // Column Management
-        /** Create a new column. @group Methods */
-        createColumn,
-        /** Update a column. @group Methods */
-        updateColumn,
-        /** Delete a column. @group Methods */
-        deleteColumn,
-        /** Reorder columns. @group Methods */
-        reorderColumns,
-        /** Collapse a column. @group Methods */
-        collapseColumn,
-        /** Expand a column. @group Methods */
-        expandColumn,
-
-        // Swimlane Management
-        /** Create a new swimlane. @group Methods */
-        createSwimlane,
-        /** Update a swimlane. @group Methods */
-        updateSwimlane,
-        /** Delete a swimlane. @group Methods */
-        deleteSwimlane,
-        /** Reorder swimlanes. @group Methods */
-        reorderSwimlanes,
-        /** Collapse a swimlane. @group Methods */
-        collapseSwimlane,
-        /** Expand a swimlane. @group Methods */
-        expandSwimlane,
-
-        // Drag & Drop
-        /** The card currently being dragged. @group State */
-        draggedCard,
-        /** The column currently being dragged over. @group State */
-        dragOverColumn,
-        /** Handler for drag start. @group Events */
-        handleDragStart,
-        /** Handler for drag over. @group Events */
-        handleDragOver,
-        /** Handler for drag end. @group Events */
-        handleDragEnd,
-        /** Handler for drop. @group Events */
-        handleDrop,
-
-        // Filtering & Search
-        /** List of cards after filtering/search. @group State */
-        filteredCards,
-        /** Current search query string. @group State */
-        searchQuery,
-        /** Handler to update the search query. @group Methods */
-        setSearchQuery,
-        /** Current active filter configuration. @group State */
-        activeFilters,
-        /** Handler to update active filters. @group Methods */
-        setActiveFilters,
-        /** Clear all active filters. @group Methods */
-        clearFilters,
-
-        // Service Registry
-        /** Access to the shared service registry. @group Services */
-        serviceRegistry,
-
-        // Keyboard Nav
-        /** Currently selected card index via keyboard. @group State */
-        selectedIndex,
-        /** Handler to set the keyboard selected index. @group Methods */
-        setSelectedIndex,
-
-        // History
-        /** Undo the last action. @group Methods */
-        undo,
-        /** Redo the previously undone action. @group Methods */
-        redo,
-        /** Whether undo is available. @group State */
-        canUndo,
-        /** Whether redo is available. @group State */
-        canRedo,
+        baseApi
     }), [
         baseApi, imperativeAPI, board, setBoard, selectedCards, setSelectedCards,
         highlightedCardId, selectedColumnId, setSelectedColumnId, view, setView, effectiveDir,

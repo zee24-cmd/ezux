@@ -1,6 +1,6 @@
 import React, { memo, useCallback } from 'react';
 import { Download, Undo, Redo, Loader2, Plus, Printer, Columns3, Save, XCircle } from 'lucide-react';
-import { globalServiceRegistry } from '../../shared/services/ServiceRegistry';
+import { useEzServiceRegistry } from '../../shared/contexts/EzProvider';
 import { NotificationService } from '../../shared/services/NotificationService';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
@@ -78,6 +78,7 @@ export const EzTableToolbar = memo(({
     changes,
     table
 }: EzTableToolbarProps) => {
+    const registry = useEzServiceRegistry();
     const handleQuickSearchChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
         const val = event.target.value;
         if (typeof globalFilter === 'object' && globalFilter !== null) {
@@ -209,7 +210,7 @@ export const EzTableToolbar = memo(({
                             size="sm"
                             onClick={() => {
                                 onExportCSV?.();
-                                globalServiceRegistry.get<NotificationService>('NotificationService')?.add({
+                                registry.get<NotificationService>('NotificationService')?.add({
                                     type: 'info',
                                     message: 'Preparing CSV export...',
                                     duration: 8000
@@ -227,7 +228,7 @@ export const EzTableToolbar = memo(({
                             size="sm"
                             onClick={() => {
                                 onExportExcel?.();
-                                globalServiceRegistry.get<NotificationService>('NotificationService')?.add({
+                                registry.get<NotificationService>('NotificationService')?.add({
                                     type: 'info',
                                     message: 'Preparing Excel export...',
                                     duration: 8000
@@ -245,7 +246,7 @@ export const EzTableToolbar = memo(({
                             size="sm"
                             onClick={() => {
                                 onExportPDF?.();
-                                globalServiceRegistry.get<NotificationService>('NotificationService')?.add({
+                                registry.get<NotificationService>('NotificationService')?.add({
                                     type: 'info',
                                     message: 'Preparing PDF export...',
                                     duration: 8000

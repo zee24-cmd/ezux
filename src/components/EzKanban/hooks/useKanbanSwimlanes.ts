@@ -1,7 +1,8 @@
 import { useCallback } from 'react';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import type { EzKanbanProps, KanbanBoard, KanbanSwimlane, IKanbanService } from '../EzKanban.types';
-import { globalServiceRegistry } from '../../../shared/services/ServiceRegistry';
+import { useEzServiceRegistry } from '../../../shared/contexts/EzProvider';
+
 import type { NotificationService } from '../../../shared/services/NotificationService';
 
 /**
@@ -14,14 +15,15 @@ import type { NotificationService } from '../../../shared/services/NotificationS
  * @group Hooks
  */
 export const useKanbanSwimlanes = (props: EzKanbanProps, board: KanbanBoard) => {
+    const registry = useEzServiceRegistry();
     const queryClient = useQueryClient();
 
     const getService = (): IKanbanService | undefined => {
-        return globalServiceRegistry.get<IKanbanService>('KanbanService');
+        return registry.get<IKanbanService>('KanbanService');
     };
 
     const notify = (type: 'success' | 'error', message: string, duration = 3000) => {
-        const notificationService = globalServiceRegistry.get<NotificationService>('NotificationService');
+        const notificationService = registry.get<NotificationService>('NotificationService');
         if (notificationService) {
             notificationService.add({ type, message, duration });
         }

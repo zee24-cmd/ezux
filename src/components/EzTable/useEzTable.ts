@@ -13,7 +13,7 @@ import { I18nState } from '../../shared/services/I18nService';
 
 import { useBaseComponent, BaseComponentProps } from '../../shared/hooks/useBaseComponent';
 import { useLifecycleEvents } from '../../shared/hooks/useLifecycleEvents';
-import { globalServiceRegistry } from '../../shared/services/ServiceRegistry';
+
 import { ITableService } from './EzTable.types';
 
 const EMPTY_ARRAY: any[] = [];
@@ -97,7 +97,7 @@ export const useEzTable = <TData extends object>(
     // 3. Resolve Service
     const service = useMemo(() => {
         if (props.service) return props.service;
-        if (props.serviceName) return globalServiceRegistry.get(props.serviceName) as unknown as ITableService<TData>;
+        if (props.serviceName) return _serviceRegistry.get(props.serviceName) as unknown as ITableService<TData>;
         return null;
     }, [props.service, props.serviceName]);
 
@@ -367,127 +367,75 @@ export const useEzTable = <TData extends object>(
 
     // Combined Return Object
     return useMemo(() => ({
-        /** Base API from useBaseComponent. @group Base */
-        ...baseApi,
-        /** Imperative API methods. @group Methods */
-        ...imperativeAPI,
-        /** Table state (pagination, sorting, etc). @group State */
-        ...states,
-        /** Reference to the table parent container. @group Properties */
-        parentRef,
-        /** Row virtualizer instance. @group Properties */
-        rowVirtualizer,
-        /** Column virtualizer instance. @group Properties */
-        columnVirtualizer,
-        /** Currently rendered rows. @group Properties */
-        rows: table.getRowModel().rows,
-        /** The TanStack Table instance. @group Properties */
-        table,
-        /** Current text direction. @group Properties */
-        dir,
-        /** Whether pagination is enabled. @group Properties */
-        paginationEnabled: pagination,
-        /** Whether export is enabled. @group Properties */
-        exportEnabled: enableExport,
-        /** Range selection state. @group State */
-        rangeSelection,
-        /** Callback for cell mouse down. @group Events */
-        onCellMouseDown,
-        /** Callback for cell mouse enter. @group Events */
-        onCellMouseEnter,
-        /** Whether sticky header is enabled. @group Properties */
-        enableStickyHeader,
-        /** Whether sticky pagination is enabled. @group Properties */
-        enableStickyPagination,
-        /** Whether change tracking is enabled. @group Properties */
-        enableChangeTracking,
-        /** Undo the last change. @group Methods */
-        undo,
-        /** Redo the previously undone change. @group Methods */
-        redo,
-        /** Whether undo is possible. @group State */
-        canUndo,
-        /** Whether redo is possible. @group State */
-        canRedo,
-        /** Current changes tracking object. @group State */
-        changes,
-        /** Batch changes for batch editing mode. @group State */
-        batchChanges,
-        /** Reset all data changes. @group Methods */
-        resetData,
-        /** Add a new row. @group Methods */
-        addRow: _addRow,
-        /** Delete specific rows. @group Methods */
-        deleteRows: _deleteRows,
-        /** Toggle editing for a row. @group Methods */
-        toggleRowEditing,
-        /** Whether editing is enabled. @group Properties */
-        enableEditing,
-        /** Current table density. @group Properties */
-        density,
-        /** Whether the table is in a pending/loading state. @group State */
-        isPending: isFiltering || props.isLoading || isLoading,
-        /** Automatically fit a specific column. @group Methods */
-        autoFitColumn,
-
-        // Settings Exposure
-        /** Current grid lines configuration. @group Properties */
-        gridLines: props.gridLines,
-        /** Whether alternating row colors are enabled. @group Properties */
-        enableAltRow: props.enableAltRow,
-        /** Whether row hover effect is enabled. @group Properties */
-        enableHover: props.enableHover,
-        /** Effective row height. @group Properties */
-        rowHeight: effectiveRowHeight,
-        /** Selection settings. @group Properties */
-        selectionSettings: props.selectionSettings,
-        /** Filter settings. @group Properties */
-        filterSettings: props.filterSettings,
-        /** Search settings. @group Properties */
-        searchSettings: props.searchSettings,
-        /** Sort settings. @group Properties */
-        sortSettings: props.sortSettings,
-        /** Edit settings. @group Properties */
-        editSettings: props.editSettings,
-
-
-        // Common Events
-        /** Row click handler. @group Events */
-        onRowClick: props.onRowClick,
-        /** Row double-click handler. @group Events */
-        onRowDoubleClick: props.onRowDoubleClick,
-        /** Cell focus handler. @group Events */
-        onCellFocus: props.onCellFocus,
-        /** Toolbar item click handler. @group Events */
-        onToolbarItemClick: props.onToolbarItemClick,
-
-        // Internal State Access (for components)
-        /** Currently focused cell coordinates. @group State */
-        focusedCell,
-        /** Update the focused cell. @group Methods */
-        setFocusedCell,
-        /** Current global filter state. @group State */
-        globalFilter: states.globalFilter,
-        /** Update the global filter. @group Methods */
-        setGlobalFilter,
-        /** Handler for column filter changes. @group Events */
-        handleColumnFiltersChange,
-        /** Handler for global filter changes. @group Events */
-        handleGlobalFilterChange,
-        /** Programmatically set the filter model. @group Methods */
-        setFilterModel,
-
-        // Data helpers
-        /** Returns current table data. @group Methods */
-        getData: () => data,
-        /** Returns primary key field names. @group Methods */
-        getPrimaryKeyFieldNames: () => {
-            const pk = props.editSettings?.primaryKey;
-            return pk ? (Array.isArray(pk) ? pk : [pk]) : [];
+        state: {
+            ...states,
+            rows: table.getRowModel().rows,
+            rangeSelection,
+            canUndo,
+            canRedo,
+            changes,
+            batchChanges,
+            density,
+            isPending: isFiltering || props.isLoading || isLoading,
+            focusedCell,
+            globalFilter: states.globalFilter,
+            pagerMessage,
+            internalLoading,
         },
-        /** Pager status message. @group State */
-        pagerMessage,
-    } as any), [
+        actions: {
+            undo,
+            redo,
+            resetData,
+            addRow: _addRow,
+            deleteRows: _deleteRows,
+            toggleRowEditing,
+            autoFitColumn,
+            onCellMouseDown,
+            onCellMouseEnter,
+            onRowClick: props.onRowClick,
+            onRowDoubleClick: props.onRowDoubleClick,
+            onCellFocus: props.onCellFocus,
+            onToolbarItemClick: props.onToolbarItemClick,
+            setFocusedCell,
+            setGlobalFilter,
+            handleColumnFiltersChange,
+            handleGlobalFilterChange,
+            setFilterModel,
+            getData: () => data,
+            getPrimaryKeyFieldNames: () => {
+                const pk = props.editSettings?.primaryKey;
+                return pk ? (Array.isArray(pk) ? pk : [pk]) : [];
+            }
+        },
+        refs: {
+            parentRef,
+            rowVirtualizer,
+            columnVirtualizer,
+        },
+        config: {
+            paginationEnabled: pagination,
+            exportEnabled: enableExport,
+            enableStickyHeader,
+            enableStickyPagination,
+            enableChangeTracking,
+            enableEditing,
+            gridLines: props.gridLines,
+            enableAltRow: props.enableAltRow,
+            enableHover: props.enableHover,
+            rowHeight: effectiveRowHeight,
+            selectionSettings: props.selectionSettings,
+            filterSettings: props.filterSettings,
+            searchSettings: props.searchSettings,
+            sortSettings: props.sortSettings,
+            editSettings: props.editSettings,
+        },
+        services: {
+        },
+        table,
+        dir,
+        baseApi,
+        imperativeAPI
+    }) as any, [
         baseApi, imperativeAPI, states, parentRef, rowVirtualizer, columnVirtualizer, table, dir,
         pagination, enableExport, rangeSelection, onCellMouseDown, onCellMouseEnter,
         enableStickyHeader, enableStickyPagination, enableChangeTracking, undo, redo,

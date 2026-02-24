@@ -83,14 +83,21 @@ const EzLayoutImpl = forwardRef<EzLayoutRef, EzLayoutProps>((props, ref) => {
         footerClassName,
     } = props;
 
+    const layoutRes = useEzLayout(props, ref);
     const {
-        layoutState,
-        i18nState,
-        isPending,
-        layoutService,
-        focusManager,
-        renderInjected
-    } = useEzLayout(props, ref);
+        state: {
+            layoutState,
+            i18nState,
+            isPending,
+        },
+        actions: {
+            renderInjected
+        },
+        services: {
+            layoutService,
+            focusManager
+        }
+    } = layoutRes;
 
     const isMinimal = layoutState.mode === 'minimal';
     const isAuth = layoutState.mode === 'auth' && authConfig;

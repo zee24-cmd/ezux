@@ -1,7 +1,8 @@
 import { useMemo, useEffect } from 'react';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { EzSchedulerProps, ViewType, SchedulerEvent } from '../EzScheduler.types';
-import { globalServiceRegistry } from '../../../shared/services/ServiceRegistry';
+import { useEzServiceRegistry } from '../../../shared/contexts/EzProvider';
+
 import { SchedulerService } from '../services/SchedulerService';
 import { RecurrenceEngine } from '../services/RecurrenceEngine';
 import {
@@ -27,9 +28,10 @@ export const useSchedulerEvents = (
     view: ViewType,
     currentDate: Date
 ) => {
+    const contextRegistry = useEzServiceRegistry();
     const {
         events,
-        serviceRegistry = globalServiceRegistry,
+        serviceRegistry = contextRegistry,
         showWeekend = true,
         recurrenceEngine: propsRecurrenceEngine,
         onEventCreate,

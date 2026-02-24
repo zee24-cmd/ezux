@@ -88,6 +88,8 @@ const EzKanbanInner = forwardRef<EzKanbanRef<KanbanCard>, EzKanbanProps>((props,
     // Initialize the main hook
     const kanban = useEzKanban<KanbanCard>(props, ref as any);
 
+    const { state, actions, dir, imperativeAPI } = kanban;
+
     // Modal State
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [editingCard, setEditingCard] = useState<Partial<KanbanCard> | undefined>(undefined);
@@ -95,74 +97,11 @@ const EzKanbanInner = forwardRef<EzKanbanRef<KanbanCard>, EzKanbanProps>((props,
     const [cardToDeleteId, setCardToDeleteId] = useState<string | null>(null);
 
     // Expose imperative API
-    useImperativeHandle(ref, () => ({
-        addCard: kanban.createCard,
-        updateCard: kanban.updateCard,
-        deleteCard: kanban.deleteCard,
-        moveCard: kanban.moveCard,
-        duplicateCard: kanban.duplicateCard,
-        archiveCard: kanban.archiveCard,
-        restoreCard: kanban.restoreCard,
-        getCard: kanban.getCard,
-        getCards: kanban.getCards,
-        getCardsInColumn: kanban.getCardsInColumn,
-
-        addColumn: kanban.createColumn,
-        updateColumn: kanban.updateColumn,
-        deleteColumn: kanban.deleteColumn,
-        reorderColumns: kanban.reorderColumns,
-        collapseColumn: kanban.collapseColumn,
-        expandColumn: kanban.expandColumn,
-        getColumn: kanban.getColumn,
-        getColumns: kanban.getColumns,
-
-        addSwimlane: kanban.createSwimlane,
-        updateSwimlane: kanban.updateSwimlane,
-        deleteSwimlane: kanban.deleteSwimlane,
-        reorderSwimlanes: kanban.reorderSwimlanes,
-        collapseSwimlane: kanban.collapseSwimlane,
-        expandSwimlane: kanban.expandSwimlane,
-        getSwimlane: kanban.getSwimlane,
-        getSwimlanes: kanban.getSwimlanes,
-
-        selectCard: kanban.selectCard,
-        selectCards: kanban.selectCards,
-        deselectCard: kanban.deselectCard,
-        deselectAllCards: kanban.deselectAllCards,
-        getSelectedCards: kanban.getSelectedCards,
-
-        setView: kanban.setView,
-        getView: kanban.getView,
-        scrollToColumn: kanban.scrollToColumn,
-        scrollToCard: kanban.scrollToCard,
-
-        setSearchQuery: kanban.setSearchQuery,
-        getSearchQuery: kanban.getSearchQuery,
-        setActiveFilters: kanban.setActiveFilters,
-        getActiveFilters: kanban.getActiveFilters,
-        clearFilters: kanban.clearFilters,
-        getFilteredCards: kanban.getFilteredCards,
-
-        getBoard: kanban.getBoard,
-        setBoard: kanban.setBoard,
-        refresh: kanban.refresh,
-        reset: kanban.reset,
-
-        showSpinner: kanban.showSpinner,
-        hideSpinner: kanban.hideSpinner,
-        forceUpdate: kanban.forceUpdate,
-        getStatistics: kanban.getStatistics,
-        validate: kanban.validate,
-
-        // Enterprise Methods
-        getOrderedCards: kanban.getOrderedCards,
-        focusCard: kanban.focusCard,
-        highlightCard: kanban.highlightCard,
-    }), [kanban]);
+    useImperativeHandle(ref, () => imperativeAPI, [imperativeAPI]);
 
     // Handle add card
     const handleAddCard = (columnId?: string) => {
-        const targetColumnId = columnId || kanban.selectedColumnId || kanban.board.columns[0]?.id;
+        const targetColumnId = columnId || state.selectedColumnId || state.board.columns[0]?.id;
 
         setEditingCard({
             columnId: targetColumnId,
@@ -176,9 +115,9 @@ const EzKanbanInner = forwardRef<EzKanbanRef<KanbanCard>, EzKanbanProps>((props,
     // Handle card save
     const handleSaveCard = async (cardData: Partial<KanbanCard>) => {
         if (cardData.id) {
-            await kanban.updateCard(cardData.id, cardData);
+            await actions.updateCard(cardData.id, cardData);
         } else {
-            await kanban.createCard(cardData);
+            await actions.createCard(cardData);
         }
         setIsEditorOpen(false);
     };
@@ -190,7 +129,7 @@ const EzKanbanInner = forwardRef<EzKanbanRef<KanbanCard>, EzKanbanProps>((props,
             setIsDeleteConfirmOpen(true);
             setIsEditorOpen(false); // Close editor if open
         } else {
-            kanban.deleteCard(cardId);
+            actions.deleteCard(cardId);
             setIsEditorOpen(false);
         }
     };
@@ -198,7 +137,7 @@ const EzKanbanInner = forwardRef<EzKanbanRef<KanbanCard>, EzKanbanProps>((props,
     // Handle confirm delete
     const handleConfirmDelete = async () => {
         if (cardToDeleteId) {
-            await kanban.deleteCard(cardToDeleteId);
+            await actions.deleteCard(cardToDeleteId);
             setIsDeleteConfirmOpen(false);
             setCardToDeleteId(null);
         }
@@ -215,30 +154,30 @@ const EzKanbanInner = forwardRef<EzKanbanRef<KanbanCard>, EzKanbanProps>((props,
 
     // Handle column collapse/expand
     const handleToggleColumnCollapse = (columnId: string) => {
-        const column = kanban.board.columns.find(c => c.id === columnId);
+        const column = state.board.columns.find(c => c.id === columnId);
         if (!column) return;
 
         if (column.isCollapsed) {
-            kanban.expandColumn(columnId);
+            actions.expandColumn(columnId);
         } else {
-            kanban.collapseColumn(columnId);
+            actions.collapseColumn(columnId);
         }
     };
 
     // Handle swimlane collapse/expand
     const handleToggleSwimlaneCollapse = (swimlaneId: string) => {
-        const swimlane = kanban.board.swimlanes?.find(s => s.id === swimlaneId);
+        const swimlane = state.board.swimlanes?.find(s => s.id === swimlaneId);
         if (!swimlane) return;
 
         if (swimlane.isCollapsed) {
-            kanban.expandSwimlane(swimlaneId);
+            actions.expandSwimlane(swimlaneId);
         } else {
-            kanban.collapseSwimlane(swimlaneId);
+            actions.collapseSwimlane(swimlaneId);
         }
     };
 
     return (
-        <div className={cn('flex flex-col h-full bg-background', className)} dir={kanban.dir}>
+        <div className={cn('flex flex-col h-full bg-background', className)} dir={dir}>
             <NotificationPanel />
             <NotificationPanel />
             {/* Toolbar */}
@@ -246,49 +185,49 @@ const EzKanbanInner = forwardRef<EzKanbanRef<KanbanCard>, EzKanbanProps>((props,
                 props.slots?.toolbar ? (
                     <props.slots.toolbar
                         {...({
-                            searchQuery: kanban.searchQuery,
-                            onSearchChange: kanban.setSearchQuery,
+                            searchQuery: state.searchQuery,
+                            onSearchChange: actions.setSearchQuery,
                             onAddCardClick: () => handleAddCard(),
                             onAddColumn: () => {
-                                kanban.createColumn({
+                                actions.createColumn({
                                     name: 'New Column',
-                                    position: kanban.board.columns.length,
+                                    position: state.board.columns.length,
                                 }).then((newCol) => {
-                                    kanban.setSelectedColumnId(newCol.id);
+                                    actions.setSelectedColumnId(newCol.id);
                                 });
                             },
-                            activeFilters: kanban.activeFilters,
-                            onFiltersChange: kanban.setActiveFilters,
-                            view: kanban.view,
-                            onViewChange: kanban.setView,
-                            onUndo: kanban.undo,
-                            onRedo: kanban.redo,
-                            canUndo: kanban.canUndo,
-                            canRedo: kanban.canRedo,
+                            activeFilters: state.activeFilters,
+                            onFiltersChange: actions.setActiveFilters,
+                            view: state.view,
+                            onViewChange: actions.setView,
+                            onUndo: actions.undo,
+                            onRedo: actions.redo,
+                            canUndo: state.canUndo,
+                            canRedo: state.canRedo,
                             ...(props.slotProps?.toolbar || {})
                         } as any)}
                     />
                 ) : (
                     <KanbanToolbar
-                        searchQuery={kanban.searchQuery}
-                        onSearchChange={kanban.setSearchQuery}
+                        searchQuery={state.searchQuery}
+                        onSearchChange={actions.setSearchQuery}
                         onAddCardClick={() => handleAddCard()}
                         onAddColumn={() => {
-                            kanban.createColumn({
+                            actions.createColumn({
                                 name: 'New Column',
-                                position: kanban.board.columns.length,
+                                position: state.board.columns.length,
                             }).then((newCol) => {
-                                kanban.setSelectedColumnId(newCol.id);
+                                actions.setSelectedColumnId(newCol.id);
                             });
                         }}
-                        activeFilters={kanban.activeFilters}
-                        onFiltersChange={kanban.setActiveFilters}
-                        view={kanban.view}
-                        onViewChange={kanban.setView}
-                        onUndo={kanban.undo}
-                        onRedo={kanban.redo}
-                        canUndo={kanban.canUndo}
-                        canRedo={kanban.canRedo}
+                        activeFilters={state.activeFilters}
+                        onFiltersChange={actions.setActiveFilters}
+                        view={state.view}
+                        onViewChange={actions.setView}
+                        onUndo={actions.undo}
+                        onRedo={actions.redo}
+                        canUndo={state.canUndo}
+                        canRedo={state.canRedo}
                     />
                 )
             )}
@@ -298,54 +237,54 @@ const EzKanbanInner = forwardRef<EzKanbanRef<KanbanCard>, EzKanbanProps>((props,
                 {props.slots?.board ? (
                     <props.slots.board
                         {...({
-                            board: kanban.board,
+                            board: state.board,
                             onCardClick: handleCardClick,
                             onCardDoubleClick: onCardDoubleClick,
-                            onCardDragStart: kanban.handleDragStart,
-                            onCardDragEnd: kanban.handleDragEnd,
-                            onCardDrop: kanban.handleDrop,
+                            onCardDragStart: actions.handleDragStart,
+                            onCardDragEnd: actions.handleDragEnd,
+                            onCardDrop: actions.handleDrop,
                             onAddCard: handleAddCard,
                             onToggleColumnCollapse: handleToggleColumnCollapse,
                             onToggleSwimlaneCollapse: handleToggleSwimlaneCollapse,
-                            onDeleteColumn: kanban.deleteColumn,
-                            onUpdateColumn: kanban.updateColumn,
-                            onColumnClick: kanban.setSelectedColumnId,
+                            onDeleteColumn: actions.deleteColumn,
+                            onUpdateColumn: actions.updateColumn,
+                            onColumnClick: actions.setSelectedColumnId,
                             onCreateCard: handleSaveCard,
-                            selectedColumnId: kanban.selectedColumnId,
-                            draggedCardId: kanban.draggedCard?.id,
-                            filteredCards: kanban.filteredCards,
+                            selectedColumnId: state.selectedColumnId,
+                            draggedCardId: state.draggedCard?.id,
+                            filteredCards: state.filteredCards,
 
                             slots: props.slots,
                             slotProps: props.slotProps,
-                            view: kanban.view,
-                            dir: kanban.dir,
+                            view: state.view,
+                            dir: dir,
                             className: "flex-1 h-full",
                             ...(props.slotProps?.board || {})
                         } as any)}
                     />
                 ) : (
                     <KanbanBoardBoard
-                        board={kanban.board}
+                        board={state.board}
                         onCardClick={handleCardClick}
                         onCardDoubleClick={onCardDoubleClick}
-                        onCardDragStart={kanban.handleDragStart}
-                        onCardDragEnd={kanban.handleDragEnd}
-                        onCardDrop={kanban.handleDrop}
+                        onCardDragStart={actions.handleDragStart}
+                        onCardDragEnd={actions.handleDragEnd}
+                        onCardDrop={actions.handleDrop}
                         onAddCard={handleAddCard}
                         onToggleColumnCollapse={handleToggleColumnCollapse}
                         onToggleSwimlaneCollapse={handleToggleSwimlaneCollapse}
-                        onDeleteColumn={kanban.deleteColumn}
-                        onUpdateColumn={kanban.updateColumn}
-                        onColumnClick={kanban.setSelectedColumnId}
+                        onDeleteColumn={actions.deleteColumn}
+                        onUpdateColumn={actions.updateColumn}
+                        onColumnClick={actions.setSelectedColumnId}
                         onCreateCard={handleSaveCard}
-                        selectedColumnId={kanban.selectedColumnId}
-                        draggedCardId={kanban.draggedCard?.id}
-                        filteredCards={kanban.filteredCards}
+                        selectedColumnId={state.selectedColumnId}
+                        draggedCardId={state.draggedCard?.id}
+                        filteredCards={state.filteredCards}
 
                         slots={props.slots}
                         slotProps={props.slotProps}
-                        view={kanban.view}
-                        dir={kanban.dir}
+                        view={state.view}
+                        dir={dir}
                         className="flex-1 h-full"
                     />
                 )}
@@ -360,7 +299,7 @@ const EzKanbanInner = forwardRef<EzKanbanRef<KanbanCard>, EzKanbanProps>((props,
                         onSave: handleSaveCard,
                         onDelete: handleDeleteRequest,
                         card: editingCard,
-                        columns: kanban.board.columns,
+                        columns: state.board.columns,
                         ...(props.slotProps?.cardEditor || {})
                     } as any)}
                 />
@@ -371,7 +310,7 @@ const EzKanbanInner = forwardRef<EzKanbanRef<KanbanCard>, EzKanbanProps>((props,
                     onSave={handleSaveCard}
                     onDelete={handleDeleteRequest}
                     card={editingCard}
-                    columns={kanban.board.columns}
+                    columns={state.board.columns}
                 />
             )}
 

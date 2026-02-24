@@ -5,7 +5,8 @@ import { Input } from '../../ui/input';
 import { Button } from '../../ui/button';
 import { Search, Plus, Download, Layout, Layers, Undo2, Redo2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../ui/select';
-import { globalServiceRegistry } from '../../../shared/services/ServiceRegistry';
+import { useEzServiceRegistry } from '../../../shared/contexts/EzProvider';
+
 import { useDebounce } from '../../../shared/hooks/useDebounce';
 import { useI18n } from '../../../shared/hooks/useI18n';
 import type { FilterConfig, KanbanBoard } from '../EzKanban.types';
@@ -68,6 +69,7 @@ export const KanbanToolbar: React.FC<KanbanToolbarProps> = ({
     activeFilters,
     onFiltersChange,
 }) => {
+    const registry = useEzServiceRegistry();
     // Removed duplicate local state for card editor
     // const [isCardEditorOpen, setIsCardEditorOpen] = useState(false);
 
@@ -96,7 +98,7 @@ export const KanbanToolbar: React.FC<KanbanToolbarProps> = ({
         if (!board) return;
 
         try {
-            const exportService = globalServiceRegistry.get<ExportService>('ExportService');
+            const exportService = registry.get<ExportService>('ExportService');
 
             if (format === 'csv') {
                 // Export cards as CSV
@@ -162,7 +164,7 @@ export const KanbanToolbar: React.FC<KanbanToolbarProps> = ({
             }
 
             // Show success notification
-            const notificationService = globalServiceRegistry.get<NotificationService>('NotificationService');
+            const notificationService = registry.get<NotificationService>('NotificationService');
             if (notificationService) {
                 notificationService.add({
                     type: 'success',
@@ -171,7 +173,7 @@ export const KanbanToolbar: React.FC<KanbanToolbarProps> = ({
                 });
             }
         } catch (error) {
-            const notificationService = globalServiceRegistry.get<NotificationService>('NotificationService');
+            const notificationService = registry.get<NotificationService>('NotificationService');
             if (notificationService) {
                 notificationService.add({
                     type: 'error',

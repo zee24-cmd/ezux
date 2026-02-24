@@ -4,6 +4,7 @@ import { useEzTable } from '../useEzTable';
 import { ColumnDef, Row } from '@tanstack/react-table';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
+import { EzProvider } from '../../../../src/shared/contexts/EzProvider';
 
 interface TestData {
     id: number;
@@ -44,7 +45,9 @@ describe('useEzTable', () => {
         const queryClient = new QueryClient();
         return ({ children }: { children: React.ReactNode }) => (
             <QueryClientProvider client={queryClient} >
-                {children}
+                <EzProvider>
+                    {children}
+                </EzProvider>
             </QueryClientProvider>
         );
     };
@@ -60,7 +63,7 @@ describe('useEzTable', () => {
                 { wrapper: createWrapper() }
             );
 
-            expect(result.current.rows).toHaveLength(5);
+            expect(result.current.state.rows).toHaveLength(5);
             expect(result.current.table).toBeDefined();
         });
 
@@ -73,7 +76,7 @@ describe('useEzTable', () => {
                 { wrapper: createWrapper() }
             );
 
-            expect(result.current.rows).toHaveLength(0);
+            expect(result.current.state.rows).toHaveLength(0);
         });
     });
 
@@ -88,7 +91,7 @@ describe('useEzTable', () => {
             );
 
             act(() => {
-                result.current.setGlobalFilter('Alice');
+                result.current.actions.setGlobalFilter('Alice');
             });
 
             // After filtering, should have fewer rows
@@ -178,7 +181,7 @@ describe('useEzTable', () => {
             );
 
             // Should show only 2 rows per page
-            expect(result.current.rows.length).toBe(2);
+            expect(result.current.state.rows.length).toBe(2);
             expect(result.current.table.getState().pagination.pageSize).toBe(2);
         });
 
@@ -193,13 +196,13 @@ describe('useEzTable', () => {
                 { wrapper: createWrapper() }
             );
 
-            const firstPageFirstRow = result.current.rows[0].original.id;
+            const firstPageFirstRow = result.current.state.rows[0].original.id;
 
             act(() => {
                 result.current.table.nextPage();
             });
 
-            const secondPageFirstRow = result.current.rows[0].original.id;
+            const secondPageFirstRow = result.current.state.rows[0].original.id;
             expect(secondPageFirstRow).not.toBe(firstPageFirstRow);
         });
     });
@@ -272,9 +275,9 @@ describe('useEzTable', () => {
                 { wrapper: createWrapper() }
             );
 
-            expect(result.current.changes).toBeDefined();
-            expect(result.current.canUndo).toBe(false);
-            expect(result.current.canRedo).toBe(false);
+            expect(result.current.state.changes).toBeDefined();
+            expect(result.current.state.canUndo).toBe(false);
+            expect(result.current.state.canRedo).toBe(false);
         });
     });
 
@@ -288,8 +291,8 @@ describe('useEzTable', () => {
                 { wrapper: createWrapper() }
             );
 
-            expect(result.current.isPending).toBeDefined();
-            expect(typeof result.current.isPending).toBe('boolean');
+            expect(result.current.state.isPending).toBeDefined();
+            expect(typeof result.current.state.isPending).toBe('boolean');
         });
     });
 });

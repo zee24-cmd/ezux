@@ -1,6 +1,5 @@
 import React from 'react';
-import { Store } from '@tanstack/store';
-import { SchedulerState, SchedulerActions } from '../state/scheduler.store';
+
 import { ViewType, SchedulerEvent, Resource, EzSchedulerProps } from '../EzScheduler.types';
 import { DayWeekView } from '../views/DayWeekView';
 import { MonthView } from '../views/MonthView';
@@ -12,16 +11,7 @@ import { useMediaQuery } from '../../../shared/hooks';
  * Props for the EzSchedulerContent component.
  */
 interface EzSchedulerContentProps {
-    /** 
-     * The scheduler state store.
-     * @group Properties 
-     */
-    store: Store<SchedulerState>;
-    /** 
-     * Actions for state mutation.
-     * @group Methods 
-     */
-    actions: SchedulerActions;
+
     /** 
      * The currently active view type.
      * @group Properties 

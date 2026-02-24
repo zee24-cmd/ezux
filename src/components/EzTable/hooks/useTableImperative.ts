@@ -13,7 +13,7 @@ import {
 
 
 import { EzTableRef } from '../EzTable.types';
-import { globalServiceRegistry } from '../../../shared/services/ServiceRegistry';
+import { useEzServiceRegistry } from '../../../shared/contexts/EzProvider';
 import { NotificationService } from '../../../shared/services/NotificationService';
 
 /**
@@ -51,6 +51,7 @@ export const useTableImperative = <TData extends object>(
     ref: React.Ref<EzTableRef<TData>>,
     extraApi: any = {}
 ) => {
+    const registry = useEzServiceRegistry();
     const { rows } = table.getRowModel();
 
     const api = useMemo<EzTableRef<TData>>(() => { // Force type to ensure adherence to EzTableRef
@@ -124,7 +125,7 @@ export const useTableImperative = <TData extends object>(
                 if (methods.service) {
                     try {
                         const result = await methods.addMutation.mutateAsync(newRecord);
-                        const service = globalServiceRegistry.get<NotificationService>('NotificationService');
+                        const service = registry.get<NotificationService>('NotificationService');
                         service?.show({ type: 'success', message: 'Row Added Successfully!', duration: 3000 });
 
                         // Select and edit the new row
@@ -139,7 +140,7 @@ export const useTableImperative = <TData extends object>(
                         }, 100);
                         return;
                     } catch (e) {
-                        const service = globalServiceRegistry.get<NotificationService>('NotificationService');
+                        const service = registry.get<NotificationService>('NotificationService');
                         service?.show({ type: 'error', message: 'Failed to Add Row', duration: 3000 });
                         throw e;
                     }
@@ -150,7 +151,7 @@ export const useTableImperative = <TData extends object>(
                 methods.addRow(newRecord, 0);
                 props.onDataChangeComplete?.({ action: 'add', data: newRecord });
 
-                const service = globalServiceRegistry.get<NotificationService>('NotificationService');
+                const service = registry.get<NotificationService>('NotificationService');
                 service?.show({ type: 'success', message: 'Row Added Successfully!', duration: 3000 });
 
                 setTimeout(() => {
@@ -170,11 +171,11 @@ export const useTableImperative = <TData extends object>(
                 if (methods.service && rowId) {
                     try {
                         await methods.updateMutation.mutateAsync({ id: rowId, updates: newData });
-                        const service = globalServiceRegistry.get<NotificationService>('NotificationService');
+                        const service = registry.get<NotificationService>('NotificationService');
                         service?.show({ type: 'success', message: 'Row Updated Successfully!', duration: 3000 });
                         return;
                     } catch (e) {
-                        const service = globalServiceRegistry.get<NotificationService>('NotificationService');
+                        const service = registry.get<NotificationService>('NotificationService');
                         service?.show({ type: 'error', message: 'Failed to Update Row', duration: 3000 });
                         throw e;
                     }
@@ -185,7 +186,7 @@ export const useTableImperative = <TData extends object>(
                     const next = [...old];
                     next[idx] = { ...next[idx], ...newData };
 
-                    const service = globalServiceRegistry.get<NotificationService>('NotificationService');
+                    const service = registry.get<NotificationService>('NotificationService');
                     service?.show({ type: 'success', message: 'Row Updated Successfully!', duration: 3000 });
 
                     return next;
@@ -202,11 +203,11 @@ export const useTableImperative = <TData extends object>(
                 if (methods.service && rowId) {
                     try {
                         await methods.deleteMutation.mutateAsync(rowId);
-                        const service = globalServiceRegistry.get<NotificationService>('NotificationService');
+                        const service = registry.get<NotificationService>('NotificationService');
                         service?.show({ type: 'success', message: 'Row Deleted Successfully!', duration: 3000 });
                         return;
                     } catch (e) {
-                        const service = globalServiceRegistry.get<NotificationService>('NotificationService');
+                        const service = registry.get<NotificationService>('NotificationService');
                         service?.show({ type: 'error', message: 'Failed to Delete Row', duration: 3000 });
                         throw e;
                     }
@@ -215,7 +216,7 @@ export const useTableImperative = <TData extends object>(
                 props.onDataChangeStart?.({ action: 'delete', data: deletedRecord });
                 methods.deleteRows([idx]);
 
-                const service = globalServiceRegistry.get<NotificationService>('NotificationService');
+                const service = registry.get<NotificationService>('NotificationService');
                 service?.show({ type: 'success', message: 'Row Deleted Successfully!', duration: 3000 });
             },
             /** Deletes multiple records. @group Methods */
@@ -229,11 +230,11 @@ export const useTableImperative = <TData extends object>(
                             const rowId = (data[idx] as any)?.[idField];
                             if (rowId) await methods.deleteMutation.mutateAsync(rowId);
                         }
-                        const service = globalServiceRegistry.get<NotificationService>('NotificationService');
+                        const service = registry.get<NotificationService>('NotificationService');
                         service?.show({ type: 'success', message: `${indices.length} Rows Deleted Successfully!`, duration: 3000 });
                         return;
                     } catch (e) {
-                        const service = globalServiceRegistry.get<NotificationService>('NotificationService');
+                        const service = registry.get<NotificationService>('NotificationService');
                         service?.show({ type: 'error', message: 'Failed to Delete Rows', duration: 3000 });
                         throw e;
                     }
@@ -242,7 +243,7 @@ export const useTableImperative = <TData extends object>(
                 props.onDataChangeStart?.({ action: 'delete', data: indices.map(i => data[i]) });
                 methods.deleteRows(indices);
 
-                const service = globalServiceRegistry.get<NotificationService>('NotificationService');
+                const service = registry.get<NotificationService>('NotificationService');
                 service?.show({ type: 'success', message: `${indices.length} Rows Deleted Successfully!`, duration: 3000 });
             },
             /** Returns TanStack row metadata. @group Methods */
@@ -258,14 +259,14 @@ export const useTableImperative = <TData extends object>(
             /** Commits multi-row batch changes. @group Methods */
             saveDataChanges: () => {
                 props.onDataChangeComplete?.({ action: 'edit', data: methods.batchChanges.changedRecords });
-                const service = globalServiceRegistry.get<NotificationService>('NotificationService');
+                const service = registry.get<NotificationService>('NotificationService');
                 service?.show({ type: 'success', message: 'Changes Saved Successfully!', duration: 3000 });
             },
             /** Reverts all uncommitted changes. @group Methods */
             cancelDataChanges: () => {
                 methods.resetData();
                 props.onDataChangeCancel?.({ action: 'edit' });
-                const service = globalServiceRegistry.get<NotificationService>('NotificationService');
+                const service = registry.get<NotificationService>('NotificationService');
                 service?.show({ type: 'info', message: 'Changes Discarded', duration: 3000 });
             },
             /** Returns batched changes object. @group Methods */
@@ -333,11 +334,11 @@ export const useTableImperative = <TData extends object>(
 
                 try {
                     await navigator.clipboard.writeText(headers + body);
-                    const service = globalServiceRegistry.get<NotificationService>('NotificationService');
+                    const service = registry.get<NotificationService>('NotificationService');
                     service?.show({ type: 'success', message: 'Copied to Clipboard!', duration: 2000 });
                 } catch (err) {
                     console.error('Failed to copy', err);
-                    const service = globalServiceRegistry.get<NotificationService>('NotificationService');
+                    const service = registry.get<NotificationService>('NotificationService');
                     service?.show({ type: 'error', message: 'Failed to Copy', duration: 3000 });
                 }
             },

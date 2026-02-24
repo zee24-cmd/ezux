@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { globalServiceRegistry } from '../services/ServiceRegistry';
-import { ThemeService, ThemeMode, ThemeColor } from '../services/ThemeService';
+import { useThemeService } from '../contexts/EzProvider';
+import { ThemeMode, ThemeColor } from '../services/ThemeService';
 
 /**
  * Hook for accessing and controlling the library's theme state.
@@ -11,13 +11,7 @@ import { ThemeService, ThemeMode, ThemeColor } from '../services/ThemeService';
  * @group Hooks
  */
 export const useEzTheme = () => {
-    // Get singleton instance
-    const themeService = globalServiceRegistry.get<ThemeService>('ThemeService') || new ThemeService();
-
-    // Register if not already (safeguard)
-    if (!globalServiceRegistry.get('ThemeService')) {
-        globalServiceRegistry.register('ThemeService', themeService);
-    }
+    const themeService = useThemeService();
 
     const [state, setState] = useState(themeService.getState());
 

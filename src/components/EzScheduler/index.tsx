@@ -83,12 +83,11 @@ const EzSchedulerInner = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, re
         selectedDate: props.selectedDate ?? props.defaultSelectedDate
     });
 
-    const {
-        store, actions,
-        view, setView, currentDate, setCurrentDate,
-        visibleEvents, rowVirtualizer, parentRef,
-        schedulerService, baseApi
-    } = scheduler;
+    const { state, actions, services, refs, baseApi, dir } = scheduler;
+    const { currentView: view, currentDate, viewEvents: visibleEvents, daysInView, slotDuration, is24Hour } = state;
+    const { setView, setCurrentDate } = actions;
+    const { rowVirtualizer, parentRef } = refs;
+    const { schedulerService, serviceRegistry } = services;
 
     // 2. Event Handlers & DND
     const checkOverlap = (event: Partial<SchedulerEvent>) => {
@@ -118,7 +117,7 @@ const EzSchedulerInner = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, re
     };
 
     const triggerOverlapWarning = (type: 'block' | 'regular' | 'past' = 'regular') => {
-        const notificationService = scheduler.serviceRegistry.get<any>('NotificationService');
+        const notificationService = serviceRegistry.get<any>('NotificationService');
         if (notificationService) {
             let message = '';
             let msgType: 'error' | 'warning' = 'warning';
@@ -144,7 +143,7 @@ const EzSchedulerInner = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, re
 
     const { sensors, handleDragEnd } = useSchedulerEventHandlers({
         events: visibleEvents,
-        slotDuration: scheduler.slotDuration,
+        slotDuration: slotDuration,
         onEventChange: (updatedEvent) => {
             // Check for past date
             if (!props.allowPastEvents && updatedEvent.start < new Date()) {
@@ -169,7 +168,7 @@ const EzSchedulerInner = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, re
             }
 
             console.log('[EzScheduler] Calling scheduler.updateEvent', updatedEvent);
-            scheduler.updateEvent(updatedEvent);
+            actions.updateEvent(updatedEvent);
 
         }
     });
@@ -215,9 +214,9 @@ const EzSchedulerInner = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, re
             hideSpinner: baseApi.hideSpinner,
             closeQuickInfoPopup: () => setIsQuickAddOpen(false),
             changeView: (v: View) => setView(v.toLowerCase() as ViewType),
-            next: scheduler.next,
-            prev: scheduler.prev,
-            today: scheduler.today
+            next: actions.nextPeriod,
+            prev: actions.prevPeriod,
+            today: actions.today
         },
         ref,
         api
@@ -261,10 +260,10 @@ const EzSchedulerInner = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, re
 
         if (editorState.mode === 'create') {
             await props.onEventCreate?.(event);
-            scheduler.addEvent(event as SchedulerEvent);
+            actions.addEvent(event as SchedulerEvent);
         } else {
             await props.onEventChange?.(event as SchedulerEvent);
-            scheduler.updateEvent(event as SchedulerEvent);
+            actions.updateEvent(event as SchedulerEvent);
         }
         setEditorState(prev => ({ ...prev, isOpen: false }));
     };
@@ -285,10 +284,10 @@ const EzSchedulerInner = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, re
         const event = visibleEvents.find((e: SchedulerEvent) => e.id === id);
         if (event) {
             await props.onEventDelete?.(id);
-            scheduler.deleteEvent(id);
+            actions.deleteEvent(id);
 
             // Send Notification
-            const notificationService = scheduler.serviceRegistry.get<any>('NotificationService');
+            const notificationService = serviceRegistry.get<any>('NotificationService');
             if (notificationService) {
                 const dateTimeStr = format(event.start, 'MMM d, yyyy h:mm a');
                 notificationService.add({
@@ -309,7 +308,7 @@ const EzSchedulerInner = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, re
             return;
         }
 
-        scheduler.addEvent(event as SchedulerEvent);
+        actions.addEvent(event as SchedulerEvent);
         props.onEventCreate?.(event);
         setIsQuickAddOpen(false);
     };
@@ -326,7 +325,7 @@ const EzSchedulerInner = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, re
         <EzErrorBoundary fallback={<EzSchedulerErrorFallback />}>
             <div
                 className={cn("ez-scheduler flex flex-col w-full h-full bg-background select-none overflow-hidden", props.className)}
-                dir={scheduler.dir}
+                dir={dir}
             >
                 {props.showHeaderBar !== false && (
                     <React.Suspense fallback={<div className="h-12 w-full animate-pulse bg-muted/20 rounded-md mb-4" />}>
@@ -338,16 +337,16 @@ const EzSchedulerInner = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, re
                                         view={view}
                                         setView={setView as any}
                                         currentDate={currentDate}
-                                        next={scheduler.next}
-                                        prev={scheduler.prev}
-                                        today={scheduler.today}
+                                        next={actions.nextPeriod}
+                                        prev={actions.prevPeriod}
+                                        today={actions.today}
                                         onAddClick={useCallback(() => setEditorState({ isOpen: true, mode: 'create', event: {} }), [])}
-                                        slotDuration={scheduler.slotDuration}
-                                        setSlotDuration={scheduler.setSlotDuration}
+                                        slotDuration={slotDuration}
+                                        setSlotDuration={actions.setSlotDuration}
                                         setCurrentDate={setCurrentDate}
-                                        onPrev={scheduler.prev}
-                                        onNext={scheduler.next}
-                                        onToday={scheduler.today}
+                                        onPrev={actions.prevPeriod}
+                                        onNext={actions.nextPeriod}
+                                        onToday={actions.today}
                                         currentView={view as View}
                                         onViewChange={(v: string) => {
                                             const normalized = v.toLowerCase().replace(/[^a-z]/g, '');
@@ -370,7 +369,7 @@ const EzSchedulerInner = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, re
                                         onExportExcel={useCallback(() => props.onExportExcel?.(visibleEvents), [props.onExportExcel, visibleEvents])}
                                         onExportCSV={useCallback(() => props.onExportCSV?.(visibleEvents), [props.onExportCSV, visibleEvents])}
                                         onExportICS={useCallback(() => props.onExportICS?.(visibleEvents), [props.onExportICS, visibleEvents])}
-                                        dir={scheduler.dir}
+                                        dir={dir}
                                         {...props.slotProps?.toolbar}
                                     />
                                 );
@@ -380,16 +379,16 @@ const EzSchedulerInner = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, re
                                     view={view as ViewType}
                                     setView={setView}
                                     currentDate={currentDate}
-                                    next={scheduler.next}
-                                    prev={scheduler.prev}
-                                    today={scheduler.today}
+                                    next={actions.nextPeriod}
+                                    prev={actions.prevPeriod}
+                                    today={actions.today}
                                     onAddClick={useCallback(() => setEditorState({ isOpen: true, mode: 'create', event: {} }), [])}
-                                    slotDuration={scheduler.slotDuration}
-                                    setSlotDuration={scheduler.setSlotDuration}
+                                    slotDuration={slotDuration}
+                                    setSlotDuration={actions.setSlotDuration}
                                     setCurrentDate={setCurrentDate}
-                                    onPrev={scheduler.prev}
-                                    onNext={scheduler.next}
-                                    onToday={scheduler.today}
+                                    onPrev={actions.prevPeriod}
+                                    onNext={actions.nextPeriod}
+                                    onToday={actions.today}
                                     currentView={view as View}
                                     onViewChange={(v) => {
                                         const normalized = v.toLowerCase().replace(/[^a-z]/g, '');
@@ -412,7 +411,7 @@ const EzSchedulerInner = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, re
                                     onExportExcel={useCallback(() => props.onExportExcel?.(visibleEvents), [props.onExportExcel, visibleEvents])}
                                     onExportCSV={useCallback(() => props.onExportCSV?.(visibleEvents), [props.onExportCSV, visibleEvents])}
                                     onExportICS={useCallback(() => props.onExportICS?.(visibleEvents), [props.onExportICS, visibleEvents])}
-                                    dir={scheduler.dir}
+                                    dir={dir}
                                 />
                             );
                         })()}
@@ -421,10 +420,8 @@ const EzSchedulerInner = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, re
                 <DndContext sensors={sensors} onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
                     <div className="flex-1 overflow-hidden relative flex flex-col">
                         <EzSchedulerContent
-                            store={store}
-                            actions={actions}
                             view={view}
-                            daysInView={scheduler.daysInView}
+                            daysInView={daysInView}
                             visibleEvents={visibleEvents}
                             rowVirtualizer={rowVirtualizer}
                             resources={internalResources}
@@ -438,10 +435,10 @@ const EzSchedulerInner = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, re
                             handleRangeSelect={handleRangeSelect}
                             currentDate={currentDate}
                             showUnassignedLane={props.showUnassignedLane}
-                            slotDuration={scheduler.slotDuration}
-                            is24Hour={scheduler.is24Hour}
-                            setIs24Hour={scheduler.setIs24Hour}
-                            dir={scheduler.dir}
+                            slotDuration={slotDuration}
+                            is24Hour={is24Hour}
+                            setIs24Hour={actions.setIs24Hour}
+                            dir={dir}
                         />
 
                         {props.isLoading && <SchedulerLoadingSpinner />}

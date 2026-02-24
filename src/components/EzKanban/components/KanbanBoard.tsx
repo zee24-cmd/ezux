@@ -1,7 +1,6 @@
-'use client';
-
-import React from 'react';
+import React, { useState } from 'react';
 import type { KanbanBoard, KanbanCard, KanbanColumn as KanbanColumnType, KanbanSlotConfig } from '../EzKanban.types';
+import { DndContext, PointerSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, DragOverEvent, DragOverlay } from '@dnd-kit/core';
 import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { KanbanColumn } from './KanbanColumn';
 import { KanbanSwimlane } from './KanbanSwimlane';
@@ -28,7 +27,7 @@ export interface KanbanBoardProps {
     /** Callback when card drag ends. @group Events */
     onCardDragEnd?: () => void;
     /** Callback when a card is dropped into a column/swimlane. @group Events */
-    onCardDrop?: (columnId: string, swimlaneId?: string) => void;
+    onCardDrop?: (columnId: string, swimlaneId?: string, targetPosition?: number) => void;
     /** Callback to add a new card to a specific location. @group Events */
     onAddCard?: (columnId: string, swimlaneId?: string) => void;
     /** Callback to toggle column collapse state. @group Events */
@@ -95,6 +94,11 @@ export const KanbanBoardComponent: React.FC<KanbanBoardProps> = ({
 }) => {
     const cards = filteredCards || board.cards;
     const { t } = useI18n();
+
+    // Track which card is being dragged (for DragOverlay)
+    const [activeCard, setActiveCard] = useState<KanbanCard | null>(null);
+    // Track which column is being hovered over
+    const [overColumnId, setOverColumnId] = useState<string | null>(null);
 
     if (view === 'timeline') {
         return (
@@ -172,57 +176,153 @@ export const KanbanBoardComponent: React.FC<KanbanBoardProps> = ({
         );
     }
 
+    // Set up sensors for DnD - 5px activation distance prevents accidental drags on click
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: { distance: 5 }
+        })
+    );
+
+    const handleDndDragStart = (event: DragStartEvent) => {
+        const { active } = event;
+        if (active.data.current?.type === 'card') {
+            setActiveCard(active.data.current.card);
+            onCardDragStart?.(active.data.current.card);
+        }
+    };
+
+    const handleDndDragOver = (event: DragOverEvent) => {
+        const { over } = event;
+        if (!over) {
+            setOverColumnId(null);
+            return;
+        }
+        if (over.data.current?.type === 'column') {
+            setOverColumnId(over.data.current.column.id);
+        } else if (over.data.current?.type === 'card') {
+            setOverColumnId(over.data.current.card.columnId);
+        } else {
+            setOverColumnId(null);
+        }
+    };
+
+    const handleDndDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+        setActiveCard(null);
+        setOverColumnId(null);
+
+        if (!over) {
+            // Dropped outside any droppable — cancel
+            onCardDragEnd?.();
+            return;
+        }
+
+        if (active.data.current?.type === 'card') {
+            // Determine target column and position based on what was dropped on
+            let targetColumnId: string | undefined;
+            let targetPosition: number | undefined;
+
+            if (over.data.current?.type === 'column') {
+                // Dropped directly on a column header/body — append at end
+                targetColumnId = over.data.current.column.id;
+                targetPosition = undefined; // will default to append in moveCard
+            } else if (over.data.current?.type === 'card') {
+                // Dropped on another card — insert at that card's position
+                const overCard: KanbanCard = over.data.current.card;
+                targetColumnId = overCard.columnId;
+                // Find the position of the over card in its sorted column
+                const columnCards = board.cards
+                    .filter(c => c.columnId === targetColumnId)
+                    .sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+                const overIndex = columnCards.findIndex(c => c.id === overCard.id);
+                targetPosition = overIndex >= 0 ? overIndex : undefined;
+            }
+
+            if (targetColumnId) {
+                onCardDrop?.(targetColumnId, undefined, targetPosition);
+            } else {
+                onCardDragEnd?.();
+            }
+        } else if (active.data.current?.type === 'column' && over.data.current?.type === 'column') {
+            // Column reordering — no-op here, handled by parent if needed
+            onCardDragEnd?.();
+        } else {
+            onCardDragEnd?.();
+        }
+    };
+
     return (
-        <div className={cn('flex gap-4 overflow-x-auto p-4', className)}>
-            <SortableContext
-                items={board.columns.map(col => col.id)}
-                strategy={horizontalListSortingStrategy}
-            >
-                {board.columns
-                    .sort((a, b) => a.position - b.position)
-                    .map((column) => {
-                        const columnCards = cards.filter((card) => card.columnId === column.id);
+        <DndContext
+            sensors={sensors}
+            onDragStart={handleDndDragStart}
+            onDragOver={handleDndDragOver}
+            onDragEnd={handleDndDragEnd}
+        >
+            <div className={cn('flex gap-4 overflow-x-auto p-4', className)}>
+                <SortableContext
+                    items={board.columns.map(col => col.id)}
+                    strategy={horizontalListSortingStrategy}
+                >
+                    {board.columns
+                        .sort((a, b) => a.position - b.position)
+                        .map((column) => {
+                            const columnCards = cards.filter((card) => card.columnId === column.id);
 
-                        return (
-                            <KanbanColumn
-                                key={column.id}
-                                column={column}
-                                cards={columnCards}
-                                onCardClick={onCardClick}
-                                onCardDoubleClick={onCardDoubleClick}
-                                onCardDragStart={onCardDragStart}
-                                onCardDragEnd={onCardDragEnd}
-                                onDrop={onCardDrop}
-                                onAddCard={onAddCard}
-                                onToggleCollapse={onToggleColumnCollapse}
-                                onDeleteColumn={onDeleteColumn}
-                                onUpdateColumn={onUpdateColumn}
-                                onColumnClick={onColumnClick}
-                                selectedColumnId={selectedColumnId}
-                                draggedCardId={draggedCardId}
-                                customFields={board.customFields}
-                                slots={slots}
-                                slotProps={slotProps}
-                                dir={dir}
-                            />
-                        );
-                    })}
-            </SortableContext>
+                            return (
+                                <KanbanColumn
+                                    key={column.id}
+                                    column={column}
+                                    cards={columnCards}
+                                    onCardClick={onCardClick}
+                                    onCardDoubleClick={onCardDoubleClick}
+                                    onCardDragStart={onCardDragStart}
+                                    onCardDragEnd={onCardDragEnd}
+                                    onDrop={onCardDrop}
+                                    onAddCard={onAddCard}
+                                    onToggleCollapse={onToggleColumnCollapse}
+                                    onDeleteColumn={onDeleteColumn}
+                                    onUpdateColumn={onUpdateColumn}
+                                    onColumnClick={onColumnClick}
+                                    selectedColumnId={selectedColumnId}
+                                    draggedCardId={draggedCardId}
+                                    isDropTarget={overColumnId === column.id}
+                                    customFields={board.customFields}
+                                    slots={slots}
+                                    slotProps={slotProps}
+                                    dir={dir}
+                                />
+                            );
+                        })}
+                </SortableContext>
 
-            {/* Add Column Button */}
-            {onAddColumn && (
-                <div className="w-80 shrink-0">
-                    <Button
-                        variant="outline"
-                        className="w-full h-12 border-dashed"
-                        onClick={onAddColumn}
-                    >
-                        <Plus className="me-2 h-4 w-4" />
-                        {t('add_column') || 'Add Column'}
-                    </Button>
-                </div>
-            )}
-        </div>
+                {/* Add Column Button */}
+                {onAddColumn && (
+                    <div className="w-80 shrink-0">
+                        <Button
+                            variant="outline"
+                            className="w-full h-12 border-dashed"
+                            onClick={onAddColumn}
+                        >
+                            <Plus className="me-2 h-4 w-4" />
+                            {t('add_column') || 'Add Column'}
+                        </Button>
+                    </div>
+                )}
+            </div>
+            {/* Floating drag overlay — shows ghost of card being dragged */}
+            <DragOverlay dropAnimation={{ duration: 200, easing: 'ease' }}>
+                {activeCard ? (
+                    <div className="rotate-2 opacity-90 shadow-2xl ring-2 ring-primary/60 rounded-lg pointer-events-none w-72">
+                        <div className="bg-card border border-border rounded-lg p-3 space-y-1">
+                            <p className="font-medium text-sm">{activeCard.title}</p>
+                            {activeCard.description && (
+                                <p className="text-xs text-muted-foreground line-clamp-2">{activeCard.description}</p>
+                            )}
+                        </div>
+                    </div>
+                ) : null}
+            </DragOverlay>
+        </DndContext>
     );
 };
 

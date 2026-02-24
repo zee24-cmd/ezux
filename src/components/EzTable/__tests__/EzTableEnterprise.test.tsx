@@ -4,6 +4,7 @@ import { describe, it, expect, vi } from 'vitest';
 import React, { useRef } from 'react';
 import { EzTable } from '../index';
 import { EzTableRef, ColumnDef } from '../EzTable.types';
+import { EzProvider } from '../../../shared/contexts/EzProvider';
 
 // Mock data
 interface User {
@@ -43,7 +44,11 @@ describe('EzTable Enterprise API', () => {
             return <EzTable ref={ref} data={data} columns={columns} />;
         };
 
-        render(<TestComponent />);
+        render(
+            <EzProvider>
+                <TestComponent />
+            </EzProvider>
+        );
 
         expect(tableRef).not.toBeNull();
         const api = (tableRef as any) as EzTableRef<User>;
@@ -79,7 +84,11 @@ describe('EzTable Enterprise API', () => {
             return <EzTable ref={ref} data={data} columns={columns} />;
         };
 
-        render(<TestComponent />);
+        render(
+            <EzProvider>
+                <TestComponent />
+            </EzProvider>
+        );
         expect((tableRef as any)?.getData()).toEqual(data);
     });
 
@@ -94,7 +103,11 @@ describe('EzTable Enterprise API', () => {
             return <EzTable ref={ref} dataSource={data} columns={columns} />;
         };
 
-        render(<TestComponent />);
+        render(
+            <EzProvider>
+                <TestComponent />
+            </EzProvider>
+        );
         expect((tableRef as any)?.getData()).toEqual(data);
     });
 
@@ -116,7 +129,11 @@ describe('EzTable Enterprise API', () => {
             );
         };
 
-        render(<TestComponent />);
+        render(
+            <EzProvider>
+                <TestComponent />
+            </EzProvider>
+        );
 
         await act(async () => {
             tableRef?.selectRow(0);

@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import type { KanbanBoard, KanbanCard, EzKanbanProps } from '../EzKanban.types';
-import { globalServiceRegistry } from '../../../shared/services/ServiceRegistry';
+import { useEzServiceRegistry } from '../../../shared/contexts/EzProvider';
+
 import type { NotificationService } from '../../../shared/services/NotificationService';
 
 type DragEvents = Pick<EzKanbanProps, 'onCardDragStart' | 'onCardDragStop' | 'onCardDragEnter' | 'onCardDragLeave'>;
@@ -19,10 +20,11 @@ type DragEvents = Pick<EzKanbanProps, 'onCardDragStart' | 'onCardDragStop' | 'on
  */
 export const useKanbanDragDrop = (
     board: KanbanBoard,
-    onCardMove: (cardId: string, targetColumnId: string, targetSwimlaneId?: string) => void,
+    onCardMove: (cardId: string, targetColumnId: string, targetSwimlaneId?: string, targetPosition?: number) => void,
     wipStrict: boolean = false,
     events?: DragEvents
 ) => {
+    const registry = useEzServiceRegistry();
     const [draggedCard, setDraggedCard] = useState<KanbanCard | null>(null);
     const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
     const [dragOverSwimlane, setDragOverSwimlane] = useState<string | null>(null);
@@ -62,7 +64,7 @@ export const useKanbanDragDrop = (
         setDragOverSwimlane(null);
     }, [draggedCard, events?.onCardDragStop]);
 
-    const handleDrop = useCallback((targetColumnId: string, targetSwimlaneId?: string) => {
+    const handleDrop = useCallback((targetColumnId: string, targetSwimlaneId?: string, targetPosition?: number) => {
         if (!draggedCard) return;
 
         // Check WIP limits
@@ -72,7 +74,7 @@ export const useKanbanDragDrop = (
 
             if (cardsInColumn.length >= targetColumn.wipLimit && (draggedCard.columnId !== targetColumnId || draggedCard.swimlaneId !== targetSwimlaneId)) {
                 // WIP limit exceeded
-                const notificationService = globalServiceRegistry.get<NotificationService>('NotificationService');
+                const notificationService = registry.get<NotificationService>('NotificationService');
                 if (notificationService) {
                     notificationService.add({
                         type: 'warning',
@@ -101,7 +103,7 @@ export const useKanbanDragDrop = (
         // Let's assume onCardDragStop covers the end of the operation.
         // We probably want an onCardDrop event too, but the types requested onCardDragStop.
 
-        onCardMove(draggedCard.id, targetColumnId, targetSwimlaneId);
+        onCardMove(draggedCard.id, targetColumnId, targetSwimlaneId, targetPosition);
 
         // Firing drag stop after move
         if (events?.onCardDragStop) {
