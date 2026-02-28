@@ -1,6 +1,6 @@
 {
     "name": "ezux",
-    "version": "1.1.10",
+    "version": "1.1.11",
     "description": "A comprehensive, type-safe TanStack First Advance component library designed for modern enterprise applications.",
     "keywords": [
         "react",
@@ -66,22 +66,22 @@
             "require": "./dist/signature.cjs"
         },
         "./table/types": {
-            "types": "./dist/components/EzTable/types/index.d.ts"
+            "types": "./dist/table.d.ts"
         },
         "./scheduler/types": {
-            "types": "./dist/components/EzScheduler/types/index.d.ts"
+            "types": "./dist/scheduler.d.ts"
         },
         "./kanban/types": {
-            "types": "./dist/components/EzKanban/types/index.d.ts"
+            "types": "./dist/kanban.d.ts"
         },
         "./layout/types": {
-            "types": "./dist/components/EzLayout/EzLayout.types.d.ts"
+            "types": "./dist/layout.d.ts"
         },
         "./treeview/types": {
-            "types": "./dist/components/EzTreeView/EzTreeView.types.d.ts"
+            "types": "./dist/treeview.d.ts"
         },
         "./signature/types": {
-            "types": "./dist/components/EzSignature/EzSignature.types.d.ts"
+            "types": "./dist/signature.d.ts"
         },
         "./dist/theme-vars.css": "./dist/theme-vars.css",
         "./dist/ezux.css": "./dist/ezux.css"

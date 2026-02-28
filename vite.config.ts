@@ -10,6 +10,20 @@ export default defineConfig({
             insertTypesEntry: true,
             rollupTypes: true,
         }),
+        {
+            name: 'copy-theme-vars',
+            apply: 'build',
+            async closeBundle() {
+                const fs = await import('fs/promises');
+                const srcPath = path.resolve(__dirname, 'src/theme-vars.css');
+                const destPath = path.resolve(__dirname, 'dist/theme-vars.css');
+                try {
+                    await fs.copyFile(srcPath, destPath);
+                } catch (err) {
+                    console.error('Failed to copy theme-vars.css:', err);
+                }
+            }
+        }
     ],
     resolve: {
         alias: {

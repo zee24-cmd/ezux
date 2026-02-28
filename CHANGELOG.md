@@ -4,7 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-## [1.1.10] - 2026-02-28
+## [1.1.11] - 2026-02-28
+
+### Fixed
+- **Build**: Fixed missing `theme-vars.css` in the `dist` folder by adding a post-build copy hook to `vite.config.ts`.
+- **Exports**: Corrected several sub-path type exports in `package.json` that were pointing to non-existent deep paths after type rollup consolidation. These fixes resolve build failures for consumers (like `ezux-showcase`) on platforms like Vercel.
+
 
 ### Added
 - **EzLayout**: Introduced `EzSidebarNav`, `EzSidebarNavItem`, and `EzSidebarFooter` for structured, multi-level navigation.
