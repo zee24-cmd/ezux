@@ -3,6 +3,7 @@ import { EzServiceRegistry, ServiceRegistry } from '../services/ServiceRegistry'
 import { ThemeService } from '../services/ThemeService';
 import { I18nService } from '../services/I18nService';
 import { NotificationService } from '../services/NotificationService';
+import { LayoutService } from '../services/LayoutService';
 
 interface EzProviderContextProps {
     registry: ServiceRegistry;
@@ -50,6 +51,7 @@ export const EzProvider: React.FC<EzProviderProps> = ({ children, defaultLocale 
 
             r.register('ThemeService', new ThemeService());
             r.register('NotificationService', new NotificationService());
+            r.register('LayoutService', new LayoutService());
 
             registryRef.current = r;
         }
@@ -128,4 +130,14 @@ export const useI18nService = (): I18nService => {
 export const useNotificationService = (): NotificationService => {
     const registry = useEzServiceRegistry();
     return registry.getOrThrow<NotificationService>('NotificationService');
+};
+
+/**
+ * Access the application-wide `LayoutService`.
+ * 
+ * @group Hooks
+ */
+export const useLayoutService = (): LayoutService => {
+    const registry = useEzServiceRegistry();
+    return registry.getOrThrow<LayoutService>('LayoutService');
 };

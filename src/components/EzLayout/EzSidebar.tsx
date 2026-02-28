@@ -23,27 +23,35 @@ export const EzSidebar = memo(({ sidebarOpen, isMobile, sidebarWidth, children, 
         }
     }, [isMobile, sidebarOpen, focusManager]);
 
+    // Effective width - when collapsed (expanded but toggle closed) it's 72px in the design
+    // The design shows a "collapsed" sidebar on the right of the images
+    // In our system, sidebarOpen=false means the sidebar is closed/minimized.
+    // If not mobile, sidebarOpen=false should show the icon-only view (72px)
+    const effectiveWidth = isMobile
+        ? (sidebarOpen ? sidebarWidth : 0)
+        : (sidebarOpen ? sidebarWidth : 72);
+
     return (
         <>
             <aside
                 ref={sidebarRef}
                 aria-label="Main Navigation"
                 style={{
-                    width: sidebarOpen ? sidebarWidth : 0,
+                    width: effectiveWidth,
                     transition: 'width 400ms cubic-bezier(0.16, 1, 0.3, 1)',
-                    overflow: 'hidden',
-                    whiteSpace: 'nowrap',
                     contain: 'content',
                 }}
                 className={cn(
-                    "border-e border-border flex-shrink-0 bg-background h-full transition-all duration-300",
+                    "border-e border-border flex-shrink-0 bg-card/30 backdrop-blur-sm h-full flex flex-col transition-all duration-300 relative",
                     isMobile
                         ? "fixed inset-y-0 left-0 z-50 shadow-2xl"
                         : "relative",
                     className
                 )}
             >
-                {children}
+                <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar">
+                    {children}
+                </div>
             </aside>
 
             {isMobile && sidebarOpen && (

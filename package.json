@@ -1,6 +1,6 @@
 {
     "name": "ezux",
-    "version": "1.1.9",
+    "version": "1.1.10",
     "description": "A comprehensive, type-safe TanStack First Advance component library designed for modern enterprise applications.",
     "keywords": [
         "react",
@@ -129,7 +129,7 @@
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "cmdk": "^1.1.1",
-        "country-flag-icons": "^1.6.13",
+        "country-flag-icons": "^1.6.15",
         "date-fns": "^4.1.0",
         "dompurify": "^3.3.1",
         "lucide-react": "^0.575.0",
@@ -137,7 +137,7 @@
         "tailwindcss-animate": "^1.0.7"
     },
     "overrides": {
-        "minimatch": "10.2.1",
+        "minimatch": "10.2.4",
         "ajv": "8.18.0"
     },
     "devDependencies": {
@@ -167,12 +167,12 @@
         "@testing-library/react": "^16.3.2",
         "@testing-library/user-event": "^14.6.1",
         "@types/file-saver": "^2.0.7",
-        "@types/node": "^25.3.0",
+        "@types/node": "^25.3.2",
         "@types/react": "^19.2.14",
         "@types/react-dom": "^19.2.3",
         "@vitejs/plugin-react": "^5.1.4",
         "@vitest/coverage-v8": "^4.0.18",
-        "autoprefixer": "^10.4.24",
+        "autoprefixer": "^10.4.27",
         "concurrently": "^9.2.1",
         "dompurify": "^3.3.1",
         "file-saver": "^2.0.5",

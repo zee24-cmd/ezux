@@ -5,7 +5,7 @@ import './style.css';
 
 // --- Core Layout & Shell ---
 /** @public @group Core Components */
-export { EzLayout, EzLanguageSwitcher, EzThemeSwitcher, EzThemeColorChanger, EzHeader, EzUserProfile, SignInForm, SignUpForm } from './components/EzLayout';
+export * from './components/EzLayout';
 
 // --- Data Grid (EzTable) ---
 /** @public @group Core Components */

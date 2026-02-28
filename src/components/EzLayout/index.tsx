@@ -88,7 +88,6 @@ const EzLayoutImpl = forwardRef<EzLayoutRef, EzLayoutProps>((props, ref) => {
         state: {
             layoutState,
             i18nState,
-            isPending,
         },
         actions: {
             renderInjected
@@ -124,7 +123,7 @@ const EzLayoutImpl = forwardRef<EzLayoutRef, EzLayoutProps>((props, ref) => {
                     <header
                         aria-label="Global Header"
                         style={{ height: layoutState.headerHeight }}
-                        className={cn("border-b border-border flex-shrink-0 px-4 flex items-center", headerClassName)}
+                        className={cn("border-b border-border flex-shrink-0 px-4 flex items-center bg-background/80 backdrop-blur-md sticky top-0 z-40", headerClassName)}
                     >
                         {renderInjected(slots?.header, {
                             ...headerConfig,
@@ -133,7 +132,13 @@ const EzLayoutImpl = forwardRef<EzLayoutRef, EzLayoutProps>((props, ref) => {
                             headerHeight: layoutState.headerHeight,
                             toggleSidebar: () => layoutService.toggleSidebar(),
                             ...slotProps?.header
-                        }) || (headerConfig && <EzHeader {...headerConfig} />)}
+                        }) || (headerConfig && (
+                            <EzHeader
+                                {...headerConfig}
+                                toggleSidebar={() => layoutService.toggleSidebar()}
+                                sidebarOpen={layoutState.sidebarOpen}
+                            />
+                        ))}
                     </header>
                 )}
 
@@ -163,7 +168,7 @@ const EzLayoutImpl = forwardRef<EzLayoutRef, EzLayoutProps>((props, ref) => {
                         </aside>
                     ))}
 
-                    <MainContent isPending={isPending} contentClassName={contentClassName}>
+                    <MainContent contentClassName={contentClassName}>
                         {children}
                     </MainContent>
 
@@ -211,6 +216,10 @@ export * from './EzThemeSwitcher';
 export * from './EzThemeColorChanger';
 export * from './EzHeader';
 export * from './EzUserProfile';
+export * from './EzOrganizationSwitcher';
+export * from './components/EzSidebarNav';
+export * from './components/EzSidebarNavItem';
+export * from './components/EzSidebarFooter';
 export * from './Authentication/SignInForm';
 export * from './Authentication/SignUpForm';
 // Note: PasswordInput is exported from ./components/ui/password-input instead

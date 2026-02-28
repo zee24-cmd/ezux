@@ -115,7 +115,7 @@ const EzSignature = React.forwardRef<EzSignatureRef, EzSignatureProps>((props, r
 
     const svgRef = useRef<SVGSVGElement>(null);
 
-    const effectiveStrokeColor = strokeColor || '#2342cd';
+    const effectiveStrokeColor = strokeColor || '#0321ab';
 
     // Helper to add to history
     const pushToHistory = useCallback((newStrokes: number[][][]) => {

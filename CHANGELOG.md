@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [1.1.10] - 2026-02-28
+
+### Added
+- **EzLayout**: Introduced `EzSidebarNav`, `EzSidebarNavItem`, and `EzSidebarFooter` for structured, multi-level navigation.
+- **EzLayout**: Added support for premium popover menus in collapsed sidebar mode, ensuring nested items are accessible with full labels and icons.
+- **EzLayout**: Integrated `EzOrganizationSwitcher` into the core layout for enterprise-grade context switching.
+- **EzLayout**: Added `useLayoutService` hook for easier access to layout state and actions.
+
+### Changed
+- **EzLayout**: Optimized re-render performance by removing `useTransition` and making layout state updates synchronous, effectively resolving "flickering" issues during sidebar toggles.
+- **EzLayout**: Centralized `LayoutService` registration within `<EzProvider>` to ensure a stable, global singleton across the application.
+- **EzSignature**: Updated default pen color to `#0321ab` for a more professional "Ink Blue" aesthetic.
+- **EzSignature**: Improved mobile responsiveness by implementing a dynamic height (200px on mobile, 400px on desktop) via `useMediaQuery`.
+
+### Fixed
+- **Security**: Resolved 5 high severity ReDoS vulnerabilities by updating `minimatch` override to `10.2.4`.
+- **EzLayout**: Fixed TypeScript error in `EzLayout` component related to `isPending` prop removal.
+- **EzLayout**: Fixed visibility of nested navigation icons in collapsed sidebar mode.
+- **EzLayout**: Resolved console warnings regarding multiple `LayoutService` registrations.
+- **EzLayout**: Eliminated redundant entry animations on `MainContent` that triggered during state updates.
+
 ## [1.1.7] - 2026-02-24
 
 ### Added

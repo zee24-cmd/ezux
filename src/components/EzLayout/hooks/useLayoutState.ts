@@ -1,4 +1,4 @@
-import { useEffect, useTransition } from 'react';
+import { useEffect } from 'react';
 import { useComponentState } from '../../../shared/hooks/useComponentState';
 import { EzLayoutProps } from '../EzLayout.types';
 import { LayoutService, LayoutState } from '../../../shared/services/LayoutService';
@@ -55,18 +55,16 @@ export const useLayoutState = (props: EzLayoutProps) => {
         service: i18nService
     });
 
-    const [isPending, startTransition] = useTransition();
-
     useEffect(() => {
         layoutService.updateConfig({ headerHeight, sidebarWidth, breakpoint });
     }, [layoutService, headerHeight, sidebarWidth, breakpoint]);
 
     useEffect(() => {
         const unsubLayout = layoutService.subscribe((state: LayoutState) => {
-            startTransition(() => setLayoutState(state));
+            setLayoutState(state);
         });
         const unsubI18n = i18nService.subscribe((state: I18nState) => {
-            startTransition(() => setI18nState(state));
+            setI18nState(state);
         });
         return () => {
             unsubLayout();
@@ -77,7 +75,7 @@ export const useLayoutState = (props: EzLayoutProps) => {
     return {
         layoutState,
         i18nState,
-        isPending,
+        isPending: false,
         layoutService,
         i18nService,
         focusManager,
