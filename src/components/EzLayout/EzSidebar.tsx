@@ -107,7 +107,7 @@ export const EzSidebar = memo(({
                         <ResizableHandle withHandle className="z-50" />
 
                         <ResizablePanel id="ez-main-panel" className="h-full">
-                            <div className="flex-1 h-full overflow-hidden relative">
+                            <div className="flex-1 flex flex-col h-full overflow-hidden relative">
                                 {mainContent}
                             </div>
                         </ResizablePanel>
@@ -133,7 +133,7 @@ export const EzSidebar = memo(({
                     >
                         {sidebarInner}
                     </aside>
-                    <div className="flex-1 h-full overflow-hidden relative">
+                    <div className="flex-1 flex flex-col h-full overflow-hidden relative">
                         {mainContent}
                     </div>
                 </div>
