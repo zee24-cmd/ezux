@@ -22,7 +22,7 @@ export interface EzSidebarNavItemProps {
     active?: boolean;
     collapsed?: boolean;
     children?: React.ReactNode;
-    onClick?: () => void;
+    onClick?: (e?: React.MouseEvent) => void;
     className?: string;
 }
 
@@ -107,7 +107,8 @@ export const EzSidebarNavItem: React.FC<EzSidebarNavItemProps> = ({
         <div className="flex flex-col">
             {content}
             {hasChildren && isOpen && !collapsed && (
-                <div className="ml-9 mt-1 flex flex-col gap-1 border-l border-border pl-2">
+                // <div className="ml-8 mt-1 flex flex-col gap-5 pl-2">
+                <div className="ml-5 mt-1 flex flex-col gap-1 pl-3 ">
                     {children}
                 </div>
             )}

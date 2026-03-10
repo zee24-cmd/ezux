@@ -578,6 +578,12 @@ export interface EzTableProps<TData extends object> extends SharedBaseProps<TDat
     onFormRender?: (props: unknown) => React.ReactNode;
     scrollBehavior?: ScrollBehavior;
     renderNoRowsOverlay?: () => React.ReactNode;
+    /**
+     * Whether to show the status bar at the bottom of the table.
+     * Defaults to true.
+     * @group Properties
+     */
+    enableStatusBar?: boolean;
 }
 
 /**

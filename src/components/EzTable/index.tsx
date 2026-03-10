@@ -519,13 +519,15 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
                             />
                         )}
 
-                        <EzTableStatusBar
-                            table={table}
-                            totalRows={table.getPrePaginationRowModel().rows.length || table.options.rowCount || table.getRowModel().rows.length}
-                            selectionInfo={(changes.added + changes.edited + changes.deleted) > 0 ? `${changes.added + changes.edited + changes.deleted} pending changes` : undefined}
-                            // Pass selection state directly to force re-render when selection changes (since table ref is stable)
-                            rowSelection={table.getState().rowSelection}
-                        />
+                        {props.enableStatusBar !== false && (
+                            <EzTableStatusBar
+                                table={table}
+                                totalRows={table.getPrePaginationRowModel().rows.length || table.options.rowCount || table.getRowModel().rows.length}
+                                selectionInfo={(changes.added + changes.edited + changes.deleted) > 0 ? `${changes.added + changes.edited + changes.deleted} pending changes` : undefined}
+                                // Pass selection state directly to force re-render when selection changes (since table ref is stable)
+                                rowSelection={table.getState().rowSelection}
+                            />
+                        )}
 
                         {editSettings?.mode === 'Dialog' && (
                             <React.Suspense fallback={null}>
@@ -626,3 +628,4 @@ export const EzTable = React.forwardRef(<TData extends object>(
 ) => React.ReactElement;
 
 export * from './context/EzTableContext';
+export * from './utils/SizingUtils';

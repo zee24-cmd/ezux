@@ -16,6 +16,8 @@ export interface EzHeaderComponentProps extends EzHeaderProps {
     headerHeight: number;
     /** Callback to manually toggle the sidebar. @group Events */
     toggleSidebar: () => void;
+    /** Allow custom properties passed via slotProps */
+    [key: string]: any;
 }
 
 /**
@@ -31,6 +33,8 @@ export interface EzSidebarComponentProps {
     onClose: () => void;
     /** Content to render inside the sidebar. @group Data */
     children?: React.ReactNode;
+    /** Allow custom properties passed via slotProps */
+    [key: string]: any;
 }
 
 export interface EzLayoutProps extends SharedBaseProps {
@@ -139,6 +143,34 @@ export interface EzLayoutProps extends SharedBaseProps {
      * @group Properties
      */
     breakpoint?: number;
+
+    /**
+     * Enable drag-to-resize for the sidebar pane.
+     * When true, a resize handle appears between the sidebar and main content.
+     * @default false
+     * @group Properties
+     */
+    sidebarResizable?: boolean;
+
+    /**
+     * Minimum sidebar width in pixels when resizable is enabled.
+     * @default 200
+     * @group Appearance
+     */
+    sidebarMinWidth?: number;
+
+    /**
+     * Maximum sidebar width in pixels when resizable is enabled.
+     * @default 480
+     * @group Appearance
+     */
+    sidebarMaxWidth?: number;
+
+    /**
+     * Callback fired when the sidebar is resized by drag.
+     * @group Events
+     */
+    onSidebarResize?: (width: number) => void;
 
     /** 
      * Enable state persistence to localStorage for layout preferences.

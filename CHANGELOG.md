@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [1.1.12] - 2026-03-10
+
+### Added
+- **EzLayout**: Added resizable sidebar support with `sidebarResizable`, `sidebarMinWidth`, `sidebarMaxWidth`, and `onSidebarResize` props. Integrated `react-resizable-panels` for smooth resizing on desktop.
+
+### Fixed
+- **EzLayout**: Fixed an issue where the responsive, resizable sidebar would collapse to zero-width or hide all text due to a pixel vs percentage misinterpretation by the `react-resizable-panels` package.
+- **EzLayout**: Corrected sidebar collapse behavior so that the resize handle is only active in the expanded state, while the collapsed state properly displays navigation icons without a handle.
+
+### Changed
+- **EzTreeView**: Replaced `ChevronRight`/`ChevronDown` expand/collapse icons with standard `Plus`/`Minus` icons for a more traditional tree navigation feel.
+- **Dependencies**: Performed a full dependency update, upgrading `@tanstack/react-form`, `lucide-react`, `dompurify`, `happy-dom`, `postcss`, and several other core packages to their latest versions.
+
+### Fixed
+- **EzTreeView**: Resolved a bug where indeterminate checkbox states were not correctly synchronized or updated during recursive selection. Fixed state derivation in `useTreeSelection` to ensure parent nodes accurately reflect child check states.
+
 ## [1.1.11] - 2026-02-28
 
 ### Fixed

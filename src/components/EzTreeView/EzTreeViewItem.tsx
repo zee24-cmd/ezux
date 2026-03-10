@@ -3,7 +3,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { EzContextMenu } from '../../shared/components/EzContextMenu';
 import { TreeNode } from './EzTreeView.types';
-import { ChevronRight, ChevronDown, Loader2, Check, Minus } from 'lucide-react';
+import { ChevronRight, ChevronDown, Loader2, Check } from 'lucide-react';
 import { HighlightText } from '../../shared/components/HighlightText';
 import { cn } from '../../lib/utils';
 
@@ -100,9 +100,8 @@ export const EzTreeViewItem = memo(({
     slots, slotProps,
     allowTextWrap, animation, checkOnClick, fullRowSelect: _fullRowSelect, fullRowNavigable: _fullRowNavigable,
     onNodeClicked, onDrawNode,
-    isEditing: externalIsEditing, onEditingChange, dir
+    isEditing: externalIsEditing, onEditingChange, dir: _dir
 }: EzTreeViewItemProps) => {
-    const isRtl = dir === 'rtl';
     const [isEditing, setIsEditing] = useState(false);
     const [editValue, setEditValue] = useState(node.label);
 
@@ -189,7 +188,7 @@ export const EzTreeViewItem = memo(({
         }
 
         if (isExpanded) return <ChevronDown className="w-4 h-4" />;
-        return isRtl ? <ChevronRight className="w-4 h-4 rotate-180" /> : <ChevronRight className="w-4 h-4" />;
+        return <ChevronRight className="w-4 h-4" />;
     };
 
     const renderCheckbox = () => {
@@ -204,12 +203,17 @@ export const EzTreeViewItem = memo(({
             <div
                 data-testid={`tree-checkbox-${node.id}`}
                 onClick={(e) => { e.stopPropagation(); onToggleCheck(node.id); }}
-                className={`w-4 h-4 me-2 flex items-center justify-center rounded border transition-colors cursor-pointer
-                    ${(isChecked || isIndeterminate) ? 'bg-primary border-primary text-primary-foreground' :
-                        'bg-background border-input'}`}
+                className={cn(
+                    "w-4 h-4 me-2 flex items-center justify-center rounded border-2 transition-all cursor-pointer",
+                    isChecked
+                        ? "bg-primary border-primary text-primary-foreground"
+                        : isIndeterminate
+                            ? "bg-background border-primary shadow-[0_0_0_1px_inset_rgba(var(--primary),0.1)]"
+                            : "bg-background border-slate-500 dark:border-slate-400 hover:border-primary/50"
+                )}
             >
-                {isChecked && <Check className="w-3 h-3" />}
-                {isIndeterminate && <Minus className="w-3 h-3" />}
+                {isChecked && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                {isIndeterminate && <div className="w-2.5 h-0.5 bg-primary rounded-full" />}
             </div>
         );
     };
@@ -307,7 +311,7 @@ export const EzTreeViewItem = memo(({
                             />
                         ) : (
                             <span
-                                className={`text-sm font-medium flex-1 ${allowTextWrap ? 'whitespace-normal' : 'truncate'}`}
+                                className={`text-base font-semibold flex-1 ${allowTextWrap ? 'whitespace-normal' : 'truncate'}`}
                                 onDoubleClick={(e) => {
                                     e.stopPropagation(); // Stop propagation to prevent conflict with parent handlers if any
                                     handleDoubleClick();

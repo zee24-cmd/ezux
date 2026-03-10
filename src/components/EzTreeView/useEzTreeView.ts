@@ -101,7 +101,7 @@ export const useEzTreeView = (props: EzTreeViewProps) => {
         setIndeterminateNodes,
         toggleCheck,
         updateCheckState
-    } = useTreeSelection(props, hierarchyService);
+    } = useTreeSelection(props, hierarchyService, treeData);
 
     // 5. Expansion State
     const {

@@ -300,14 +300,15 @@ export class I18nService extends BaseService<I18nState> {
 
     /**
      * Translates a key based on the current active locale.
-     * Falls back to English, then returns the key itself if not found.
+     * Falls back to the provided defaultValue, then to English, then returns the key itself.
      * @param key The translation key to lookup.
-     * @returns The localized string or the key if not found.
+     * @param defaultValue Optional fallback string if the key is not found.
+     * @returns The localized string or the fallback/key if not found.
      * @group Methods
      */
-    t = (key: string): string => {
+    t = (key: string, defaultValue?: string): string => {
         const localeData = this._translations[this._locale] || this._translations['en'];
-        return localeData?.[key] ?? key;
+        return localeData?.[key] ?? defaultValue ?? key;
     };
 
     /**

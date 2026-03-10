@@ -45,13 +45,13 @@ export const SelectTrigger: React.FC<{ className?: string, children: React.React
     </DropdownMenuTrigger>
 );
 
-export const SelectValue: React.FC<{ placeholder?: string }> = ({ placeholder }) => {
+export const SelectValue: React.FC<{ placeholder?: string, children?: React.ReactNode }> = ({ placeholder, children }) => {
     const context = React.useContext(SelectContext);
-    return <span>{context?.value || placeholder}</span>;
+    return <span>{children || context?.value || placeholder}</span>;
 }
 
-export const SelectContent: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-    <DropdownMenuContent className="max-h-[200px] overflow-y-auto">
+export const SelectContent: React.FC<{ children: React.ReactNode, className?: string }> = ({ children, className }) => (
+    <DropdownMenuContent className={cn("max-h-[200px] overflow-y-auto", className)}>
         {children}
     </DropdownMenuContent>
 );

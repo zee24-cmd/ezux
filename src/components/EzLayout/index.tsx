@@ -81,6 +81,10 @@ const EzLayoutImpl = forwardRef<EzLayoutRef, EzLayoutProps>((props, ref) => {
         headerClassName,
         sidebarClassName,
         footerClassName,
+        sidebarResizable = false,
+        sidebarMinWidth = 200,
+        sidebarMaxWidth = 480,
+        onSidebarResize,
     } = props;
 
     const layoutRes = useEzLayout(props, ref);
@@ -143,41 +147,82 @@ const EzLayoutImpl = forwardRef<EzLayoutRef, EzLayoutProps>((props, ref) => {
                 )}
 
                 <div className="flex flex-1 overflow-hidden relative">
-                    {!isMinimal && (slots?.sidebar) && (
-                        <EzSidebar
-                            sidebarOpen={layoutState.sidebarOpen}
-                            isMobile={layoutState.isMobile}
-                            sidebarWidth={layoutState.sidebarWidth}
-                            layoutService={layoutService}
-                            focusManager={focusManager}
-                        >
-                            {renderInjected(slots?.sidebar, {
-                                open: layoutState.sidebarOpen,
-                                isMobile: layoutState.isMobile,
-                                onClose: () => layoutService.toggleSidebar(false),
-                                className: sidebarClassName,
-                                ...slotProps?.sidebar
-                            })}
-                        </EzSidebar>
-                    )}
+                    {(() => {
+                        const hasSidebar = !isMinimal && slots?.sidebar;
 
-                    {/* Enterprise Panels: Left */}
-                    {layoutState.panels?.filter((p: any) => p.position === 'left').map((p: any) => (
-                        <aside key={p.id} className="border-r border-border bg-background w-64 overflow-y-auto flex-shrink-0 relative z-20">
-                            {p.content}
-                        </aside>
-                    ))}
+                        const sidebarContent = hasSidebar ? renderInjected(slots?.sidebar, {
+                            open: layoutState.sidebarOpen,
+                            isMobile: layoutState.isMobile,
+                            onClose: () => layoutService.toggleSidebar(false),
+                            className: sidebarClassName,
+                            ...slotProps?.sidebar
+                        }) : null;
 
-                    <MainContent contentClassName={contentClassName}>
-                        {children}
-                    </MainContent>
+                        const leftPanels = layoutState.panels?.filter((p: any) => p.position === 'left').map((p: any) => (
+                            <aside key={p.id} className="border-r border-border bg-background w-64 overflow-y-auto flex-shrink-0 relative z-20">
+                                {p.content}
+                            </aside>
+                        ));
 
-                    {/* Enterprise Panels: Right */}
-                    {layoutState.panels?.filter((p: any) => p.position === 'right').map((p: any) => (
-                        <aside key={p.id} className="border-l border-border bg-background w-64 overflow-y-auto flex-shrink-0 relative z-20">
-                            {p.content}
-                        </aside>
-                    ))}
+                        const rightPanels = layoutState.panels?.filter((p: any) => p.position === 'right').map((p: any) => (
+                            <aside key={p.id} className="border-l border-border bg-background w-64 overflow-y-auto flex-shrink-0 relative z-20">
+                                {p.content}
+                            </aside>
+                        ));
+
+                        const mainArea = (
+                            <>
+                                {leftPanels}
+                                <MainContent contentClassName={contentClassName}>
+                                    {children}
+                                </MainContent>
+                                {rightPanels}
+                            </>
+                        );
+
+                        // When resizable on desktop, EzSidebar renders the ResizablePanelGroup
+                        // wrapping sidebar + main content. Otherwise, render them side-by-side.
+                        if (hasSidebar && sidebarResizable && !layoutState.isMobile) {
+                            // Resizable mode: EzSidebar wraps both sidebar + main content
+                            return (
+                                <EzSidebar
+                                    sidebarOpen={layoutState.sidebarOpen}
+                                    isMobile={layoutState.isMobile}
+                                    sidebarWidth={layoutState.sidebarWidth}
+                                    layoutService={layoutService}
+                                    focusManager={focusManager}
+                                    sidebarResizable={sidebarResizable}
+                                    sidebarMinWidth={sidebarMinWidth}
+                                    sidebarMaxWidth={sidebarMaxWidth}
+                                    onSidebarResize={onSidebarResize}
+                                    mainContent={mainArea}
+                                >
+                                    {sidebarContent}
+                                </EzSidebar>
+                            );
+                        }
+
+                        if (hasSidebar) {
+                            // Non-resizable mode: sidebar and main content side-by-side
+                            return (
+                                <>
+                                    <EzSidebar
+                                        sidebarOpen={layoutState.sidebarOpen}
+                                        isMobile={layoutState.isMobile}
+                                        sidebarWidth={layoutState.sidebarWidth}
+                                        layoutService={layoutService}
+                                        focusManager={focusManager}
+                                    >
+                                        {sidebarContent}
+                                    </EzSidebar>
+                                    {mainArea}
+                                </>
+                            );
+                        }
+
+                        // No sidebar — just render main content with enterprise panels
+                        return mainArea;
+                    })()}
                 </div>
 
                 {/* Enterprise Panels: Bottom */}

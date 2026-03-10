@@ -9,7 +9,7 @@ export * from './components/EzLayout';
 
 // --- Data Grid (EzTable) ---
 /** @public @group Core Components */
-export { EzTable, EzTablePrimitive } from './components/EzTable';
+export { EzTable, EzTablePrimitive, calculateColWidth } from './components/EzTable';
 /** @public @group Methods */
 export { useEzTable } from './components/EzTable/useEzTable';
 /** @internal @group Core Components */
