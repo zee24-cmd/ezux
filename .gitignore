@@ -52,3 +52,7 @@ docs/npm_token.txt
 
 # Python files
 *.py
+
+# Additional ignores
+.npmrc
+a.txt
