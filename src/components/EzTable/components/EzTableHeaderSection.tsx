@@ -35,9 +35,9 @@ function _EzTableHeaderSection<TData extends object>({
         <div
             className={cn(
                 flexColumn,
-                "w-full bg-background shadow-sm",
+                "w-full bg-white dark:bg-zinc-900 shadow-sm",
                 borderStyles.bottom,
-                enableStickyHeader && "sticky top-0 z-20",
+                enableStickyHeader && "sticky top-0 z-30",
                 classNames?.header
             )}
             role="rowgroup"

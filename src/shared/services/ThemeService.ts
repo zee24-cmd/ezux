@@ -40,16 +40,14 @@ export class ThemeService implements IService {
             root.classList.remove('dark');
         }
 
-        // Apply Zinc base if needed
-        if (color !== 'Zinc') {
-            const baseVars = themes.Zinc[mode] as Record<string, string>;
-            for (const key in baseVars) {
-                root.style.setProperty(`--${key}`, baseVars[key]);
-            }
+        const baseVars = themes.Zinc[mode] as Record<string, string>;
+        for (const key in baseVars) {
+            root.style.setProperty(`--${key}`, baseVars[key]);
         }
 
-        for (const key in theme) {
-            root.style.setProperty(`--${key}`, theme[key]);
+        const ring = theme.ring;
+        if (ring) {
+            root.style.setProperty('--ring', ring);
         }
     }
 
@@ -133,23 +131,18 @@ export class ThemeService implements IService {
         // 2. Apply Radius (Base from state)
         root.style.setProperty('--radius', `${this.state.radius}rem`);
 
-        // 3. Apply Theme Color (CSS Variables from TS Object)
+        // 3. Apply Theme Color (focus ring only)
         const theme = themes[this.state.themeColor];
         if (theme) {
-            // Apply mode-specific variables
+            const baseVars = themes.Zinc[this.state.mode] as Record<string, string>;
             const modeVars = theme[this.state.mode] as Record<string, string>;
 
-            // If it's not 'Zinc', we apply Zinc's base variables first to ensure all shadcn variables are covered
-            if (this.state.themeColor !== 'Zinc') {
-                const baseVars = themes.Zinc[this.state.mode] as Record<string, string>;
-                for (const key in baseVars) {
-                    root.style.setProperty(`--${key}`, baseVars[key]);
-                }
+            for (const key in baseVars) {
+                root.style.setProperty(`--${key}`, baseVars[key]);
             }
 
-            // Override with current theme variables
-            for (const key in modeVars) {
-                root.style.setProperty(`--${key}`, modeVars[key]);
+            if (modeVars.ring) {
+                root.style.setProperty('--ring', modeVars.ring);
             }
         }
 

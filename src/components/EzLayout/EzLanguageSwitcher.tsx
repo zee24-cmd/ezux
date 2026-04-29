@@ -50,7 +50,7 @@ export const EzLanguageSwitcher: React.FC<{ className?: string }> = ({ className
                             onClick={() => i18nService.setLocale(lang.code)}
                             className={cn(currentLocale === lang.code ? 'bg-accent' : '')}
                         >
-                            {FlagComponent && <FlagComponent className="mr-2 w-5 h-5 rounded-sm shadow-sm" />}
+                            {FlagComponent && <FlagComponent className="me-2 w-5 h-5 rounded-sm shadow-sm" />}
                             {lang.name}
                         </DropdownMenuItem>
                     );

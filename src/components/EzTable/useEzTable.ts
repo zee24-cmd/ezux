@@ -53,11 +53,11 @@ export const useEzTable = <TData extends object>(
         enableEditing,
         isRowEditable,
         isCellEditable,
-        pagination = false,
+        pagination = true,
         enableExport = false,
-        enableStickyHeader = false,
-        enableStickyPagination = false,
-        enableChangeTracking = false,
+        enableStickyHeader = true,
+        enableStickyPagination = true,
+        enableChangeTracking = true,
         density = 'standard',
         dir: propDir,
     } = props;
@@ -124,8 +124,9 @@ export const useEzTable = <TData extends object>(
         queryKey,
         queryFn: async () => {
             if (!service) return { data: initialData, totalCount: initialData.length };
+            const { onDataChange: _onDataChange, ...serviceProps } = props;
             const response = await service.getData({
-                ...props,
+                ...serviceProps,
                 state: table.getState(),
                 data: [], // Required by interface
                 columns: [], // Required by interface
@@ -183,7 +184,8 @@ export const useEzTable = <TData extends object>(
         parentRef,
         rowVirtualizer,
         columnVirtualizer,
-        effectiveRowHeight
+        effectiveRowHeight,
+        dynamicRowSizing
     } = useTableVirtualization(props, table, dir);
 
     // 7. Selection & Range Selection
@@ -423,6 +425,7 @@ export const useEzTable = <TData extends object>(
             enableAltRow: props.enableAltRow,
             enableHover: props.enableHover,
             rowHeight: effectiveRowHeight,
+            dynamicRowSizing,
             selectionSettings: props.selectionSettings,
             filterSettings: props.filterSettings,
             searchSettings: props.searchSettings,

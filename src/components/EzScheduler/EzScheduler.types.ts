@@ -192,6 +192,16 @@ export interface Reminder {
     status?: 'pending' | 'sent' | 'dismissed';
 }
 
+export interface SchedulerAttachment {
+    id?: string;
+    name: string;
+    size?: number;
+    type?: string;
+    url?: string;
+    file?: File;
+    metadata?: Record<string, unknown>;
+}
+
 /** 
  * Timezone configuration for an event.
  */
@@ -264,7 +274,7 @@ export interface SchedulerEvent {
     /** Recurrence configuration */
     recurrence?: Recurrence;
     /** Files attached to the event (alias for attachedFiles) */
-    attachments?: any[];
+    attachments?: (SchedulerAttachment | File)[];
     /** Whether the event is a holiday */
     isHoliday?: boolean;
     /** Whether the event slot is fully booked */
@@ -899,6 +909,13 @@ export interface EzSchedulerProps extends SharedBaseProps {
     onEventCreate?: (event: Partial<SchedulerEvent>) => void | Promise<void>;
     onEventDelete?: (eventId: string) => void | Promise<void>;
     onEventChange?: (event: SchedulerEvent) => void | Promise<void>;
+    onBeforeEventCreate?: (args: SchedulerBeforeEventArgs<Partial<SchedulerEvent>>) => boolean | void;
+    onBeforeEventChange?: (args: SchedulerBeforeEventArgs<SchedulerEvent>) => boolean | void;
+    onBeforeEventDelete?: (args: SchedulerBeforeEventDeleteArgs) => boolean | void;
+    onBeforeEventResize?: (args: ResizeEventArgs) => boolean | void;
+    onBeforeEventDrop?: (args: DragEventArgs) => boolean | void;
+    onTimezoneConvert?: (args: SchedulerTimezoneConvertEvent) => void;
+    interactionPreset?: 'default' | 'outlook' | 'compact' | 'touch';
 
     // Event Callbacks (exhaustive)
     actionBegin?: (args: ActionEventArgs) => void;
@@ -912,10 +929,15 @@ export interface EzSchedulerProps extends SharedBaseProps {
     popupClose?: (args: PopupCloseEventArgs) => void;
     popupOpen?: (args: PopupOpenEventArgs) => void;
     renderCell?: (args: RenderCellEventArgs) => void;
+    /** @deprecated Prefer `onBeforeEventResize` and modern `onEventChange` flows. */
     resizeStart?: (args: ResizeEventArgs) => void;
+    /** @deprecated Prefer `onBeforeEventResize` and modern `onEventChange` flows. */
     resizeStop?: (args: ResizeEventArgs) => void;
+    /** @deprecated Prefer `onBeforeEventDrop` and modern `onEventChange` flows. */
     dragStart?: (args: DragEventArgs) => void;
+    /** @deprecated Prefer `onBeforeEventDrop` and modern `onEventChange` flows. */
     drag?: (args: DragEventArgs) => void;
+    /** @deprecated Prefer `onBeforeEventDrop` and modern `onEventChange` flows. */
     dragStop?: (args: DragEventArgs) => void;
     select?: (args: SelectEventArgs) => void;
     beforePaste?: (args: Record<string, unknown>) => void;
@@ -1021,11 +1043,48 @@ export interface RenderCellEventArgs {
     groupIndex?: number;
 }
 
+export interface SchedulerBeforeEventArgs<TEvent extends Partial<SchedulerEvent> = SchedulerEvent> {
+    event: TEvent;
+    originalEvent?: SchedulerEvent;
+    proposedEvent?: TEvent;
+    sourceResource?: Resource;
+    targetResource?: Resource;
+    sourceResourceId?: string;
+    targetResourceId?: string;
+    sourceTime?: Date;
+    targetTime?: Date;
+    cancel: boolean;
+}
+
+export interface SchedulerBeforeEventDeleteArgs {
+    eventId: string;
+    event?: SchedulerEvent;
+    cancel: boolean;
+}
+
+export interface SchedulerTimezoneConvertEvent {
+    event: SchedulerEvent;
+    fromTimezone: string;
+    toTimezone: string;
+    convertedStart: Date;
+    convertedEnd: Date;
+}
+
 /**
  * Arguments for resize events.
  */
 export interface ResizeEventArgs {
-    data: EventData;
+    data: SchedulerEvent;
+    event: SchedulerEvent;
+    originalEvent?: SchedulerEvent;
+    proposedEvent?: SchedulerEvent;
+    sourceResource?: Resource;
+    targetResource?: Resource;
+    sourceResourceId?: string;
+    targetResourceId?: string;
+    sourceTime?: Date;
+    targetTime?: Date;
+    resizeEdge?: 'start' | 'end';
     element?: HTMLElement;
     cancel: boolean;
 }
@@ -1034,11 +1093,27 @@ export interface ResizeEventArgs {
  * Arguments for drag events.
  */
 export interface DragEventArgs {
-    data: EventData;
+    data: SchedulerEvent;
+    event: SchedulerEvent;
+    originalEvent?: SchedulerEvent;
+    proposedEvent?: SchedulerEvent;
+    sourceResource?: Resource;
+    targetResource?: Resource;
+    sourceResourceId?: string;
+    targetResourceId?: string;
+    sourceTime?: Date;
+    targetTime?: Date;
     element?: HTMLElement;
     cancel: boolean;
     target?: HTMLElement;
 }
+
+export type DropEventArgs = DragEventArgs;
+export type BeforeEventCreateArgs = SchedulerBeforeEventArgs<Partial<SchedulerEvent>>;
+export type BeforeEventChangeArgs = SchedulerBeforeEventArgs<SchedulerEvent>;
+export type BeforeEventDeleteArgs = SchedulerBeforeEventDeleteArgs;
+export type BeforeEventResizeArgs = ResizeEventArgs;
+export type BeforeEventDropArgs = DropEventArgs;
 
 /**
  * Arguments for selection events.
@@ -1064,6 +1139,8 @@ export interface EzSchedulerRef {
      * @group Properties 
      */
     currentView: View;
+    getCurrentDate: () => Date;
+    setCurrentDate: (date: Date) => void;
 
     /** 
      * Scroll to a specific row index.
@@ -1131,12 +1208,17 @@ export interface EzSchedulerRef {
      * @group Methods 
      */
     getEventsInDateRange: (start: Date, end: Date) => Promise<SchedulerEvent[]>;
+    scrollToEvent: (eventId: string) => void;
+    selectEvent: (eventId: string) => void;
+    clearSelection: () => void;
 
     /** 
      * Add a new resource.
      * @group Methods 
      */
     addResource: (resource: Resource | Record<string, unknown>) => Promise<void>;
+    getResources: () => Promise<Resource[]>;
+    updateResource: (resourceId: string | number, updates: Partial<Resource>) => Promise<void>;
     /** 
      * Remove a resource by ID.
      * @group Methods 

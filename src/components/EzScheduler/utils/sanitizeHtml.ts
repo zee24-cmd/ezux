@@ -1,4 +1,5 @@
 import DOMPurify from 'dompurify';
+import type React from 'react';
 
 /**
  * Sanitizes HTML content using DOMPurify
@@ -19,22 +20,22 @@ export function sanitizeHtml(html: string, enabled: boolean = true): string {
             'a', 'img',
             'table', 'thead', 'tbody', 'tr', 'th', 'td'
         ],
-        ALLOWED_ATTR: ['class', 'style', 'href', 'src', 'alt', 'title'],
+        ALLOWED_ATTR: ['class', 'href', 'src', 'alt', 'title'],
         ALLOW_DATA_ATTR: false,
     });
 }
 
 /**
- * Renders template content safely
+ * Renders template content safely.
  * @param template - Template content (React node or HTML string)
  * @param data - Data to pass to template function
- * @param enableSanitizer - Whether to sanitize HTML strings
+ * @param _enableSanitizer - Deprecated. String templates are always sanitized before dangerouslySetInnerHTML.
  * @returns Rendered content
  */
 export function renderTemplate(
     template: ((data: any) => React.ReactNode) | string | undefined,
     data: any,
-    enableSanitizer: boolean = true
+    _enableSanitizer: boolean = true
 ): React.ReactNode | { __html: string } | null {
     if (!template) return null;
 
@@ -42,17 +43,17 @@ export function renderTemplate(
     if (typeof template === 'function') {
         const result = template(data);
 
-        // If result is a string, sanitize it
+        // String results are rendered with dangerouslySetInnerHTML by scheduler views.
         if (typeof result === 'string') {
-            return { __html: sanitizeHtml(result, enableSanitizer) };
+            return { __html: sanitizeHtml(result, true) };
         }
 
         return result;
     }
 
-    // If template is a string, sanitize it
+    // String templates are rendered with dangerouslySetInnerHTML by scheduler views.
     if (typeof template === 'string') {
-        return { __html: sanitizeHtml(template, enableSanitizer) };
+        return { __html: sanitizeHtml(template, true) };
     }
 
     return null;

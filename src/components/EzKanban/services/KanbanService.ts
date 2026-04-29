@@ -1,26 +1,17 @@
 import type { IKanbanService, KanbanBoard, KanbanCard, KanbanColumn, KanbanSwimlane } from '../EzKanban.types';
 
 /**
- * Kanban service implementation following the ServiceRegistry pattern
- */
-// Static Mock Database (Simulating a Backend)
-const MOCK_DB = new Map<string, KanbanBoard>();
-
-/**
  * Kanban service implementation following the ServiceRegistry pattern.
- * Uses a static mock database to simulate persistence across component lifecycles.
+ * Uses instance-local in-memory storage for demos and tests.
  */
 export class KanbanService implements IKanbanService {
     name = 'KanbanService';
+    private boards = new Map<string, KanbanBoard>();
 
     async init(): Promise<void> {
-        console.log('[KanbanService] Initialized');
     }
 
     async cleanup(): Promise<void> {
-        // In a real app, close connections.
-        // For mock, we might choose to clear DB or keep it.
-        // MOCK_DB.clear(); 
     }
 
     /**
@@ -29,8 +20,8 @@ export class KanbanService implements IKanbanService {
      */
     initializeWithData(boards: KanbanBoard[]) {
         boards.forEach(board => {
-            if (!MOCK_DB.has(board.id)) {
-                MOCK_DB.set(board.id, JSON.parse(JSON.stringify(board))); // Deep copy
+            if (!this.boards.has(board.id)) {
+                this.boards.set(board.id, JSON.parse(JSON.stringify(board))); // Deep copy
             }
         });
     }
@@ -41,7 +32,7 @@ export class KanbanService implements IKanbanService {
 
     async getBoard(boardId: string): Promise<KanbanBoard> {
         await this.simulateLatency();
-        const board = MOCK_DB.get(boardId);
+        const board = this.boards.get(boardId);
         if (!board) {
             throw new Error(`Board with ID ${boardId} not found`);
         }
@@ -67,13 +58,13 @@ export class KanbanService implements IKanbanService {
             updatedAt: new Date(),
         };
 
-        MOCK_DB.set(newBoard.id, newBoard);
+        this.boards.set(newBoard.id, newBoard);
         return newBoard;
     }
 
     async updateBoard(boardId: string, updates: Partial<KanbanBoard>): Promise<void> {
         await this.simulateLatency();
-        const board = MOCK_DB.get(boardId);
+        const board = this.boards.get(boardId);
         if (!board) throw new Error(`Board with ID ${boardId} not found`);
 
         const updatedBoard = {
@@ -81,12 +72,12 @@ export class KanbanService implements IKanbanService {
             ...updates,
             updatedAt: new Date(),
         };
-        MOCK_DB.set(boardId, updatedBoard);
+        this.boards.set(boardId, updatedBoard);
     }
 
     async deleteBoard(boardId: string): Promise<void> {
         await this.simulateLatency();
-        MOCK_DB.delete(boardId);
+        this.boards.delete(boardId);
     }
 
     // ────────────────────────────────────────────────
@@ -95,7 +86,7 @@ export class KanbanService implements IKanbanService {
 
     async createCard(boardId: string, card: Partial<KanbanCard>): Promise<KanbanCard> {
         await this.simulateLatency();
-        const board = MOCK_DB.get(boardId);
+        const board = this.boards.get(boardId);
         if (!board) throw new Error(`Board with ID ${boardId} not found`);
 
         const newCard: KanbanCard = {
@@ -117,7 +108,7 @@ export class KanbanService implements IKanbanService {
         };
 
         board.cards.push(newCard);
-        MOCK_DB.set(boardId, board); // Update DB
+        this.boards.set(boardId, board); // Update DB
 
         return newCard;
     }
@@ -125,7 +116,7 @@ export class KanbanService implements IKanbanService {
     async updateCard(cardId: string, updates: Partial<KanbanCard>): Promise<void> {
         await this.simulateLatency();
         // Search across all boards (or assume we know context)
-        for (const [boardId, board] of MOCK_DB.entries()) {
+        for (const [boardId, board] of this.boards.entries()) {
             const cardIndex = board.cards.findIndex(c => c.id === cardId);
             if (cardIndex !== -1) {
                 board.cards[cardIndex] = {
@@ -133,7 +124,7 @@ export class KanbanService implements IKanbanService {
                     ...updates,
                     updatedAt: new Date(),
                 };
-                MOCK_DB.set(boardId, board);
+                this.boards.set(boardId, board);
                 return;
             }
         }
@@ -142,11 +133,11 @@ export class KanbanService implements IKanbanService {
 
     async deleteCard(cardId: string): Promise<void> {
         await this.simulateLatency();
-        for (const [boardId, board] of MOCK_DB.entries()) {
+        for (const [boardId, board] of this.boards.entries()) {
             const filteredCards = board.cards.filter(c => c.id !== cardId);
             if (filteredCards.length !== board.cards.length) {
                 board.cards = filteredCards;
-                MOCK_DB.set(boardId, board);
+                this.boards.set(boardId, board);
                 return;
             }
         }
@@ -160,7 +151,7 @@ export class KanbanService implements IKanbanService {
         targetPosition?: number
     ): Promise<void> {
         await this.simulateLatency();
-        for (const [boardId, board] of MOCK_DB.entries()) {
+        for (const [boardId, board] of this.boards.entries()) {
             const card = board.cards.find(c => c.id === cardId);
             if (card) {
                 card.columnId = targetColumnId;
@@ -168,7 +159,7 @@ export class KanbanService implements IKanbanService {
                 if (targetPosition !== undefined) card.position = targetPosition;
                 card.updatedAt = new Date();
 
-                MOCK_DB.set(boardId, board);
+                this.boards.set(boardId, board);
                 return;
             }
         }
@@ -181,7 +172,7 @@ export class KanbanService implements IKanbanService {
 
     async createColumn(boardId: string, column: Partial<KanbanColumn>): Promise<KanbanColumn> {
         await this.simulateLatency();
-        const board = MOCK_DB.get(boardId);
+        const board = this.boards.get(boardId);
         if (!board) throw new Error(`Board with ID ${boardId} not found`);
 
         const newColumn: KanbanColumn = {
@@ -195,21 +186,21 @@ export class KanbanService implements IKanbanService {
         };
 
         board.columns.push(newColumn);
-        MOCK_DB.set(boardId, board);
+        this.boards.set(boardId, board);
 
         return newColumn;
     }
 
     async updateColumn(columnId: string, updates: Partial<KanbanColumn>): Promise<void> {
         await this.simulateLatency();
-        for (const [boardId, board] of MOCK_DB.entries()) {
+        for (const [boardId, board] of this.boards.entries()) {
             const columnIndex = board.columns.findIndex(c => c.id === columnId);
             if (columnIndex !== -1) {
                 board.columns[columnIndex] = {
                     ...board.columns[columnIndex],
                     ...updates,
                 };
-                MOCK_DB.set(boardId, board);
+                this.boards.set(boardId, board);
                 return;
             }
         }
@@ -218,14 +209,14 @@ export class KanbanService implements IKanbanService {
 
     async deleteColumn(columnId: string): Promise<void> {
         await this.simulateLatency();
-        for (const [boardId, board] of MOCK_DB.entries()) {
+        for (const [boardId, board] of this.boards.entries()) {
             const filteredColumns = board.columns.filter(c => c.id !== columnId);
             if (filteredColumns.length !== board.columns.length) {
                 // Also remove cards in this column
                 const filteredCards = board.cards.filter(c => c.columnId !== columnId);
                 board.columns = filteredColumns;
                 board.cards = filteredCards;
-                MOCK_DB.set(boardId, board);
+                this.boards.set(boardId, board);
                 return;
             }
         }
@@ -239,7 +230,7 @@ export class KanbanService implements IKanbanService {
 
     async createSwimlane(boardId: string, swimlane: Partial<KanbanSwimlane>): Promise<KanbanSwimlane> {
         await this.simulateLatency();
-        const board = MOCK_DB.get(boardId);
+        const board = this.boards.get(boardId);
         if (!board) throw new Error(`Board with ID ${boardId} not found`);
 
         const newSwimlane: KanbanSwimlane = {
@@ -255,14 +246,14 @@ export class KanbanService implements IKanbanService {
         const swimlanes = board.swimlanes || [];
         swimlanes.push(newSwimlane);
         board.swimlanes = swimlanes;
-        MOCK_DB.set(boardId, board);
+        this.boards.set(boardId, board);
 
         return newSwimlane;
     }
 
     async updateSwimlane(swimlaneId: string, updates: Partial<KanbanSwimlane>): Promise<void> {
         await this.simulateLatency();
-        for (const [boardId, board] of MOCK_DB.entries()) {
+        for (const [boardId, board] of this.boards.entries()) {
             const swimlanes = board.swimlanes || [];
             const swimlaneIndex = swimlanes.findIndex(s => s.id === swimlaneId);
 
@@ -272,7 +263,7 @@ export class KanbanService implements IKanbanService {
                     ...updates,
                 };
                 board.swimlanes = swimlanes;
-                MOCK_DB.set(boardId, board);
+                this.boards.set(boardId, board);
                 return;
             }
         }
@@ -281,7 +272,7 @@ export class KanbanService implements IKanbanService {
 
     async deleteSwimlane(swimlaneId: string): Promise<void> {
         await this.simulateLatency();
-        for (const [boardId, board] of MOCK_DB.entries()) {
+        for (const [boardId, board] of this.boards.entries()) {
             const swimlanes = board.swimlanes || [];
             if (swimlanes.some(s => s.id === swimlaneId)) {
                 // Remove swimlane
@@ -292,7 +283,7 @@ export class KanbanService implements IKanbanService {
                     card.swimlaneId === swimlaneId ? { ...card, swimlaneId: undefined } : card
                 );
 
-                MOCK_DB.set(boardId, board);
+                this.boards.set(boardId, board);
                 return;
             }
         }

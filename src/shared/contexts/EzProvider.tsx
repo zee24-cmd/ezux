@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo } from 'react';
+import { LucideProvider } from 'lucide-react';
 import { EzServiceRegistry, ServiceRegistry } from '../services/ServiceRegistry';
 import { ThemeService } from '../services/ThemeService';
 import { I18nService } from '../services/I18nService';
@@ -22,6 +23,7 @@ export interface EzProviderProps {
      */
     translations?: Record<string, Record<string, string>>;
 }
+
 
 /**
  * `<EzProvider>` serves as the central orchestration point for all EzUX global services.
@@ -81,7 +83,9 @@ export const EzProvider: React.FC<EzProviderProps> = ({ children, defaultLocale 
 
     return (
         <EzContext.Provider value={contextValue}>
-            {children}
+            <LucideProvider strokeWidth={2} size={18}>
+                {children}
+            </LucideProvider>
         </EzContext.Provider>
     );
 };

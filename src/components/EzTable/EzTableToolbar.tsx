@@ -1,4 +1,4 @@
-import React, { memo, useCallback } from 'react';
+import React, { memo, useCallback, useState, useEffect } from 'react';
 import { Download, Undo, Redo, Loader2, Plus, Printer, Columns3, Save, XCircle } from 'lucide-react';
 import { useEzServiceRegistry } from '../../shared/contexts/EzProvider';
 import { NotificationService } from '../../shared/services/NotificationService';
@@ -49,6 +49,8 @@ interface EzTableToolbarProps {
     onDiscard?: () => void;
     /** Whether editing is enabled. @group Properties */
     enableEditing?: boolean;
+    /** Whether column hiding is enabled. @group Properties */
+    enableHiding?: boolean;
     /** Current change counts for badge display. @group State */
     changes?: { added: number; edited: number; deleted: number };
     /** The TanStack Table instance. @group Properties */
@@ -75,21 +77,42 @@ export const EzTableToolbar = memo(({
     onSave,
     onDiscard,
     enableEditing,
+    enableHiding,
     changes,
     table
 }: EzTableToolbarProps) => {
     const registry = useEzServiceRegistry();
+    
+    // Local state for the search input to support debouncing
+    const initialQuickSearch = (typeof globalFilter === 'string' ? globalFilter : globalFilter?.quickSearch) ?? '';
+    const [searchTerm, setSearchTerm] = useState(initialQuickSearch);
+
+    // Update local state when globalFilter changes from outside
+    useEffect(() => {
+        setSearchTerm(initialQuickSearch);
+    }, [initialQuickSearch]);
+
+    // Apply filtering with debounce
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            if (searchTerm === initialQuickSearch) return;
+
+            if (typeof globalFilter === 'object' && globalFilter !== null) {
+                setGlobalFilter({ ...globalFilter, quickSearch: searchTerm });
+            } else {
+                setGlobalFilter(searchTerm);
+            }
+        }, 300);
+
+        return () => clearTimeout(handler);
+    }, [searchTerm, setGlobalFilter, initialQuickSearch]);
+
     const handleQuickSearchChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-        const val = event.target.value;
-        if (typeof globalFilter === 'object' && globalFilter !== null) {
-            setGlobalFilter({ ...globalFilter, quickSearch: val });
-        } else {
-            setGlobalFilter(val);
-        }
-    }, [globalFilter, setGlobalFilter]);
+        setSearchTerm(event.target.value);
+    }, []);
 
     return (
-        <div className="flex flex-wrap items-center justify-between gap-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-y-2 px-1">
             <div className="flex flex-1 flex-wrap items-center gap-2">
                 {enableEditing && onAdd && (
                     <Button
@@ -129,7 +152,7 @@ export const EzTableToolbar = memo(({
                 <div className="relative">
                     <Input
                         placeholder="Filter all columns..."
-                        value={(typeof globalFilter === 'string' ? globalFilter : globalFilter?.quickSearch) ?? ''}
+                        value={searchTerm}
                         onChange={handleQuickSearchChange}
                         className={cn(
                             "h-8 min-w-[150px] flex-1 lg:max-w-[250px]",
@@ -140,6 +163,7 @@ export const EzTableToolbar = memo(({
                         <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />
                     )}
                 </div>
+
 
                 {enableChangeTracking && (
                     <div className="flex items-center gap-1 ml-2 border-l border-border pl-2">
@@ -167,33 +191,37 @@ export const EzTableToolbar = memo(({
                 )}
             </div>
 
-            {(onExportCSV || onExportExcel || onExportPDF) && (
-                <div className="flex justify-end gap-2">
-                    {table && (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="sm" className="h-8 gap-2">
-                                    <Columns3 className="w-4 h-4" /> Columns
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-[180px]">
-                                {table.getAllLeafColumns()
-                                    .filter((column: any) => typeof column.accessorFn !== 'undefined' && column.getCanHide())
-                                    .map((column: any) => {
-                                        return (
-                                            <DropdownMenuCheckboxItem
-                                                key={column.id}
-                                                className="capitalize"
-                                                checked={column.getIsVisible()}
-                                                onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                                            >
-                                                {column.columnDef.header}
-                                            </DropdownMenuCheckboxItem>
-                                        );
-                                    })}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    )}
+            <div className="flex justify-end gap-2">
+                {enableHiding && table && (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm" className="h-8 gap-2">
+                                <Columns3 className="w-4 h-4" /> Columns
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-[180px]">
+                            {table.getAllLeafColumns()
+                                .filter((column: any) => typeof column.accessorFn !== 'undefined' && column.getCanHide())
+                                .map((column: any) => {
+                                    return (
+                                        <DropdownMenuCheckboxItem
+                                            key={column.id}
+                                            className="capitalize"
+                                            checked={column.getIsVisible()}
+                                            onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                                        >
+                                            {typeof column.columnDef.header === 'string' 
+                                                ? column.columnDef.header 
+                                                : (column.id.replace(/_/g, ' ') || 'Unnamed Column')}
+                                        </DropdownMenuCheckboxItem>
+                                    );
+                                })}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                )}
+
+                {(onExportCSV || onExportExcel || onExportPDF) && (
+                    <>
 
                     <Button
                         variant="outline"
@@ -257,8 +285,9 @@ export const EzTableToolbar = memo(({
                             <Download className="w-4 h-4" /> Export PDF
                         </Button>
                     )}
-                </div>
-            )}
+                    </>
+                )}
+            </div>
         </div>
     );
 });

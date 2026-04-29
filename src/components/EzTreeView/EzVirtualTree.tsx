@@ -141,7 +141,8 @@ export const EzVirtualTree = memo(({
             rowVirtualizer.scrollToIndex(prevIndex);
         } else if (e.key === expandKey) {
             e.preventDefault();
-            if ((node.children?.length || (!node.isLoaded && !node.isLeaf)) && !expandedNodes.has(node.id)) {
+            const hasChildren = !!node.children?.length || (node.children && !node.isLeaf) || (!node.isLoaded && !node.isLeaf);
+            if (hasChildren && !expandedNodes.has(node.id)) {
                 onToggleExpand(node.id);
             } else if (node.children?.length && expandedNodes.has(node.id)) {
                 if (index + 1 < items.length && items[index + 1].level > (node.level ?? 0)) {
@@ -204,7 +205,7 @@ export const EzVirtualTree = memo(({
                                 isChecked={checkedNodes.has(node.id)}
                                 isIndeterminate={indeterminateNodes.has(node.id)}
                                 isLoading={loadingNodes.has(node.id)}
-                                hasChildren={!!node.children?.length || (!node.isLoaded && !node.isLeaf)}
+                                hasChildren={!!node.children?.length || (node.children && !node.isLeaf) || (!node.isLoaded && !node.isLeaf)}
                                 onToggleExpand={onToggleExpand}
                                 onToggleSelect={onToggleSelect}
                                 onToggleCheck={onToggleCheck}

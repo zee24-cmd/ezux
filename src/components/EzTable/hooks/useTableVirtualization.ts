@@ -21,6 +21,7 @@ export const useTableVirtualization = <TData extends object>(
         density = 'standard',
         rowHeight,
         estimatedRowHeight,
+        rowSizingMode = 'auto',
         enableColumnVirtualization = false
     } = props;
 
@@ -46,6 +47,31 @@ export const useTableVirtualization = <TData extends object>(
         }
     }, [density]);
 
+    const hasVariableHeightRows = useMemo(() => {
+        if (rowHeight) return false;
+        if (rowSizingMode === 'dynamic') return true;
+        if (rowSizingMode === 'fixed') return false;
+
+        const hasWrappedColumns = props.columns.some(column => column.meta?.wrapText);
+        const hasContentWrapping = props.textWrapSettings?.wrapMode === 'Both' || props.textWrapSettings?.wrapMode === 'Content';
+
+        return Boolean(
+            props.renderDetailPanel ||
+            props.enableEditing ||
+            hasWrappedColumns ||
+            hasContentWrapping ||
+            props.adaptiveSizing
+        );
+    }, [
+        rowHeight,
+        rowSizingMode,
+        props.columns,
+        props.textWrapSettings,
+        props.renderDetailPanel,
+        props.enableEditing,
+        props.adaptiveSizing
+    ]);
+
     const virtualization = useVirtualization({
         rowCount: rows.length,
         rowHeight: effectiveRowHeight,
@@ -56,7 +82,7 @@ export const useTableVirtualization = <TData extends object>(
         enableColumnVirtualization,
         progressiveRendering: props.progressiveRendering ?? false,
         prefetchDistance: props.prefetchDistance ?? 10,
-        adaptiveSizing: props.adaptiveSizing,
+        adaptiveSizing: hasVariableHeightRows,
         id: props.id,
         debug: false,
         languageDirection: dir, // Pass the text direction to handles horizontal RTL
@@ -83,6 +109,8 @@ export const useTableVirtualization = <TData extends object>(
         /** Scroll to a specific column. @group Methods */
         scrollToColumn,
         /** Calculated row height based on density or props. @group Properties */
-        effectiveRowHeight
+        effectiveRowHeight,
+        /** Whether rows are measured from rendered content. @group Properties */
+        dynamicRowSizing: hasVariableHeightRows
     };
 };

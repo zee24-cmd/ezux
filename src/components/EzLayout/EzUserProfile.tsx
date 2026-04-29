@@ -34,11 +34,15 @@ export interface EzUserProfileProps {
     };
     /** Callback triggered when the user clicks 'Sign Out'. @group Events */
     onLogout?: () => void;
+    /** Callback triggered when the user clicks 'Profile'. @group Events */
+    onProfileClick?: () => void;
+    /** Callback triggered when the user clicks 'Settings'. @group Events */
+    onSettingsClick?: () => void;
     /** Custom CSS class for the profile trigger button. @group Appearance */
     className?: string;
 }
 
-export const EzUserProfile: React.FC<EzUserProfileProps> = ({ user, onLogout, className }) => {
+export const EzUserProfile: React.FC<EzUserProfileProps> = ({ user, onLogout, onProfileClick, onSettingsClick, className }) => {
     // Theme Service logic for Color Changer
 
     const themeService = useThemeService();
@@ -83,17 +87,17 @@ export const EzUserProfile: React.FC<EzUserProfileProps> = ({ user, onLogout, cl
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onSelect={onProfileClick}>
                         <User className="mr-2 h-4 w-4" />
-                        <span>{i18nService.t('profile')}</span>
+                        <span>{i18nService.t('profile', 'Profile')}</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onSelect={onSettingsClick}>
                         <Settings className="mr-2 h-4 w-4" />
-                        <span>{i18nService.t('nav_settings')}</span>
+                        <span>{i18nService.t('nav_settings', 'Settings')}</span>
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuLabel>{i18nService.t('theme_color')}</DropdownMenuLabel>
+                <DropdownMenuLabel>{i18nService.t('theme_color', 'Theme Color')}</DropdownMenuLabel>
                 <div className="grid grid-cols-6 gap-2 p-2 pt-0">
                     {colors.map((color) => (
                         <div
@@ -109,9 +113,9 @@ export const EzUserProfile: React.FC<EzUserProfileProps> = ({ user, onLogout, cl
                     ))}
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={onLogout}>
+                <DropdownMenuItem onSelect={onLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
-                    <span>{i18nService.t('sign_out')}</span>
+                    <span>{i18nService.t('sign_out', 'Sign Out')}</span>
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

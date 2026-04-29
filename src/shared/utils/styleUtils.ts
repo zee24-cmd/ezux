@@ -43,7 +43,7 @@ export const getDensityPaddingClasses = (density?: Density): string => {
 export const getDensityTextClasses = (density?: Density): string => {
     switch (density) {
         case 'compact':
-            return 'text-xs';
+            return 'text-[13px] leading-5';
         case 'comfortable':
             return 'text-base';
         case 'standard':

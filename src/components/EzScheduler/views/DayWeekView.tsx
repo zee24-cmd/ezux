@@ -262,7 +262,6 @@ export const DayWeekView: React.FC<DayWeekViewProps> = ({
     weekRule = 'FirstDay' as const,
     // timeFormat,  // Unused
     cellTemplate,
-    enableHtmlSanitizer = true,
     showUnassignedLane = false,
     startHour = '00:00',
     slotDuration = 30,
@@ -650,6 +649,13 @@ export const DayWeekView: React.FC<DayWeekViewProps> = ({
                                                     resourceId={res.id}
                                                     isWorkHour={isWorkHour}
                                                     isSelected={isSelecting}
+                                                    data={{
+                                                        kind: 'time-slot',
+                                                        date: slotDate,
+                                                        resourceId: res.id,
+                                                        orientation: 'vertical',
+                                                        slotDuration
+                                                    }}
                                                     onMouseDown={() => handleMouseDown(slotDate, res.id)}
                                                     onMouseEnter={() => handleMouseEnter(slotDate)}
                                                     onDoubleClick={() => {
@@ -678,7 +684,7 @@ export const DayWeekView: React.FC<DayWeekViewProps> = ({
                                                 >
                                                     {cellTemplate ? (() => {
                                                         const templateData = { date: slotDate, resourceId: res.id, isWorkHour, isToday };
-                                                        const content = renderTemplate(cellTemplate, templateData, enableHtmlSanitizer);
+                                                        const content = renderTemplate(cellTemplate, templateData);
                                                         if (content && typeof content === 'object' && '__html' in content) {
                                                             return <div className="w-full h-full" dangerouslySetInnerHTML={content} />;
                                                         }

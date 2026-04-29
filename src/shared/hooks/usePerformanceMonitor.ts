@@ -7,23 +7,38 @@ export interface PerformanceMetrics {
     memoryUsage?: number;
 }
 
+export interface PerformanceMonitorOptions {
+    /**
+     * Publish metrics to React state on this interval.
+     * Disabled by default to avoid monitor-driven render loops.
+     */
+    updateIntervalMs?: number;
+}
+
+const initialMetrics: PerformanceMetrics = {
+    renderCount: 0,
+    lastRenderTime: 0,
+    averageRenderTime: 0,
+};
+
 /**
  * Hook for monitoring component performance
  * Tracks render count, render time, and memory usage
  */
-export const usePerformanceMonitor = (componentName: string) => {
+export const usePerformanceMonitor = (
+    componentName: string,
+    options: PerformanceMonitorOptions = {}
+) => {
     const renderCount = useRef(0);
     const renderTimes = useRef<number[]>([]);
-    const lastRenderStart = useRef(performance.now());
-    const [metrics, setMetrics] = useState<PerformanceMetrics>({
-        renderCount: 0,
-        lastRenderTime: 0,
-        averageRenderTime: 0,
-    });
+    const metricsRef = useRef<PerformanceMetrics>(initialMetrics);
+    const renderStart = performance.now();
+    const [metrics, setMetrics] = useState<PerformanceMetrics>(initialMetrics);
+    const { updateIntervalMs } = options;
 
     useEffect(() => {
         const renderEnd = performance.now();
-        const renderTime = renderEnd - lastRenderStart.current;
+        const renderTime = renderEnd - renderStart;
 
         renderCount.current += 1;
         renderTimes.current.push(renderTime);
@@ -47,15 +62,27 @@ export const usePerformanceMonitor = (componentName: string) => {
             newMetrics.memoryUsage = (performance as any).memory.usedJSHeapSize / 1048576; // MB
         }
 
-        setMetrics(newMetrics);
+        metricsRef.current = newMetrics;
 
         // Log to console in development
         if (process.env.NODE_ENV === 'development' && renderCount.current % 10 === 0) {
             console.log(`[Performance] ${componentName}:`, newMetrics);
         }
-
-        lastRenderStart.current = performance.now();
     });
+
+    useEffect(() => {
+        if (!updateIntervalMs || updateIntervalMs <= 0) {
+            return;
+        }
+
+        const intervalId = window.setInterval(() => {
+            setMetrics(metricsRef.current);
+        }, updateIntervalMs);
+
+        return () => {
+            window.clearInterval(intervalId);
+        };
+    }, [updateIntervalMs]);
 
     return metrics;
 };

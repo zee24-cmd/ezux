@@ -48,7 +48,7 @@ export const BooleanCell: React.FC<BooleanCellProps> = ({
                     className="scale-90"
                 />
                 {showLabel && (
-                    <span className="text-xs font-medium">
+                    <span className="text-sm font-medium">
                         {isTrue ? trueLabel : isFalse ? falseLabel : nullLabel}
                     </span>
                 )}
@@ -58,7 +58,7 @@ export const BooleanCell: React.FC<BooleanCellProps> = ({
 
     return (
         <div className={cn(
-            "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md transition-colors text-xs font-medium",
+            "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md transition-colors text-sm font-medium",
             isTrue && "bg-emerald-50/50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400",
             isFalse && "bg-rose-50/50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400",
             isNull && "bg-muted/60 text-muted-foreground",
@@ -72,7 +72,7 @@ export const BooleanCell: React.FC<BooleanCellProps> = ({
                 </>
             )}
             {showLabel && (
-                <span className="text-xs font-medium">
+                <span className="text-sm font-medium">
                     {isTrue ? trueLabel : isFalse ? falseLabel : nullLabel}
                 </span>
             )}

@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useEffect } from 'react';
 import {
     useReactTable,
     getCoreRowModel,
@@ -165,6 +165,28 @@ export const useTableState = <TData extends object>(props: EzTableProps<TData>, 
     };
 
     // --- Table Instance ---
+    // Use refs for callbacks to avoid infinite loops when parent passes anonymous functions
+    const onColumnFiltersChangeRef = useRef(props.onColumnFiltersChange);
+    const onGlobalFilterChangeRef = useRef(props.onGlobalFilterChange);
+
+    useEffect(() => {
+        onColumnFiltersChangeRef.current = props.onColumnFiltersChange;
+        onGlobalFilterChangeRef.current = props.onGlobalFilterChange;
+    });
+
+    // Side-effects for manual filtering
+    useEffect(() => {
+        if (manualFiltering && state.columnFilters.length >= 0) {
+            onColumnFiltersChangeRef.current?.(state.columnFilters);
+        }
+    }, [state.columnFilters, manualFiltering]);
+
+    useEffect(() => {
+        if (manualFiltering) {
+            onGlobalFilterChangeRef.current?.(state.globalFilter);
+        }
+    }, [state.globalFilter, manualFiltering]);
+
     const table: Table<TData> = useReactTable({
         data: currentData,
         columns,

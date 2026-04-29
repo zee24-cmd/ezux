@@ -89,14 +89,38 @@ export const useSchedulerImperative = (
 
             // DataOperations
             ...crudMethods,
+            getCurrentDate: () => currentDate,
+            setCurrentDate: (date: Date) => {
+                const delta = date.getTime() - currentDate.getTime();
+                if (delta > 0) methods.next();
+                if (delta < 0) methods.prev();
+            },
             getEvents: async () => schedulerService.getEvents(),
             getEventsInDateRange: async (start: Date, end: Date) => schedulerService.getEvents(start, end),
             addEvent: async (e: SchedulerEvent | Record<string, unknown>) => { await schedulerService.addEvent(e as Partial<SchedulerEvent>); },
             saveEvent: async (e: SchedulerEvent | Record<string, unknown>) => { await schedulerService.updateEvent(e as SchedulerEvent); },
             deleteEvent: async (id: string | number) => { await schedulerService.deleteEvent(id); },
             getCurrentViewEvents: () => visibleEvents,
+            scrollToEvent: (eventId: string) => {
+                const event = visibleEvents.find(e => e.id === eventId);
+                if (!event) return;
+                const totalMinutes = event.start.getHours() * 60 + event.start.getMinutes();
+                methods.scrollToIndex(Math.floor(totalMinutes / 30));
+            },
+            selectEvent: () => {
+                // Selection state is owned by interactive views; this method is reserved for view adapters.
+            },
+            clearSelection: () => {
+                // Selection state is owned by interactive views; this method is reserved for view adapters.
+            },
             addResource: async (r: Resource | Record<string, unknown>) => {
                 methods.setResources(prev => [...(prev as Resource[]), r as Resource]);
+            },
+            getResources: async () => schedulerService.getResources(),
+            updateResource: async (resourceId: string | number, updates: Partial<Resource>) => {
+                methods.setResources(prev => (prev as Resource[]).map(resource =>
+                    String(resource.id) === String(resourceId) ? { ...resource, ...updates } : resource
+                ));
             },
             removeResource: async (id: string | number) => {
                 methods.setResources(prev => (prev as Resource[]).filter(r => r.id !== id));

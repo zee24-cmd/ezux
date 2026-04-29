@@ -60,7 +60,7 @@ export const SelectItem: React.FC<{ value: any, children: React.ReactNode }> = (
     const context = React.useContext(SelectContext);
     return (
         <DropdownMenuItem
-            className={cn("flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50", context?.value === value && "font-bold")}
+            className={cn("flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 text-start", context?.value === value && "font-bold")}
             onSelect={() => {
                 context?.onValueChange?.(value);
                 context?.setOpen(false);

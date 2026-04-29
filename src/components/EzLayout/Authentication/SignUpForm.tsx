@@ -5,7 +5,7 @@ import { Input } from '../../ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '../../ui/avatar';
 import { cn } from '../../../lib/utils';
 import { PasswordInput } from './InputPassword';
-import { Upload, User, Mail, Github, Facebook } from 'lucide-react';
+import { Upload, User, Mail } from 'lucide-react';
 
 interface SignUpFormValues {
     name: string;
@@ -75,10 +75,10 @@ export const SignUpForm: React.FC<SignUpFormProps> = ({ onSubmit }) => {
 
                 <div className="flex justify-center gap-4 my-4">
                     <Button type="button" variant="outline" size="icon" className="rounded-full w-10 h-10 border-border hover:bg-background-secondary dark:border-zinc-800 dark:hover:bg-zinc-900">
-                        <Facebook className="w-4 h-4 text-blue-600" />
+                        <span className="font-bold text-xs text-blue-600">F</span>
                     </Button>
                     <Button type="button" variant="outline" size="icon" className="rounded-full w-10 h-10 border-border hover:bg-background-secondary dark:border-zinc-800 dark:hover:bg-zinc-900">
-                        <Github className="w-4 h-4 text-zinc-900 dark:text-white" />
+                        <span className="font-bold text-xs text-zinc-900 dark:text-white">GH</span>
                     </Button>
                     <Button type="button" variant="outline" size="icon" className="rounded-full w-10 h-10 border-border hover:bg-background-secondary dark:border-zinc-800 dark:hover:bg-zinc-900">
                         <span className="font-bold text-xs">G</span>

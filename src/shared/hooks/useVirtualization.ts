@@ -182,6 +182,9 @@ export const useVirtualization = (config: VirtualizationConfig): VirtualizationR
         scrollPaddingEnd,
         rangeExtractor: enhancedRangeExtractor,
         scrollToFn,
+        measureElement: adaptiveSizing
+            ? (element: Element) => element.getBoundingClientRect().height
+            : undefined,
         [VIRTUALIZER_LANGUAGE_DIR_KEY]: languageDirection,
         onChange: (instance: Virtualizer<HTMLDivElement, Element>) => {
             const offset = instance.scrollOffset ?? 0;
@@ -216,6 +219,7 @@ export const useVirtualization = (config: VirtualizationConfig): VirtualizationR
         scrollPaddingEnd,
         enhancedRangeExtractor,
         scrollToFn,
+        languageDirection,
         onScroll,
         onScrollStart,
         onScrollStop

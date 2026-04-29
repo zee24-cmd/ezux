@@ -26,6 +26,8 @@ interface DraggableEventProps {
     isHighlighted?: boolean;
     slotDuration?: number;
     pixelsPerSlot?: number;
+    dragOverlay?: boolean;
+    isSourceDragging?: boolean;
 }
 
 
@@ -43,18 +45,25 @@ export const DraggableEvent = ({
     isPast = false,
     isHighlighted = false,
     slotDuration = 30,
-    pixelsPerSlot
+    pixelsPerSlot,
+    dragOverlay = false,
+    isSourceDragging = false
 }: DraggableEventProps) => {
     const isExplicitBlock = isBlocked || event.isBlock;
     const isRestricted = isExplicitBlock || isPast;
+    const effectivePixelsPerSlot = pixelsPerSlot || (orientation === 'vertical' ? 64 : 80);
 
     const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-        id: event.id,
-        data: event,
-        disabled: isRestricted
+        id: dragOverlay ? `overlay-${event.id}` : event.id,
+        data: {
+            type: 'event',
+            eventId: event.id,
+            event,
+            orientation,
+            pixelsPerSlot: effectivePixelsPerSlot
+        },
+        disabled: dragOverlay || isRestricted
     });
-
-    const effectivePixelsPerSlot = pixelsPerSlot || (orientation === 'vertical' ? 64 : 80);
 
     const { attributes: resizeBottomAttrs, listeners: resizeBottomListeners, setNodeRef: setResizeBottomRef, transform: resizeBottomTransform, isDragging: isResizingBottom } = useDraggable({
         id: `resize-bottom-${event.id}`,
@@ -116,12 +125,12 @@ export const DraggableEvent = ({
 
     const combinedStyle: React.CSSProperties = {
         ...style,
-        transform: CSS.Translate.toString(transform),
-        opacity: isDragging ? 0.6 : (isPast ? 0.7 : 1),
+        transform: dragOverlay ? undefined : CSS.Translate.toString(transform),
+        opacity: isSourceDragging ? 0.35 : (isDragging ? 0.6 : (isPast ? 0.7 : 1)),
         zIndex: isDragging || isResizing ? 100 : (isRestricted ? 10 : 20),
         touchAction: 'none',
-        pointerEvents: (isDragging || isResizing) ? 'none' : 'auto',
-        position: 'absolute',
+        pointerEvents: (dragOverlay || isDragging || isResizing) ? 'none' : 'auto',
+        position: dragOverlay ? 'relative' : 'absolute',
         backgroundColor: `color-mix(in srgb, ${eventColor} 12%, transparent)`,
         color: `color-mix(in srgb, ${eventColor} 90%, black)`,
         borderLeftWidth: '4px',
@@ -152,6 +161,7 @@ export const DraggableEvent = ({
             className={cn(
                 'absolute rounded-md text-xs border overflow-hidden group select-none flex flex-col',
                 'bg-primary/10 border-primary/20 text-foreground shadow-sm hover:shadow-md transition-shadow',
+                dragOverlay && 'shadow-xl ring-2 ring-primary/40 cursor-grabbing scale-[1.01]',
                 isDragging && 'opacity-50 z-50 shadow-xl scale-105 cursor-grabbing ring-2 ring-primary ring-offset-2',
                 isHighlighted && 'ring-2 ring-primary ring-offset-1 bg-primary/20 shadow-md transition-all duration-300',
                 isExplicitBlock && 'bg-muted/50 border-muted opacity-80',

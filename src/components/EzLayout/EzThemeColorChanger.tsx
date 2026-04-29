@@ -56,8 +56,10 @@ export const EzThemeColorChanger: React.FC<{ className?: string }> = ({ classNam
                                     size="sm"
                                     onClick={() => themeService.setThemeColor(color.name)}
                                     className={cn(
-                                        "flex items-center justify-start h-10 w-full px-3 rounded-lg border border-transparent transition-all duration-200",
-                                        state.themeColor === color.name ? "bg-primary/10 border-primary/20 text-primary" : "hover:bg-muted"
+                                        "flex items-center justify-start h-10 w-full px-3 rounded-lg border border-transparent text-foreground transition-all duration-200",
+                                        state.themeColor === color.name
+                                            ? "border-ring shadow-[0_0_0_3px_oklch(var(--ring)/0.14)]"
+                                            : "hover:bg-muted"
                                     )}
                                 >
                                     <span
@@ -66,7 +68,7 @@ export const EzThemeColorChanger: React.FC<{ className?: string }> = ({ classNam
                                     />
                                     <span className="text-sm font-semibold">{color.label}</span>
                                     {state.themeColor === color.name && (
-                                        <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary" />
+                                        <div className="ml-auto w-1.5 h-1.5 rounded-full bg-ring" />
                                     )}
                                 </Button>
                             ))}

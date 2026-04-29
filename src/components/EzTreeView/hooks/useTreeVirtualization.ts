@@ -27,7 +27,7 @@ export const useTreeVirtualization = (
         const checkMatch = (node: TreeNode): { matches: boolean; hasChildMatch: boolean } => {
             if (map.has(node.id)) return map.get(node.id)!;
 
-            let selfMatch = node.label.toLowerCase().includes(normalizedTerm);
+            let selfMatch = (node.label || "").toLowerCase().includes(normalizedTerm);
             let childMatch = false;
 
             if (node.children) {

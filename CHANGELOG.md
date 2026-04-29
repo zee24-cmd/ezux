@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [1.1.15] - 2026-04-29
+
+### Added
+- **EzFlow**: Added the `EzWorkflow` workflow builder, typed workflow nodes, validation, examples, local service adapters, import/export support, and production-readiness coverage.
+- **Exports**: Added `ezux/flow`, `ezux/advanced`, and `ezux/mock-services` package entry points, with public API checks for consumer imports.
+
+### Changed
+- **Build**: Updated the Vite library build entries, externalization rules, path resolution, CSS side effects, and Node engine metadata for the expanded package surface.
+- **EzScheduler**: Improved drag-and-drop behavior with drag overlays, pointer-aware collision detection, resource-aware drops, and before-event lifecycle guards for create, change, delete, resize, and drop operations.
+- **EzTable**: Refined toolbar filtering, column hiding, row sizing, validation callbacks, status bar totals, context menu payloads, and scroll behavior.
+- **Themes & i18n**: Expanded theme variables, service helpers, performance monitoring, and localization infrastructure.
+- **Dependencies**: Added `@xyflow/react` and `framer-motion`, upgraded TanStack store packages to `0.11.0`, and refreshed Vite, Vitest, Tailwind, Playwright, and related tooling.
+
+## [1.1.14] - 2026-04-10
+
+### Changed
+- **Migration**: Migrated the entire library to **Vite 8**, leveraging the new Rust-based **Rolldown** bundler for faster builds and improved developer experience.
+- **Dependencies**: Upgraded `@vitejs/plugin-react` to **v6.0.0**, which uses **Oxc** for faster React transforms and removes the Babel dependency.
+- **Icons**: Upgraded `lucide-react` to **v1.0.0**, providing improved accessibility with `aria-hidden="true"` by default and various performance optimizations.
+
 ## [1.1.12] - 2026-03-10
 
 ### Added

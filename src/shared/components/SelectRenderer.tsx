@@ -32,14 +32,14 @@ export const SelectCell: React.FC<SelectCellProps> = ({
     table
 }) => {
     if (value === null || value === undefined) {
-        return <span className="text-muted-foreground text-xs italic">—</span>;
+        return <span className="text-muted-foreground text-sm italic">—</span>;
     }
 
     // Normalize value to array for consistent handling
     const values = Array.isArray(value) ? value : [value];
 
     if (values.length === 0) {
-        return <span className="text-muted-foreground text-xs italic">—</span>;
+        return <span className="text-muted-foreground text-sm italic">—</span>;
     }
 
     // Find option details for each value
@@ -77,7 +77,7 @@ export const SelectCell: React.FC<SelectCellProps> = ({
                 return (
                     <div
                         key={`${option.value}-${index}`}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border transition-all duration-300 shadow-sm"
+                        className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[13px] font-bold border transition-all duration-300 shadow-sm"
                         style={styles.container}
                     >
                         <span className="w-1.5 h-1.5 rounded-full" style={styles.dot} />

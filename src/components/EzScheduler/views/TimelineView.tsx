@@ -676,7 +676,14 @@ const TimelineRow: React.FC<TimelineRowProps> = ({
     const isRtl = dir === 'rtl';
     const { setNodeRef, isOver } = useDroppable({
         id: `row-${resource.id}`,
-        data: { resourceId: resource.id }
+        data: {
+            kind: 'timeline-row',
+            resourceId: resource.id,
+            slotWidth,
+            totalSlots,
+            slotDuration,
+            isRtl
+        }
     });
 
     return (

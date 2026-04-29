@@ -24,3 +24,4 @@ export * from './radio-group';
 export * from './badge';
 export * from './progress';
 export * from './modal';
+export * from './combobox';

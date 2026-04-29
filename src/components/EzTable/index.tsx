@@ -78,6 +78,7 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
             onCellMouseDown,
             onCellMouseEnter,
             setGlobalFilter,
+            handleGlobalFilterChange,
             getData,
             onRowClick: onRowClickProp,
             onRowDoubleClick: onRowDoubleClickProp,
@@ -92,6 +93,7 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
             enableChangeTracking,
             enableEditing,
             editSettings,
+            dynamicRowSizing,
         },
         table,
         dir,
@@ -105,7 +107,14 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
 
     // Use shared validation hook - call it early to be available for handlers
     const { validate, validateForm } = useFieldValidation({
-        validateField: props.validateField,
+        validateField: props.validateField
+            ? ({ fieldName, value, data }) => props.validateField?.({
+                field: fieldName,
+                value,
+                row: data as TData,
+                table
+            }) ?? true
+            : undefined,
         editSettings
     });
 
@@ -375,7 +384,7 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
         <EzErrorBoundary fallback={<EzTableErrorFallback />}>
             <TooltipProvider>
                 <DndContext sensors={sensors} onDragEnd={onDndEnd} onDragStart={onDndStart} collisionDetection={pointerWithin}>
-                    <div className={cn(flexColumn, "w-full min-h-0 gap-3", props.className, props.classNames?.root)} dir={dir}>
+                    <div className={cn(flexColumn, "w-full min-h-0 gap-3 h-full", props.className, props.classNames?.root)} dir={dir}>
 
                         {props.enableGrouping && (
                             <React.Suspense fallback={null}>
@@ -400,7 +409,7 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
                             <React.Suspense fallback={<div className="h-10 w-full animate-pulse bg-muted/20 rounded-md" />}>
                                 <EzTableToolbar
                                     globalFilter={globalFilter}
-                                    setGlobalFilter={setGlobalFilter}
+                                    setGlobalFilter={handleGlobalFilterChange}
                                     enableAdvancedFiltering={props.enableAdvancedFiltering}
                                     enableExport={props.enableExport}
                                     onExportExcel={props.onExportExcel ? () => props.onExportExcel!(table) : undefined}
@@ -417,6 +426,7 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
                                     onSave={handleSave}
                                     onDiscard={handleDiscard}
                                     enableEditing={enableEditing}
+                                    enableHiding={props.enableHiding}
                                     changes={changes}
                                     table={table}
                                 />
@@ -449,13 +459,13 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
                             style={{
                                 overflowAnchor: 'none', // Disable browser scroll anchoring to prevent jitter with virtualizer
                                 scrollBehavior: (props.scrollBehavior ?? 'smooth') as any,
-                                height: '100%',
                                 position: 'relative',
-                                minHeight: '0'
+                                minHeight: '0',
+                                WebkitOverflowScrolling: 'touch'
                             }}
                             onKeyDown={handleKeyDown}
                         >
-                            <div className="flex flex-col relative w-full min-w-max flex-1" role="presentation" style={{ ...columnSizeVars, height: '100%' }}>
+                            <div className="flex flex-col w-full min-w-max" role="presentation" style={{ ...columnSizeVars, minHeight: '100%' }}>
 
                                 <EzTableHeaderSection
                                     table={table}
@@ -486,7 +496,9 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
                                     slots={props.slots}
                                     localization={props.localization}
                                     enableContextMenu={props.enableContextMenu}
-                                    onContextMenuItemClick={props.onContextMenuItemClick}
+                                    onContextMenuItemClick={props.onContextMenuItemClick
+                                        ? (action, row) => props.onContextMenuItemClick?.({ action, data: row as TData })
+                                        : undefined}
                                     isCellSelected={isCellSelected}
                                     focusedCell={focusedCell}
                                     onCellMouseDown={onCellMouseDown}
@@ -494,6 +506,7 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
                                     onCellClick={onCellClick}
                                     onCellDoubleClick={onCellDoubleClick}
                                     renderDetailPanel={props.renderDetailPanel as any}
+                                    dynamicRowSizing={dynamicRowSizing}
                                     onRowClick={onRowClick}
                                     onRowDoubleClick={onRowDoubleClick}
                                 />
@@ -519,10 +532,10 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
                             />
                         )}
 
-                        {props.enableStatusBar !== false && (
+                        {props.enableStatusBar === true && (
                             <EzTableStatusBar
                                 table={table}
-                                totalRows={table.getPrePaginationRowModel().rows.length || table.options.rowCount || table.getRowModel().rows.length}
+                                totalRows={table.options.rowCount ?? table.getPrePaginationRowModel().rows.length}
                                 selectionInfo={(changes.added + changes.edited + changes.deleted) > 0 ? `${changes.added + changes.edited + changes.deleted} pending changes` : undefined}
                                 // Pass selection state directly to force re-render when selection changes (since table ref is stable)
                                 rowSelection={table.getState().rowSelection}

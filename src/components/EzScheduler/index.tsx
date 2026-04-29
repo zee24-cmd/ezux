@@ -1,6 +1,6 @@
 import React, { useState, forwardRef, useCallback } from 'react';
 import { addMinutes, areIntervalsOverlapping } from 'date-fns';
-import { EzSchedulerProps, View, ViewType, SchedulerEvent, EzSchedulerRef, EditorMode } from './EzScheduler.types';
+import { EzSchedulerProps, View, ViewType, SchedulerEvent, EzSchedulerRef, EditorMode, Resource } from './EzScheduler.types';
 import { cn } from '../../lib/utils';
 import { useEzScheduler } from './useEzScheduler';
 import { useSchedulerImperative } from './hooks/useSchedulerImperative';
@@ -9,10 +9,11 @@ import { useSchedulerEventHandlers } from './hooks/useSchedulerEventHandlers';
 import { EzErrorBoundary } from '../shared/components/EzErrorBoundary';
 import { EzSchedulerErrorFallback } from '../shared/components/EzSchedulerErrorFallback';
 import { SchedulerLoadingSpinner } from './components/SchedulerLoadingSpinner';
-import { DndContext, closestCenter } from '@dnd-kit/core';
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, pointerWithin, rectIntersection } from '@dnd-kit/core';
 const EzEventModal = React.lazy(() => import('./components/EzEventModal').then(m => ({ default: m.EzEventModal })));
 const EzSchedulerQuickAdd = React.lazy(() => import('./components/EzSchedulerQuickAdd').then(m => ({ default: m.EzSchedulerQuickAdd })));
 import { EzSchedulerContent } from './components/EzSchedulerContent';
+import { DraggableEvent } from './components/dnd/DraggableEvent';
 
 // Modular: Lazy load default implementations
 const EzSchedulerToolbar = React.lazy(() => import('./EzSchedulerToolbar').then(m => ({ default: m.EzSchedulerToolbar })));
@@ -88,6 +89,12 @@ const EzSchedulerInner = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, re
     const { setView, setCurrentDate } = actions;
     const { rowVirtualizer, parentRef } = refs;
     const { schedulerService, serviceRegistry } = services;
+    const [activeDragEvent, setActiveDragEvent] = useState<SchedulerEvent | null>(null);
+
+    // 3. Resource Management
+    const { internalResources, setInternalResources } = useSchedulerResources({
+        resources: props.resources
+    });
 
     // 2. Event Handlers & DND
     const checkOverlap = (event: Partial<SchedulerEvent>) => {
@@ -143,7 +150,10 @@ const EzSchedulerInner = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, re
 
     const { sensors, handleDragEnd } = useSchedulerEventHandlers({
         events: visibleEvents,
+        resources: internalResources as Resource[],
         slotDuration: slotDuration,
+        onBeforeEventDrop: props.onBeforeEventDrop,
+        onBeforeEventResize: props.onBeforeEventResize,
         onEventChange: (updatedEvent) => {
             // Check for past date
             if (!props.allowPastEvents && updatedEvent.start < new Date()) {
@@ -167,16 +177,26 @@ const EzSchedulerInner = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, re
                 triggerOverlapWarning('regular');
             }
 
-            console.log('[EzScheduler] Calling scheduler.updateEvent', updatedEvent);
             actions.updateEvent(updatedEvent);
 
         }
     });
 
-    // 3. Resource Management
-    const { internalResources, setInternalResources } = useSchedulerResources({
-        resources: props.resources
-    });
+    const handleSchedulerDragStart = useCallback((event: DragStartEvent) => {
+        const activeData = event.active.data.current;
+        const eventId = activeData?.eventId || activeData?.id || event.active.id;
+        const nextActiveEvent = activeData?.event || visibleEvents.find((ev: SchedulerEvent) => ev.id === eventId);
+        setActiveDragEvent(nextActiveEvent ?? null);
+    }, [visibleEvents]);
+
+    const handleSchedulerDragEnd = useCallback((event: DragEndEvent) => {
+        handleDragEnd(event);
+        setActiveDragEvent(null);
+    }, [handleDragEnd]);
+
+    const handleSchedulerDragCancel = useCallback(() => {
+        setActiveDragEvent(null);
+    }, []);
 
     // 4. Local State
     const [editorState, setEditorState] = useState<{
@@ -239,6 +259,8 @@ const EzSchedulerInner = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, re
         }
     };
 
+    const isBeforeCanceled = (result: boolean | void, args: { cancel: boolean }) => result === false || args.cancel;
+
     const handleSaveEvent = async (event: Partial<SchedulerEvent>) => {
         // Check for past date
         if (!props.allowPastEvents && event.start && event.start < new Date()) {
@@ -259,11 +281,26 @@ const EzSchedulerInner = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, re
         }
 
         if (editorState.mode === 'create') {
+            const beforeArgs = { event, cancel: false };
+            if (isBeforeCanceled(props.onBeforeEventCreate?.(beforeArgs), beforeArgs)) return;
             await props.onEventCreate?.(event);
             actions.addEvent(event as SchedulerEvent);
         } else {
-            await props.onEventChange?.(event as SchedulerEvent);
-            actions.updateEvent(event as SchedulerEvent);
+            const originalEvent = event.id ? visibleEvents.find((item: SchedulerEvent) => item.id === event.id) : undefined;
+            const proposedEvent = event as SchedulerEvent;
+            const beforeArgs = {
+                event: proposedEvent,
+                originalEvent,
+                proposedEvent,
+                sourceResourceId: originalEvent?.resourceId,
+                targetResourceId: proposedEvent.resourceId,
+                sourceTime: originalEvent?.start,
+                targetTime: proposedEvent.start,
+                cancel: false
+            };
+            if (isBeforeCanceled(props.onBeforeEventChange?.(beforeArgs), beforeArgs)) return;
+            await props.onEventChange?.(proposedEvent);
+            actions.updateEvent(proposedEvent);
         }
         setEditorState(prev => ({ ...prev, isOpen: false }));
     };
@@ -283,6 +320,8 @@ const EzSchedulerInner = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, re
 
         const event = visibleEvents.find((e: SchedulerEvent) => e.id === id);
         if (event) {
+            const beforeArgs = { eventId: id, event, cancel: false };
+            if (isBeforeCanceled(props.onBeforeEventDelete?.(beforeArgs), beforeArgs)) return;
             await props.onEventDelete?.(id);
             actions.deleteEvent(id);
 
@@ -308,6 +347,8 @@ const EzSchedulerInner = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, re
             return;
         }
 
+        const beforeArgs = { event, cancel: false };
+        if (isBeforeCanceled(props.onBeforeEventCreate?.(beforeArgs), beforeArgs)) return;
         actions.addEvent(event as SchedulerEvent);
         props.onEventCreate?.(event);
         setIsQuickAddOpen(false);
@@ -417,7 +458,17 @@ const EzSchedulerInner = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, re
                         })()}
                     </React.Suspense>
                 )}
-                <DndContext sensors={sensors} onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
+                <DndContext
+                    sensors={sensors}
+                    onDragStart={handleSchedulerDragStart}
+                    onDragEnd={handleSchedulerDragEnd}
+                    onDragCancel={handleSchedulerDragCancel}
+                    collisionDetection={(args) => {
+                        const pointerCollisions = pointerWithin(args);
+                        return pointerCollisions.length > 0 ? pointerCollisions : rectIntersection(args);
+                    }}
+                    autoScroll={{ enabled: true }}
+                >
                     <div className="flex-1 overflow-hidden relative flex flex-col">
                         <EzSchedulerContent
                             view={view}
@@ -443,6 +494,22 @@ const EzSchedulerInner = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, re
 
                         {props.isLoading && <SchedulerLoadingSpinner />}
                     </div>
+
+                    <DragOverlay dropAnimation={null}>
+                        {activeDragEvent ? (
+                            <DraggableEvent
+                                event={activeDragEvent}
+                                dragOverlay
+                                orientation={view.toLowerCase().startsWith('timeline') ? 'horizontal' : 'vertical'}
+                                showTime
+                                resizable={false}
+                                style={{
+                                    width: view.toLowerCase().startsWith('timeline') ? 180 : 220,
+                                    minHeight: 56
+                                }}
+                            />
+                        ) : null}
+                    </DragOverlay>
 
                     {(() => {
                         if (isQuickAddOpen && quickAddSelection) {

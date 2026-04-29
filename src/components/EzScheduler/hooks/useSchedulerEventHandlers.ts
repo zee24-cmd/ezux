@@ -1,19 +1,32 @@
 import { useCallback } from 'react';
-import { SchedulerEvent } from '../EzScheduler.types';
-import { PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DragEventArgs, ResizeEventArgs, Resource, SchedulerEvent } from '../EzScheduler.types';
+import { DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 
 interface UseSchedulerEventHandlersProps {
     events: SchedulerEvent[];
+    resources?: Resource[];
     onEventChange?: (updatedEvent: SchedulerEvent) => void;
+    onBeforeEventDrop?: (args: DragEventArgs) => boolean | void;
+    onBeforeEventResize?: (args: ResizeEventArgs) => boolean | void;
     slotDuration?: number;
 }
 
 export const useSchedulerEventHandlers = ({
     events,
+    resources = [],
     onEventChange,
+    onBeforeEventDrop,
+    onBeforeEventResize,
     slotDuration = 30
 }: UseSchedulerEventHandlersProps) => {
-    const handleDragEnd = useCallback((event: any) => {
+    const getResource = useCallback((resourceId?: string) => {
+        if (!resourceId) return undefined;
+        return resources.find(resource => String(resource.id) === String(resourceId));
+    }, [resources]);
+
+    const shouldCancel = (result: boolean | void, args: { cancel: boolean }) => result === false || args.cancel;
+
+    const handleDragEnd = useCallback((event: DragEndEvent) => {
         const { active, over, delta } = event;
 
         // Find the event being dragged or resized
@@ -35,6 +48,9 @@ export const useSchedulerEventHandlers = ({
 
             if (minutesDelta === 0) return;
 
+            let updatedEvent: SchedulerEvent | undefined;
+            let resizeEdge: 'start' | 'end' | undefined;
+
             if (type === 'resize-bottom') {
                 const newEnd = new Date(draggedEvent.end.getTime() + minutesDelta * 60 * 1000);
 
@@ -42,10 +58,8 @@ export const useSchedulerEventHandlers = ({
                 const minEnd = new Date(draggedEvent.start.getTime() + slotDuration * 60 * 1000);
                 const finalEnd = newEnd < minEnd ? minEnd : newEnd;
 
-                onEventChange?.({
-                    ...draggedEvent,
-                    end: finalEnd
-                });
+                resizeEdge = 'end';
+                updatedEvent = { ...draggedEvent, end: finalEnd };
             } else if (type === 'resize-top') {
                 const newStart = new Date(draggedEvent.start.getTime() + minutesDelta * 60 * 1000);
 
@@ -53,34 +67,107 @@ export const useSchedulerEventHandlers = ({
                 const maxStart = new Date(draggedEvent.end.getTime() - slotDuration * 60 * 1000);
                 const finalStart = newStart > maxStart ? maxStart : newStart;
 
-                onEventChange?.({
-                    ...draggedEvent,
-                    start: finalStart
-                });
+                resizeEdge = 'start';
+                updatedEvent = { ...draggedEvent, start: finalStart };
             }
+
+            if (!updatedEvent) return;
+
+            const args: ResizeEventArgs = {
+                data: draggedEvent,
+                event: updatedEvent,
+                originalEvent: draggedEvent,
+                proposedEvent: updatedEvent,
+                sourceResourceId: draggedEvent.resourceId,
+                targetResourceId: updatedEvent.resourceId,
+                sourceResource: getResource(draggedEvent.resourceId),
+                targetResource: getResource(updatedEvent.resourceId),
+                sourceTime: draggedEvent.start,
+                targetTime: updatedEvent.start,
+                resizeEdge,
+                cancel: false
+            };
+
+            if (shouldCancel(onBeforeEventResize?.(args), args)) return;
+            onEventChange?.(updatedEvent);
             return;
         }
 
-        // Handle Dropping on a Slot
-        if (typeof over.id === 'string' && over.id.startsWith('slot-')) {
-            // Format: slot-ISOString-resourceId
-            // The ISOString might contain dashes, so we should be careful. 
-            // Better: use over.data.current
-            const targetDate = over.data?.current?.date;
-            const targetResourceId = over.data?.current?.resourceId;
+        if (!over) return;
+
+        const dropData = over.data?.current;
+
+        // Handle dropping on a time slot in day/week views.
+        if (dropData?.kind === 'time-slot' || (typeof over.id === 'string' && over.id.startsWith('slot-'))) {
+            const targetDate = dropData?.date;
+            const targetResourceId = dropData?.resourceId;
 
             if (targetDate) {
                 const duration = draggedEvent.end.getTime() - draggedEvent.start.getTime();
                 const newStart = new Date(targetDate);
                 const newEnd = new Date(newStart.getTime() + duration);
 
-                onEventChange?.({
+                const updatedEvent: SchedulerEvent = {
                     ...draggedEvent,
                     start: newStart,
                     end: newEnd,
-                    resourceId: targetResourceId === 'none' ? undefined : targetResourceId
-                });
+                    resourceId: targetResourceId === 'none' ? undefined : targetResourceId,
+                    resourceIds: targetResourceId && targetResourceId !== 'none' ? [targetResourceId] : draggedEvent.resourceIds
+                };
+                const args: DragEventArgs = {
+                    data: draggedEvent,
+                    event: updatedEvent,
+                    originalEvent: draggedEvent,
+                    proposedEvent: updatedEvent,
+                    sourceResourceId: draggedEvent.resourceId,
+                    targetResourceId: updatedEvent.resourceId,
+                    sourceResource: getResource(draggedEvent.resourceId),
+                    targetResource: getResource(updatedEvent.resourceId),
+                    sourceTime: draggedEvent.start,
+                    targetTime: newStart,
+                    cancel: false
+                };
+
+                if (shouldCancel(onBeforeEventDrop?.(args), args)) return;
+                onEventChange?.(updatedEvent);
             }
+            return;
+        }
+
+        // Handle timeline rows. Keep the pointer movement continuous and snap to slot width.
+        if (dropData?.kind === 'timeline-row') {
+            const slotWidth = dropData.slotWidth || 80;
+            const targetResourceId = dropData.resourceId;
+            const isRtl = !!dropData.isRtl;
+            const directionMultiplier = isRtl ? -1 : 1;
+            const minutesDelta = Math.round((delta.x * directionMultiplier) / slotWidth) * slotDuration;
+            const duration = draggedEvent.end.getTime() - draggedEvent.start.getTime();
+            const newStart = new Date(draggedEvent.start.getTime() + minutesDelta * 60 * 1000);
+            const newEnd = new Date(newStart.getTime() + duration);
+
+            const updatedEvent: SchedulerEvent = {
+                ...draggedEvent,
+                start: newStart,
+                end: newEnd,
+                resourceId: targetResourceId === 'none' ? undefined : targetResourceId,
+                resourceIds: targetResourceId && targetResourceId !== 'none' ? [targetResourceId] : draggedEvent.resourceIds
+            };
+            const args: DragEventArgs = {
+                data: draggedEvent,
+                event: updatedEvent,
+                originalEvent: draggedEvent,
+                proposedEvent: updatedEvent,
+                sourceResourceId: draggedEvent.resourceId,
+                targetResourceId: updatedEvent.resourceId,
+                sourceResource: getResource(draggedEvent.resourceId),
+                targetResource: getResource(updatedEvent.resourceId),
+                sourceTime: draggedEvent.start,
+                targetTime: newStart,
+                cancel: false
+            };
+
+            if (shouldCancel(onBeforeEventDrop?.(args), args)) return;
+            onEventChange?.(updatedEvent);
             return;
         }
 
@@ -90,13 +177,28 @@ export const useSchedulerEventHandlers = ({
             : null;
 
         if (targetColumnId) {
-            const updatedEvent = {
+            const updatedEvent: SchedulerEvent = {
                 ...draggedEvent,
                 resourceId: targetColumnId
             };
+            const args: DragEventArgs = {
+                data: draggedEvent,
+                event: updatedEvent,
+                originalEvent: draggedEvent,
+                proposedEvent: updatedEvent,
+                sourceResourceId: draggedEvent.resourceId,
+                targetResourceId: updatedEvent.resourceId,
+                sourceResource: getResource(draggedEvent.resourceId),
+                targetResource: getResource(updatedEvent.resourceId),
+                sourceTime: draggedEvent.start,
+                targetTime: updatedEvent.start,
+                cancel: false
+            };
+
+            if (shouldCancel(onBeforeEventDrop?.(args), args)) return;
             onEventChange?.(updatedEvent);
         }
-    }, [events, onEventChange, slotDuration]);
+    }, [events, getResource, onBeforeEventDrop, onBeforeEventResize, onEventChange, slotDuration]);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {

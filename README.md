@@ -21,6 +21,7 @@
 - **EzScheduler**: Drag-and-drop timeline management with resource grouping.
 - **EzKanban**: Trello-like board with swimlanes and timeline views.
 - **EzTreeView**: Virtualized tree handling unlimited nesting.
+- **EzFlow**: Production workflow builder with typed nodes, validation, import/export, and service-backed save/publish.
 - **EzLayout**: A fluid orchestration engine for complex interfaces.
 
 ## Prerequisites
@@ -50,6 +51,27 @@ function App() {
     <EzLayout>
        <EzTable {...tableRes} />
     </EzLayout>
+  );
+}
+```
+
+### EzFlow Workflow Builder
+
+```tsx
+import { EzWorkflow, approvalWorkflowExample, createLocalEzWorkflowService } from 'ezux/flow';
+
+const workflowService = createLocalEzWorkflowService({
+  approval: approvalWorkflowExample,
+});
+
+function WorkflowDesigner() {
+  return (
+    <EzWorkflow
+      workflowId="approval"
+      service={workflowService}
+      defaultWorkflow={approvalWorkflowExample}
+      onValidationChange={(result) => console.log(result.valid)}
+    />
   );
 }
 ```

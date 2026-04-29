@@ -54,7 +54,7 @@ export const PrimitiveCell: React.FC<PrimitiveCellProps> = ({
                         <TooltipTrigger asChild>
                             <div className="flex-1 min-w-0 cursor-help">
                                 <span
-                                    className="block !whitespace-normal break-words text-xs leading-normal"
+                                    className="block !whitespace-normal break-words text-sm leading-normal"
                                     style={{
                                         display: '-webkit-box',
                                         WebkitLineClamp: 2,
@@ -66,7 +66,7 @@ export const PrimitiveCell: React.FC<PrimitiveCellProps> = ({
                                 </span>
                             </div>
                         </TooltipTrigger>
-                        <TooltipContent className="max-w-[300px] p-3 break-words text-xs leading-relaxed">
+                        <TooltipContent className="max-w-[300px] p-3 break-words text-sm leading-relaxed">
                             {fullText}
                         </TooltipContent>
                     </Tooltip>
@@ -131,7 +131,7 @@ export const PrimitiveCell: React.FC<PrimitiveCellProps> = ({
         <BaseCell
             value={value}
             align={resolvedAlign}
-            title={columnType === 'longtext' ? "" : undefined}
+            title={(columnType === 'longtext' || meta?.clipMode === 'ellipsis-tooltip') ? "" : undefined}
             className={cn(
                 columnType === 'number' && "font-mono tabular-nums",
                 columnType === 'number' && value < 0 && "text-rose-600 dark:text-rose-400",

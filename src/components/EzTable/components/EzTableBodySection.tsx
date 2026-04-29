@@ -51,6 +51,8 @@ interface EzTableBodySectionProps<TData extends object> {
     onCellDoubleClick?: (params: any) => void;
     /** Custom renderer for row detail panel. @group Components */
     renderDetailPanel?: (props: { row: Row<TData> }) => React.ReactNode;
+    /** Whether rows should be measured from rendered content. @group Properties */
+    dynamicRowSizing?: boolean;
     /** Handler for row click. @group Events */
     onRowClick?: (args: any) => void;
     /** Handler for row double-click. @group Events */
@@ -86,6 +88,7 @@ export function EzTableBodySection<TData extends object>({
     onCellClick,
     onCellDoubleClick,
     renderDetailPanel,
+    dynamicRowSizing,
     onRowClick,
     onRowDoubleClick
 }: EzTableBodySectionProps<TData>) {
@@ -128,7 +131,8 @@ export function EzTableBodySection<TData extends object>({
                         onCellClick={onCellClick}
                         onCellDoubleClick={onCellDoubleClick}
                         renderDetailPanel={renderDetailPanel}
-                        measureElement={rowVirtualizer.measureElement}
+                        measureElement={dynamicRowSizing ? rowVirtualizer.measureElement : undefined}
+                        dynamicRowSizing={dynamicRowSizing}
                         columnVirtualizer={columnVirtualizer}
                         onRowClick={onRowClick}
                         onRowDoubleClick={onRowDoubleClick}

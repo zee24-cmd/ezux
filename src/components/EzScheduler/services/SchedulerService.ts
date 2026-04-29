@@ -1,17 +1,13 @@
 import { SchedulerEvent, Resource, ISchedulerService } from '../EzScheduler.types';
 
-// Static Mock Database (Simulating a Backend)
-const MOCK_DB = {
-    events: new Map<string, SchedulerEvent>(),
-    resources: new Map<string, Resource>()
-};
-
 /**
  * Service for managing scheduler data and operations.
  * @group Services
  */
 export class SchedulerService implements ISchedulerService {
     name = 'SchedulerService';
+    private events = new Map<string, SchedulerEvent>();
+    private resources = new Map<string, Resource>();
 
     constructor(initialEvents: SchedulerEvent[] = []) {
         this.initializeWithData(initialEvents);
@@ -22,7 +18,6 @@ export class SchedulerService implements ISchedulerService {
      * @group Methods
      */
     async init(): Promise<void> {
-        console.log('[SchedulerService] Initialized');
     }
 
     /**
@@ -30,8 +25,6 @@ export class SchedulerService implements ISchedulerService {
      * @group Methods
      */
     async cleanup(): Promise<void> {
-        // MOCK_DB.events.clear();
-        // MOCK_DB.resources.clear();
     }
 
     /**
@@ -41,14 +34,14 @@ export class SchedulerService implements ISchedulerService {
      * @group Methods
      */
     initializeWithData(events: SchedulerEvent[], resources: Resource[] = []) {
-        MOCK_DB.events.clear();
-        MOCK_DB.resources.clear();
+        this.events.clear();
+        this.resources.clear();
 
         events.forEach(event => {
-            MOCK_DB.events.set(String(event.id), JSON.parse(JSON.stringify(event)));
+            this.events.set(String(event.id), JSON.parse(JSON.stringify(event)));
         });
         resources.forEach(resource => {
-            MOCK_DB.resources.set(String(resource.id), JSON.parse(JSON.stringify(resource)));
+            this.resources.set(String(resource.id), JSON.parse(JSON.stringify(resource)));
         });
     }
 
@@ -65,10 +58,10 @@ export class SchedulerService implements ISchedulerService {
         await this.simulateLatency();
         // If no range provided, return all
         if (!start || !end) {
-            return Array.from(MOCK_DB.events.values());
+            return Array.from(this.events.values());
         }
         // Filter events within range
-        const events = Array.from(MOCK_DB.events.values()).filter(event => {
+        const events = Array.from(this.events.values()).filter(event => {
             const eventStart = new Date(event.start);
             const eventEnd = new Date(event.end);
             return (
@@ -104,7 +97,7 @@ export class SchedulerService implements ISchedulerService {
             ...event
         } as SchedulerEvent;
 
-        MOCK_DB.events.set(newEvent.id, newEvent);
+        this.events.set(String(newEvent.id), newEvent);
         return newEvent;
     }
 
@@ -115,26 +108,23 @@ export class SchedulerService implements ISchedulerService {
      * @group Methods
      */
     async updateEvent(event: SchedulerEvent): Promise<SchedulerEvent> {
-        console.log('[SchedulerService] Updating event:', event.id, event.start, event.end);
         await this.simulateLatency();
 
         const strId = String(event.id);
 
-        if (MOCK_DB.events.has(strId)) {
-            const existing = MOCK_DB.events.get(strId);
+        if (this.events.has(strId)) {
+            const existing = this.events.get(strId);
             const updatedEvent = { ...existing, ...event, id: strId };
-            MOCK_DB.events.set(strId, updatedEvent);
-            console.log('[SchedulerService] Event updated in DB:', updatedEvent);
+            this.events.set(strId, updatedEvent);
             return updatedEvent;
-        } else if (MOCK_DB.events.has(event.id)) {
+        } else if (this.events.has(event.id as string)) {
             // Fallback for non-string ID if mismatched
-            const existing = MOCK_DB.events.get(event.id);
+            const existing = this.events.get(event.id as string);
             const updatedEvent = { ...existing, ...event };
-            MOCK_DB.events.set(event.id, updatedEvent);
+            this.events.set(event.id as string, updatedEvent);
             return updatedEvent;
         }
 
-        console.error('[SchedulerService] Event not found in DB:', event.id, 'Keys:', Array.from(MOCK_DB.events.keys()));
         throw new Error(`Event with ID ${event.id} not found`);
     }
 
@@ -147,11 +137,11 @@ export class SchedulerService implements ISchedulerService {
     async deleteEvent(id: string | number): Promise<void> {
         await this.simulateLatency();
         const strId = String(id);
-        if (MOCK_DB.events.has(strId)) {
-            MOCK_DB.events.delete(strId);
+        if (this.events.has(strId)) {
+            this.events.delete(strId);
         } else {
             // Try raw if string fails
-            if (MOCK_DB.events.has(id as string)) MOCK_DB.events.delete(id as string);
+            if (this.events.has(id as string)) this.events.delete(id as string);
         }
     }
 
@@ -164,7 +154,7 @@ export class SchedulerService implements ISchedulerService {
      */
     async getResources(): Promise<Resource[]> {
         await this.simulateLatency();
-        return Array.from(MOCK_DB.resources.values());
+        return Array.from(this.resources.values());
     }
 
     /**
@@ -176,7 +166,7 @@ export class SchedulerService implements ISchedulerService {
     async addResource(resource: Resource): Promise<Resource> {
         await this.simulateLatency();
         if (!resource.id) resource.id = Math.random().toString(36).substring(2, 9);
-        MOCK_DB.resources.set(resource.id, resource);
+        this.resources.set(String(resource.id), resource);
         return resource;
     }
 

@@ -148,11 +148,8 @@ const FilterContent = React.memo(({ column, table, setIsOpen, filterValue }: { c
     };
 
     const handleClear = () => {
-        if (view === 'filters') {
-            column.setFilterValue(undefined);
-            setIsOpen(false);
-            return;
-        }
+        column.setFilterValue(undefined);
+        setIsOpen(false);
         clearSelection();
         setSearch('');
     };

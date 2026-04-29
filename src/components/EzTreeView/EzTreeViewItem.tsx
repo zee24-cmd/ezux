@@ -93,7 +93,7 @@ interface EzTreeViewItemProps {
  * @group Components
  */
 export const EzTreeViewItem = memo(({
-    node, level, isExpanded, isSelected, isChecked, isIndeterminate, isLoading, hasChildren,
+    node, level, isExpanded, isSelected, isChecked, isIndeterminate, isLoading,
     onToggleExpand, onToggleSelect, onToggleCheck, onRename,
     showCheckboxes, allowEditing, searchTerm,
     style, onKeyDown, tabIndex, autoFocus,
@@ -164,6 +164,7 @@ export const EzTreeViewItem = memo(({
         }
     };
 
+    const hasChildren = (node.children && node.children.length > 0) || (node.children && !node.isLeaf) || (!node.isLoaded && !node.isLeaf);
     const paddingStart = level * 20 + (hasChildren ? 0 : 20);
 
     const combinedStyle: React.CSSProperties = {

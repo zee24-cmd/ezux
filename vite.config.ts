@@ -26,9 +26,10 @@ export default defineConfig({
         }
     ],
     resolve: {
-        alias: {
-            '@': path.resolve(__dirname, './src'),
-        },
+        tsconfigPaths: true,
+    },
+    server: {
+        forwardConsole: true,
     },
     build: {
         lib: {
@@ -40,35 +41,41 @@ export default defineConfig({
                 table: path.resolve(__dirname, 'src/components/EzTable/index.tsx'),
                 treeview: path.resolve(__dirname, 'src/components/EzTreeView/index.tsx'),
                 signature: path.resolve(__dirname, 'src/components/EzSignature/index.tsx'),
+                flow: path.resolve(__dirname, 'src/components/EzFlow/index.ts'),
+                advanced: path.resolve(__dirname, 'src/advanced.ts'),
+                'mock-services': path.resolve(__dirname, 'src/mock-services.ts'),
             },
             name: 'Ezux',
             fileName: (format, entryName) => format === 'es' ? `${entryName}.es.js` : `${entryName}.cjs`,
         },
         rollupOptions: {
+            checks: {
+                pluginTimings: false,
+            },
             external: [
-                'react',
-                'react-dom',
-                'react/jsx-runtime',
-                '@tanstack/react-table',
-                '@tanstack/react-form',
-                '@tanstack/react-virtual',
-                '@tanstack/store',
-                '@tanstack/react-store',
-                '@tanstack/virtual-core',
-                'rrule'
+                /^react/,
+                /^react-dom/,
+                /^@tanstack/,
+                /^@radix-ui/,
+                /^@dnd-kit/,
+                /^@xyflow/,
+                'lucide-react',
+                'framer-motion',
+                'date-fns',
+                'clsx',
+                'tailwind-merge',
+                'class-variance-authority',
+                'rrule',
+                'dompurify',
+                'cmdk',
+                'country-flag-icons',
+                'react-resizable-panels'
             ],
             output: {
                 exports: 'named',
                 globals: {
                     react: 'React',
-                    'react-dom': 'ReactDOM',
-                    '@tanstack/react-table': 'ReactTable',
-                    '@tanstack/react-form': 'ReactForm',
-                    '@tanstack/react-virtual': 'ReactVirtual',
-                    '@tanstack/store': 'TanstackStore',
-                    '@tanstack/react-store': 'TanstackReactStore',
-                    '@tanstack/virtual-core': 'TanstackVirtualCore',
-                    'rrule': 'rrule'
+                    'react-dom': 'ReactDOM'
                 },
             },
         },

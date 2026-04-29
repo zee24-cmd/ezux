@@ -43,7 +43,7 @@ export function EzTablePaginationSection({
                 pageIndex={table.getState().pagination.pageIndex}
                 pageSize={table.getState().pagination.pageSize}
                 pageCount={table.getPageCount()}
-                totalRows={table.getPrePaginationRowModel().rows.length}
+                totalRows={table.options.rowCount ?? table.getPrePaginationRowModel().rows.length}
                 canNextPage={table.getCanNextPage()}
                 canPreviousPage={table.getCanPreviousPage()}
                 onPageChange={table.setPageIndex}

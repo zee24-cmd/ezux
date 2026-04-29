@@ -618,7 +618,7 @@ export const EzEventModal: React.FC<EzEventModalProps> = ({
 
                                     {(field.state.value || []).length > 0 && (
                                         <div className="grid grid-cols-1 gap-3">
-                                            {(field.state.value || []).map((file: File, idx: number) => (
+                                            {(field.state.value || []).map((file, idx: number) => (
                                                 <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-highlight border border-border group hover:border-border transition-all">
                                                     <div className="flex items-center gap-3 overflow-hidden">
                                                         <div className="w-9 h-9 rounded-md bg-white border border-border flex items-center justify-center shrink-0 shadow-sm">
@@ -626,7 +626,7 @@ export const EzEventModal: React.FC<EzEventModalProps> = ({
                                                         </div>
                                                         <div className="flex flex-col overflow-hidden">
                                                             <span className="text-[13px] font-medium text-foreground truncate">{file.name}</span>
-                                                            <span className="text-[11px] text-muted-foreground font-medium">{(file.size / 1024).toFixed(1)} KB</span>
+                                                            <span className="text-[11px] text-muted-foreground font-medium">{typeof file.size === 'number' ? `${(file.size / 1024).toFixed(1)} KB` : 'Attachment'}</span>
                                                         </div>
                                                     </div>
                                                     <Button

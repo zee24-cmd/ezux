@@ -60,15 +60,17 @@ export const useTableHistory = <TData extends object>(initialData: TData[], idFi
     // Keep a stable reference to initial data IDs for tracking
     const initialDataMap = useMemo(() => {
         const map = new Map<string | number, TData>();
-        initialData.forEach((row) => {
-            const id = (row as any)[idField];
-            if (id !== undefined) map.set(id, row);
-        });
+        if (Array.isArray(initialData)) {
+            initialData.forEach((row) => {
+                const id = (row as any)[idField];
+                if (id !== undefined) map.set(id, row);
+            });
+        }
         return map;
     }, [initialData, idField]);
 
     const [state, setState] = useState<TableHistoryState<TData>>({
-        data: initialData,
+        data: Array.isArray(initialData) ? initialData : [],
         history: { past: [], future: [] }
     });
 
@@ -80,7 +82,7 @@ export const useTableHistory = <TData extends object>(initialData: TData[], idFi
     if (lastInitialData.current !== initialData) {
         lastInitialData.current = initialData;
         setState({
-            data: initialData,
+            data: Array.isArray(initialData) ? initialData : [],
             history: { past: [], future: [] }
         });
         dirtyRowIds.current.clear();
@@ -269,34 +271,38 @@ export const useTableHistory = <TData extends object>(initialData: TData[], idFi
         }
 
         const currentDataMap = new Map<string | number, TData>();
-        data.forEach(row => {
-            const id = (row as any)[idField];
-            if (id !== undefined) currentDataMap.set(id, row);
-        });
+        if (Array.isArray(data)) {
+            data.forEach(row => {
+                const id = (row as any)[idField];
+                if (id !== undefined) currentDataMap.set(id, row);
+            });
+        }
 
         let added = 0;
         let edited = 0;
         let deleted = 0;
 
         // Count added and edited
-        data.forEach(row => {
-            const id = (row as any)[idField];
-            if (id === undefined || !initialDataMap.has(id)) {
-                added++;
-            } else {
-                const original = initialDataMap.get(id);
-                // If same reference, definitely not edited
-                if (row === original) return;
+        if (Array.isArray(data)) {
+            data.forEach(row => {
+                const id = (row as any)[idField];
+                if (id === undefined || !initialDataMap.has(id)) {
+                    added++;
+                } else {
+                    const original = initialDataMap.get(id);
+                    // If same reference, definitely not edited
+                    if (row === original) return;
 
-                // Robust equality check for editing
-                const isEdited = Object.keys(row).some(key => {
-                    // Skip internal keys often added by frameworks/hooks
-                    if (key.startsWith('_')) return false;
-                    return (row as any)[key] !== (original as any)[key];
-                });
-                if (isEdited) edited++;
-            }
-        });
+                    // Robust equality check for editing
+                    const isEdited = Object.keys(row).some(key => {
+                        // Skip internal keys often added by frameworks/hooks
+                        if (key.startsWith('_')) return false;
+                        return (row as any)[key] !== (original as any)[key];
+                    });
+                    if (isEdited) edited++;
+                }
+            });
+        }
 
         // Count deleted
         initialDataMap.forEach((_val, id) => {
@@ -315,30 +321,34 @@ export const useTableHistory = <TData extends object>(initialData: TData[], idFi
         }
 
         const currentDataMap = new Map<string | number, TData>();
-        data.forEach(row => {
-            const id = (row as any)[idField];
-            if (id !== undefined) currentDataMap.set(id, row);
-        });
+        if (Array.isArray(data)) {
+            data.forEach(row => {
+                const id = (row as any)[idField];
+                if (id !== undefined) currentDataMap.set(id, row);
+            });
+        }
 
         const addedRecords: TData[] = [];
         const changedRecords: TData[] = [];
         const deletedRecords: TData[] = [];
 
-        data.forEach(row => {
-            const id = (row as any)[idField];
-            if (id === undefined || !initialDataMap.has(id)) {
-                addedRecords.push(row);
-            } else {
-                const original = initialDataMap.get(id);
-                if (row === original) return;
+        if (Array.isArray(data)) {
+            data.forEach(row => {
+                const id = (row as any)[idField];
+                if (id === undefined || !initialDataMap.has(id)) {
+                    addedRecords.push(row);
+                } else {
+                    const original = initialDataMap.get(id);
+                    if (row === original) return;
 
-                const isEdited = Object.keys(row).some(key => {
-                    if (key.startsWith('_')) return false;
-                    return (row as any)[key] !== (original as any)[key];
-                });
-                if (isEdited) changedRecords.push(row);
-            }
-        });
+                    const isEdited = Object.keys(row).some(key => {
+                        if (key.startsWith('_')) return false;
+                        return (row as any)[key] !== (original as any)[key];
+                    });
+                    if (isEdited) changedRecords.push(row);
+                }
+            });
+        }
 
         initialDataMap.forEach((val, id) => {
             if (!currentDataMap.has(id)) {

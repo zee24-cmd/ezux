@@ -19,7 +19,7 @@ export const BaseCell: React.FC<BaseCellProps> = ({
     className,
     title,
     children,
-    fallback = <span className="text-muted-foreground text-xs italic">—</span>,
+    fallback = <span className="text-muted-foreground text-sm italic">—</span>,
     align = 'left'
 }) => {
     if (value === null || value === undefined) {
@@ -34,7 +34,7 @@ export const BaseCell: React.FC<BaseCellProps> = ({
                 align === 'right' && "text-right",
                 className
             )}
-            title={title || (typeof value === 'string' ? value : String(value))}
+            title={title !== undefined ? title : (typeof value === 'string' ? value : String(value))}
         >
             {children || String(value)}
         </div>

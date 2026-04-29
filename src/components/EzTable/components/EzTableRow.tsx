@@ -39,7 +39,9 @@ export interface EzTableRowProps {
     /** Custom renderer for detail panel. @group Components */
     renderDetailPanel?: (props: any) => React.ReactNode;
     /** Ref callback for measuring the row element. @group Methods */
-    measureElement: (el: HTMLElement | null) => void;
+    measureElement?: (el: HTMLElement | null) => void;
+    /** Whether row height should be measured from rendered content. @group Properties */
+    dynamicRowSizing?: boolean;
     /** Optional column virtualizer instance. @group Properties */
     columnVirtualizer?: any;
     /** Handler for row click. @group Events */
@@ -75,6 +77,7 @@ export const EzTableRow = memo(({
     focusedCell,
     renderDetailPanel,
     measureElement,
+    dynamicRowSizing,
     columnVirtualizer,
     onRowClick,
     onRowDoubleClick,
@@ -85,6 +88,7 @@ export const EzTableRow = memo(({
     // Column Virtualization Handling
     const virtualColumns = columnVirtualizer?.getVirtualItems() || row.getVisibleCells().map((_c: any, index: number) => ({ index }));
     const visibleCells = row.getVisibleCells();
+    const expectsVariableHeight = !!dynamicRowSizing || row.getIsExpanded() || visibleCells.some((c: any) => c.column.columnDef.meta?.wrapText);
 
     const { paddingLeft, paddingRight } = useMemo(() => {
         if (!columnVirtualizer || virtualColumns.length === 0) return { paddingLeft: 0, paddingRight: 0 };
@@ -113,9 +117,7 @@ export const EzTableRow = memo(({
                 aria-rowindex={virtualRow.index + 1}
                 style={{
                     transform: `translateY(${virtualRow.start}px)`,
-                    // Use fixed height to prevent jitter from minor layout shifts (e.g. edit inputs)
-                    // unless we explicitly expect dynamic height (expanded row or text wrapping)
-                    ...(row.getIsExpanded() || visibleCells.some((c: any) => c.column.columnDef.meta?.wrapText)
+                    ...(expectsVariableHeight
                         ? { minHeight: `${virtualRow.size}px` }
                         : { height: `${virtualRow.size}px` }),
                 }}

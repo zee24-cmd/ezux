@@ -5,6 +5,42 @@ import { ToolbarItemType, ToolbarItem, SelectionSettings, EditSettings } from '.
 import { FilterSettings, SearchSettings, SortSettings, TextWrapSettings } from './EzTableFilter.types';
 import { FilterGroup } from '../../../shared/types/common';
 
+export interface EzTableChanges<TData> {
+    addedRecords: TData[];
+    changedRecords: TData[];
+    deletedRecords: TData[];
+}
+
+export interface EzTableValidateFieldParams<TData extends object> {
+    field: keyof TData | string;
+    value: unknown;
+    row?: TData;
+    rowIndex?: number;
+    column?: ColumnDef<TData>;
+    table?: Table<TData>;
+}
+
+export interface EzTableDataRequestParams {
+    pageIndex?: number;
+    pageSize?: number;
+    sorting?: import('@tanstack/react-table').SortingState;
+    filters?: import('@tanstack/react-table').ColumnFiltersState;
+    globalFilter?: EzGlobalFilterState;
+    query?: Record<string, unknown>;
+}
+
+export interface EzTableFilterEvent<TData extends object> {
+    columns: import('@tanstack/react-table').ColumnFiltersState;
+    table?: Table<TData>;
+}
+
+export interface EzTableContextMenuItemClickArgs<TData extends object> {
+    action: string;
+    row?: Row<TData>;
+    data?: TData;
+    originalEvent?: React.MouseEvent;
+}
+
 /**
  * Custom CSS class names for internal table elements.
  * @group Models
@@ -206,7 +242,7 @@ export interface EzTableProps<TData extends object> extends SharedBaseProps<TDat
      * Alias for onDataRequest. Triggered when data needs to be fetched (e.g. pagination/sorting in server-side mode).
      * @group Events 
      */
-    onFetchData?: (params: unknown) => void;
+    onFetchData?: (params: EzTableDataRequestParams) => void;
 
     // --- 6. Localization ---
     /** 
@@ -388,10 +424,20 @@ export interface EzTableProps<TData extends object> extends SharedBaseProps<TDat
     height?: string | number;
     /** 
      * Fixed row height for all rows.
-     * Required for efficient virtualization.
+     * Use this when every row has the same height for the most efficient virtualization.
      * @group Properties 
      */
     rowHeight?: number;
+
+    /**
+     * Controls how virtualized row heights are calculated.
+     * - `fixed`: use `rowHeight` or the density-based estimate for every row.
+     * - `dynamic`: measure rendered rows so wrapped content, editors, and detail panels scroll correctly.
+     * - `auto`: use dynamic sizing when variable-height features are detected.
+     * @default "auto"
+     * @group Properties
+     */
+    rowSizingMode?: 'auto' | 'fixed' | 'dynamic';
 
     // Structured Settings
     /** 
@@ -499,7 +545,7 @@ export interface EzTableProps<TData extends object> extends SharedBaseProps<TDat
      * Callback when batch changes are saved.
      * @group Events 
      */
-    onBatchSave?: (changes: { addedRecords: TData[], changedRecords: TData[], deletedRecords: TData[] }) => void;
+    onBatchSave?: (changes: EzTableChanges<TData>) => void;
     /** 
      * Callback when a record fails validation before saving.
      * @group Events 
@@ -526,7 +572,7 @@ export interface EzTableProps<TData extends object> extends SharedBaseProps<TDat
     /**
      * Component validation hook for custom validation.
      */
-    validateField?: (params: any) => string | boolean;
+    validateField?: (params: EzTableValidateFieldParams<TData>) => string | boolean;
 
     // missing boolean flags
     enableSearchHighlighting?: boolean;
@@ -557,10 +603,10 @@ export interface EzTableProps<TData extends object> extends SharedBaseProps<TDat
     onRowSelectionChange?: (updaterOrValue: Updater<import('@tanstack/react-table').RowSelectionState>) => void;
     onColumnOrderChange?: (updaterOrValue: Updater<string[]>) => void;
     onColumnFiltersChange?: (updaterOrValue: Updater<import('@tanstack/react-table').ColumnFiltersState>) => void;
-    onGlobalFilterChange?: (updaterOrValue: Updater<any>) => void;
-    onFilter?: (args: { columns: any }) => void;
+    onGlobalFilterChange?: (updaterOrValue: Updater<EzGlobalFilterState>) => void;
+    onFilter?: (args: EzTableFilterEvent<TData>) => void;
     onSearch?: (query: string) => void;
-    onActionBegin?: (args: any) => void;
+    onActionBegin?: (args: { action: 'add' | 'edit' | 'delete' | 'save' | 'fetch'; data?: Partial<TData> | TData; cancel?: boolean }) => void;
     enableRangeSelection?: boolean;
     pageCount?: number;
     enableRowSelection?: boolean;
@@ -571,7 +617,7 @@ export interface EzTableProps<TData extends object> extends SharedBaseProps<TDat
     isLoading?: boolean;
     onBatchDiscard?: () => void;
     enableContextMenu?: boolean;
-    onContextMenuItemClick?: (item: unknown) => void;
+    onContextMenuItemClick?: (item: EzTableContextMenuItemClickArgs<TData>) => void;
     renderDetailPanel?: (row: Row<TData>) => React.ReactNode;
     enableGrouping?: boolean;
     enableColumnReorder?: boolean;
@@ -584,6 +630,11 @@ export interface EzTableProps<TData extends object> extends SharedBaseProps<TDat
      * @group Properties
      */
     enableStatusBar?: boolean;
+    /**
+     * Enable column visibility toggling.
+     * @group Properties
+     */
+    enableHiding?: boolean;
 }
 
 /**
@@ -626,8 +677,8 @@ export interface TableParams<TData extends object> {
     onRowDeselect?: (args: { row?: Row<TData>, data: TData, rowIndex: number }) => void;
     enableChangeTracking?: boolean;
     editSettings?: EditSettings;
-    onDataChange?: (changes: any) => void;
-    onFetchData?: (params: unknown) => void;
+    onDataChange?: (changes: EzTableChanges<TData>) => void;
+    onFetchData?: (params: EzTableDataRequestParams) => void;
 }
 
 // Global Filter State can be string (simple) or object (advanced)
@@ -667,16 +718,18 @@ export interface EzTableColumnDef {
     children?: React.ReactNode;
 }
 
-export interface EzTableRef<TData extends object> {
+export interface EzTableBaseRef<TData extends object> {
     getState: () => TableState;
     getSelectedRows: () => TData[];
     saveChanges: () => Promise<void>;
     cancelChanges: () => void;
-    getChanges: () => any;
+    getChanges: () => EzTableChanges<TData>;
     validateField: (field: string) => boolean;
     validateEditForm: () => boolean;
-    [key: string]: any; // Allow calling custom table API methods
 }
+
+export type EzTableRef<TData extends object, TExtraApi extends object = Record<string, never>> =
+    EzTableBaseRef<TData> & TExtraApi;
 
 export interface ITableService<TData extends object> {
     fetchData: (query: unknown) => Promise<{ data: TData[], rowCount?: number }>;
