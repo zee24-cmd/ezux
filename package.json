@@ -1,7 +1,7 @@
 {
     "name": "ezux",
     "version": "1.1.15",
-    "description": "A comprehensive, type-safe TanStack First Advance component library designed for modern enterprise applications.",
+    "description": "Premium React UI Kit for enterprise dashboards. Features high-performance TanStack Table, Scheduler, Kanban, and interactive components. Built with TypeScript for type-safe applications.",
     "keywords": [
         "react",
         "components",
@@ -12,7 +12,10 @@
         "enterprise",
         "ui-kit",
         "tanstack",
-        "typescript"
+        "typescript",
+        "react-components",
+        "data-grid",
+        "workflow-builder"
     ],
     "homepage": "https://ezux.dev",
     "repository": {
