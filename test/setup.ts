@@ -1,10 +1,13 @@
 import '@testing-library/jest-dom';
-import { cleanup } from '@testing-library/react';
+import { cleanup, act } from '@testing-library/react';
 import { afterEach } from 'vitest';
 
-// Cleanup after each test
-afterEach(() => {
+// Cleanup after each test and flush pending async tasks/lazy loads in act
+afterEach(async () => {
     cleanup();
+    await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+    });
 });
 
 // Mock window.matchMedia
