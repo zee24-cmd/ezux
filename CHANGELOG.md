@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [1.1.17] - 2026-06-24
+
+### Changed
+- **Typography & Accessibility**: Upgraded global font size and line-height tokens to relative units (`rem`) and improved sizes to conform with readability guidelines for age 40+ users (e.g., base body font size raised to `1rem`/`16px` equivalent and line-height to `1.5`).
+
 ## [1.1.16] - 2026-06-24
 
 ### Changed
