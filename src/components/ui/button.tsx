@@ -37,30 +37,28 @@ export interface ButtonProps
     VariantProps<typeof buttonVariants> {
     asChild?: boolean;
     isLoading?: boolean;
+    ref?: React.Ref<HTMLButtonElement>;
 }
 
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-    ({ className, variant, size, asChild = false, isLoading = false, children, disabled, ...props }, ref) => {
-        const Comp = asChild ? Slot : "button";
-        return (
-            <Comp
-                className={cn(buttonVariants({ variant, size, className }))}
-                ref={ref}
-                disabled={isLoading || disabled}
-                {...props}
-            >
-                {asChild ? (
-                    children
-                ) : (
-                    <>
-                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        {children}
-                    </>
-                )}
-            </Comp>
-        );
-    }
-);
-Button.displayName = "Button";
+export function Button({ className, variant, size, asChild = false, isLoading = false, children, disabled, ref, ...props }: ButtonProps) {
+    const Comp = asChild ? Slot : "button";
+    return (
+        <Comp
+            className={cn(buttonVariants({ variant, size, className }))}
+            ref={ref}
+            disabled={isLoading || disabled}
+            {...props}
+        >
+            {asChild ? (
+                children
+            ) : (
+                <>
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {children}
+                </>
+            )}
+        </Comp>
+    );
+}
 
-export { Button, buttonVariants };
+export { buttonVariants };

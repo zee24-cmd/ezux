@@ -9,7 +9,7 @@ import { EzErrorBoundary } from '../shared/components/EzErrorBoundary';
 import { EzTableErrorFallback } from '../shared/components/EzTableErrorFallback';
 import { useEzServiceRegistry } from '../../shared/contexts/EzProvider';
 import { NotificationService } from '../../shared/services/NotificationService';
-import { flexColumn, borderStyles } from '../../shared/utils/ezStyleUtils';
+import { flexColumn, borderStyles } from '../../shared/utils/styleUtils';
 import { EzTableProps, EzTableRef } from './EzTable.types';
 import { cn } from '../../lib/utils';
 import {
@@ -35,7 +35,7 @@ import { EzTablePaginationSection } from './components/EzTablePaginationSection'
 import { useColumnSizeVars } from './hooks/useColumnSizeVars';
 import { TooltipProvider } from '../ui/tooltip';
 
-const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<TData>, ref: React.ForwardedRef<EzTableRef<TData>>) => {
+const EzTableImpl = <TData extends object>({ ref, ...props }: EzTableProps<TData> & { ref?: React.Ref<EzTableRef<TData>> }) => {
     const registry = useEzServiceRegistry();
     const tableRes = useEzTable(props);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -573,9 +573,8 @@ const EzTableImpl = React.forwardRef(<TData extends object>(props: EzTableProps<
             </TooltipProvider>
         </EzErrorBoundary>
     );
-});
+};
 
-EzTableImpl.displayName = 'EzTableImpl';
 export const EzTablePrimitive = EzTableImpl;
 
 const queryClient = new QueryClient();
@@ -624,10 +623,10 @@ const queryClient = new QueryClient();
  * 
  * @group Core Components
  */
-export const EzTable = React.forwardRef(<TData extends object>(
-    props: EzTableProps<TData>,
-    ref: React.ForwardedRef<EzTableRef<TData>>
-) => {
+export function EzTable<TData extends object>({
+    ref,
+    ...props
+}: EzTableProps<TData> & { ref?: React.Ref<EzTableRef<TData>> }) {
     // Initialize core services (I18n, Notifications, etc.)
     useInitCoreServices();
 
@@ -636,9 +635,7 @@ export const EzTable = React.forwardRef(<TData extends object>(
             <EzTableImpl {...(props as any)} ref={ref as any} />
         </QueryClientProvider>
     );
-}) as <TData extends object>(
-    props: EzTableProps<TData> & { ref?: React.ForwardedRef<EzTableRef<TData>> }
-) => React.ReactElement;
+}
 
 export * from './context/EzTableContext';
 export * from './utils/SizingUtils';

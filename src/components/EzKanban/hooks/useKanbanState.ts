@@ -1,7 +1,22 @@
 import { useMemo, useEffect, useRef } from 'react';
 import { useStore } from '@tanstack/react-store';
-import type { EzKanbanProps } from '../EzKanban.types';
+import type { EzKanbanProps, KanbanBoard } from '../EzKanban.types';
 import { createKanbanStore, createKanbanActions } from '../state/kanban.store';
+
+const defaultBoard: KanbanBoard = {
+    id: 'default-board',
+    name: 'Default Board',
+    columns: [],
+    cards: [],
+    settings: {
+        allowDragAndDrop: true,
+        allowMultiSelect: true,
+        enableWipLimits: false,
+        defaultView: 'standard'
+    },
+    createdAt: new Date(),
+    updatedAt: new Date()
+};
 
 /**
  * Hook for managing Kanban board state using a centralized store.
@@ -12,8 +27,11 @@ import { createKanbanStore, createKanbanActions } from '../state/kanban.store';
  * @group Hooks
  */
 export const useKanbanState = (props: EzKanbanProps) => {
+    const effectiveBoard = props.board || defaultBoard;
+    const boardId = effectiveBoard.id;
+
     // Create store instance (memoized per board ID)
-    const store = useMemo(() => createKanbanStore(props.board, props.view), [props.board.id, props.view]);
+    const store = useMemo(() => createKanbanStore(effectiveBoard, props.view), [boardId, props.view]);
     const actions = useMemo(() => createKanbanActions(store), [store]);
 
     // Subscribe to store state
@@ -25,10 +43,11 @@ export const useKanbanState = (props: EzKanbanProps) => {
     const activeFilters = useStore(store, (state) => state.activeFilters);
 
     // Sync external board changes to store
-    const lastBoardStr = useRef(JSON.stringify(props.board));
+    const lastBoardStr = useRef(props.board ? JSON.stringify(props.board) : '');
     const lastView = useRef(props.view);
 
     useEffect(() => {
+        if (!props.board) return;
         const currentBoardStr = JSON.stringify(props.board);
 
         if (currentBoardStr !== lastBoardStr.current) {

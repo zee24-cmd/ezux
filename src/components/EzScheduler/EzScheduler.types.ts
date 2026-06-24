@@ -869,6 +869,8 @@ export interface EzSchedulerProps extends SharedBaseProps {
     cellTemplate?: string | ((props: Record<string, unknown>) => React.ReactNode);
     editorFooterTemplate?: string | ((props: Record<string, unknown>) => React.ReactNode);
     editorHeaderTemplate?: string | ((props: Record<string, unknown>) => React.ReactNode);
+    editorHeaderFieldsTemplate?: string | ((props: Record<string, unknown>) => React.ReactNode);
+    editorHiddenFields?: Array<'location'>;
     editorTemplate?: string | ((props: Record<string, unknown>) => React.ReactNode);
     enableHtmlSanitizer?: boolean;
     eventDragArea?: string;

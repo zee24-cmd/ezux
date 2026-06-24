@@ -38,7 +38,7 @@ export const useSchedulerImperative = (
         prev: () => void;
         today: () => void;
     },
-    ref: React.Ref<EzSchedulerRef>,
+    ref: React.Ref<EzSchedulerRef> | undefined,
     extraApi: Partial<EzSchedulerRef> = {}
 ) => {
 

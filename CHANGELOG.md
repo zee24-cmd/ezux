@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [1.1.16] - 2026-06-24
+
+### Changed
+- **React 19 Compatibility**: Modernized all UI primitives and core components by refactoring `React.forwardRef` to React 19 native prop-based refs (including `Button`, `Input`, `Checkbox`, `Textarea`, `Label`, `Switch`, `Tooltip`, `Popover`, `Card`, `Progress`, `Avatar`, `Tabs`, `EzTable`, and `EzScheduler`).
+- **TypeScript**: Upgraded the compilation target and library output to `ES2022`. Cleaned up deprecated legacy compiler settings (`baseUrl`, `ignoreDeprecations`) in `tsconfig.json` for forward compatibility with TypeScript 7.0.
+- **Hooks**: Refactored `useSchedulerImperative` to support nullable/optional ref prop signatures.
+
 ## [1.1.15] - 2026-04-29
 
 ### Added

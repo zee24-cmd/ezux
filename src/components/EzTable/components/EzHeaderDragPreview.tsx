@@ -1,6 +1,6 @@
 import { Header, flexRender } from '@tanstack/react-table';
 import { cn } from '../../../lib/utils';
-import { getDensityClass } from '../../../shared/utils/ezStyleUtils';
+import { getDensityClass } from '../../../shared/utils/styleUtils';
 import { GripVertical } from 'lucide-react';
 
 interface EzHeaderDragPreviewProps {

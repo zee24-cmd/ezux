@@ -2,7 +2,7 @@ import React from 'react';
 import { Table } from '@tanstack/react-table';
 import { EzDraggableHeader } from './EzDraggableHeader';
 import { cn } from '../../../lib/utils';
-import { flexColumn, borderStyles } from '../../../shared/utils/ezStyleUtils';
+import { flexColumn, borderStyles } from '../../../shared/utils/styleUtils';
 
 
 interface EzTableHeaderSectionProps<TData extends object> {

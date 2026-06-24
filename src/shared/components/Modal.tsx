@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -27,15 +27,54 @@ export const Modal: React.FC<ModalProps> = ({
     closeOnBackdropClick = true,
     showCloseButton = true
 }) => {
-    // Prevent body scroll when open
+    const dialogRef = useRef<HTMLDivElement>(null);
+
+    // Prevent body scroll when open and handle Escape key
     useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-            return () => {
-                document.body.style.overflow = 'unset';
-            };
-        }
-    }, [isOpen]);
+        if (!isOpen) return;
+
+        const originalOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                onClose();
+            }
+            if (e.key === 'Tab') {
+                // Scope focus trap query to only elements inside our dialog ref container
+                const container = dialogRef.current;
+                if (!container) return;
+                
+                const focusableElements = container.querySelectorAll(
+                    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                );
+                
+                if (focusableElements.length === 0) return;
+                
+                const firstElement = focusableElements[0] as HTMLElement;
+                const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+                if (e.shiftKey) {
+                    if (document.activeElement === firstElement) {
+                        lastElement.focus();
+                        e.preventDefault();
+                    }
+                } else {
+                    if (document.activeElement === lastElement) {
+                        firstElement.focus();
+                        e.preventDefault();
+                    }
+                }
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            document.body.style.overflow = originalOverflow;
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [isOpen, onClose]);
 
     if (!isOpen) return null;
 
@@ -58,6 +97,7 @@ export const Modal: React.FC<ModalProps> = ({
 
             {/* Dialog Panel */}
             <div
+                ref={dialogRef}
                 className={cn(
                     "relative w-full bg-background rounded-xl border border-border shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-2 duration-200",
                     sizeClasses[size],

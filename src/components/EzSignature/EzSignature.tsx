@@ -107,8 +107,9 @@ const EzSignature = React.forwardRef<EzSignatureRef, EzSignatureProps>((props, r
     useBaseComponent(props); // Initializes base component logic
     useInitCoreServices(); // Ensures core services are registered
 
-    // State
-    const [points, setPoints] = useState<number[][]>([]); // Current stroke
+    // State & Refs
+    const pointsRef = useRef<number[][]>([]); // Current stroke points
+    const activePathRef = useRef<SVGPathElement>(null); // DOM node for active path drawing
     const [strokes, setStrokes] = useState<number[][][]>([]); // Completed strokes
     const [history, setHistory] = useState<number[][][][]>([]); // For undo/redo (stack of strokes arrays)
     const [historyIndex, setHistoryIndex] = useState<number>(-1);
@@ -126,28 +127,48 @@ const EzSignature = React.forwardRef<EzSignatureRef, EzSignatureProps>((props, r
         if (onChange) onChange(newStrokes.map(s => JSON.stringify(s)));
     }, [history, historyIndex, onChange]);
 
+    const updateActivePath = useCallback(() => {
+        const pts = pointsRef.current;
+        if (activePathRef.current && pts.length > 0) {
+            const stroke = getStroke(pts, {
+                size: maxStrokeWidth,
+                thinning,
+                smoothing,
+                start: { cap: true, taper: false },
+                end: { cap: true, taper: 10 },
+                simulatePressure: pts.length > 2,
+            });
+            activePathRef.current.setAttribute('d', getSvgPathFromStroke(stroke));
+        }
+    }, [maxStrokeWidth, thinning, smoothing]);
+
     // Pointer Events
     const handlePointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
         if (readOnly || disabled) return;
         e.currentTarget.setPointerCapture(e.pointerId);
         const point = [e.nativeEvent.offsetX, e.nativeEvent.offsetY, e.pressure];
-        setPoints([point]);
+        pointsRef.current = [point];
+        updateActivePath();
     };
 
     const handlePointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
         if (readOnly || disabled) return;
         if (e.buttons !== 1) return;
         const point = [e.nativeEvent.offsetX, e.nativeEvent.offsetY, e.pressure];
-        setPoints(prev => [...prev, point]);
+        pointsRef.current.push(point);
+        updateActivePath();
     };
 
     const handlePointerUp = (e: React.PointerEvent<SVGSVGElement>) => {
         if (readOnly || disabled) return;
-        if (points.length > 0) {
-            const newStrokes = [...strokes, points];
+        if (pointsRef.current.length > 0) {
+            const newStrokes = [...strokes, pointsRef.current];
             setStrokes(newStrokes);
             pushToHistory(newStrokes);
-            setPoints([]);
+            pointsRef.current = [];
+            if (activePathRef.current) {
+                activePathRef.current.setAttribute('d', '');
+            }
             if (onEnd) onEnd(e);
         }
     };
@@ -156,7 +177,10 @@ const EzSignature = React.forwardRef<EzSignatureRef, EzSignatureProps>((props, r
     const api = useMemo(() => ({
         clear: () => {
             setStrokes([]);
-            setPoints([]);
+            pointsRef.current = [];
+            if (activePathRef.current) {
+                activePathRef.current.setAttribute('d', '');
+            }
             pushToHistory([]);
             registry.get<NotificationService>('NotificationService')?.show({
                 type: 'info',
@@ -183,7 +207,7 @@ const EzSignature = React.forwardRef<EzSignatureRef, EzSignatureProps>((props, r
         },
         canUndo: () => historyIndex >= 0,
         canRedo: () => historyIndex < history.length - 1,
-        isEmpty: () => strokes.length === 0 && points.length === 0,
+        isEmpty: () => strokes.length === 0 && pointsRef.current.length === 0,
         getSignature: () => strokes,
         load: (data: number[][][] | string) => {
             if (typeof data === 'string') {
@@ -255,7 +279,7 @@ const EzSignature = React.forwardRef<EzSignatureRef, EzSignatureProps>((props, r
                 img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
             });
         }
-    }), [history, historyIndex, strokes, points, backgroundColor, onSave, pushToHistory]);
+    }), [history, historyIndex, strokes, backgroundColor, onSave, pushToHistory]);
 
     useImperativeAPI(ref, api);
 
@@ -268,8 +292,6 @@ const EzSignature = React.forwardRef<EzSignatureRef, EzSignatureProps>((props, r
         end: { cap: true, taper: 10 } // Subtle tapering for natural end without being "too thin"
     }), [maxStrokeWidth, thinning, smoothing]);
 
-    // Rendering strokes
-    // Rendering strokes
     const renderedStrokes = useMemo(() => strokes.map((stroke, i) => (
         <MemoizedStroke
             key={i}
@@ -278,21 +300,6 @@ const EzSignature = React.forwardRef<EzSignatureRef, EzSignatureProps>((props, r
             color={effectiveStrokeColor}
         />
     )), [strokes, strokeOptions, effectiveStrokeColor]);
-
-    const currentStroke = points.length > 0 && (
-        <path
-            d={getSvgPathFromStroke(getStroke(points, {
-                size: maxStrokeWidth,
-                thinning,
-                smoothing,
-                start: { cap: true, taper: false },
-                end: { cap: true, taper: 10 },
-                simulatePressure: points.length > 2, // only simulate if we have some movement
-            }))}
-            fill={effectiveStrokeColor}
-            opacity={0.8}
-        />
-    );
 
     return (
         <div
@@ -310,9 +317,16 @@ const EzSignature = React.forwardRef<EzSignatureRef, EzSignatureProps>((props, r
                 onPointerMove={handlePointerMove}
                 onPointerUp={handlePointerUp}
                 onPointerLeave={handlePointerUp}
+                role="img"
+                aria-label="Signature canvas"
             >
                 {renderedStrokes}
-                {currentStroke}
+                <path
+                    ref={activePathRef}
+                    fill={effectiveStrokeColor}
+                    opacity={0.8}
+                    d=""
+                />
             </svg>
 
         </div>

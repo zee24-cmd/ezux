@@ -3,10 +3,7 @@ import { Header, flexRender } from '@tanstack/react-table';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { ArrowUp, ArrowDown, GripVertical } from 'lucide-react';
 import { cn } from '../../../lib/utils';
-import {
-    getDensityClass
-} from '../../../shared/utils/ezStyleUtils';
-import { PinnedPosition, getPinnedStyles, getPinnedClasses } from '../../../shared/utils/styleUtils';
+import { PinnedPosition, getPinnedStyles, getPinnedClasses, getDensityClass } from '../../../shared/utils/styleUtils';
 
 import { EzExcelFilter } from '../EzExcelFilter';
 import { EzHeaderContextMenu } from '../EzHeaderContextMenu';

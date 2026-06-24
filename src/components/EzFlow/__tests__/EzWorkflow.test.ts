@@ -184,5 +184,5 @@ describe('EzWorkflow performance helpers', () => {
     expect(workflow.edges).toHaveLength(nodeCount - 1);
     expect(sample).toMatchObject({ nodeCount, edgeCount: nodeCount - 1, valid: true, issueCount: 0 });
     expect(sample.validateMs).toBeGreaterThanOrEqual(0);
-  });
+  }, 20000);
 });

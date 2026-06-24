@@ -22,6 +22,8 @@ interface EzEventModalProps {
     editorTemplate?: (event: Partial<SchedulerEvent>) => React.ReactNode;
     headerTemplate?: (event: Partial<SchedulerEvent>, mode: string) => React.ReactNode;
     footerTemplate?: (event: Partial<SchedulerEvent>, mode: string, onSave: () => void, onClose: () => void) => React.ReactNode;
+    headerFieldsTemplate?: (props: { event: Partial<SchedulerEvent>; mode: EditorMode; isReadOnly: boolean }) => React.ReactNode;
+    hiddenFields?: Array<'location'>;
 }
 
 const WEEK_DAYS = [
@@ -45,6 +47,8 @@ export const EzEventModal: React.FC<EzEventModalProps> = ({
     editorTemplate,
     headerTemplate,
     footerTemplate,
+    headerFieldsTemplate,
+    hiddenFields = [],
 }) => {
     // Form implementation
     const form = useForm({
@@ -105,9 +109,9 @@ export const EzEventModal: React.FC<EzEventModalProps> = ({
 
     if (!isOpen) return null;
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
+    const handleSubmit = (e?: React.FormEvent) => {
+        e?.preventDefault();
+        e?.stopPropagation();
         form.handleSubmit();
     };
 
@@ -185,6 +189,8 @@ export const EzEventModal: React.FC<EzEventModalProps> = ({
                         style={{ padding: '8px 40px 32px 40px' }}
                     >
 
+                        {headerFieldsTemplate?.({ event: event || {}, mode, isReadOnly })}
+
                         {/* Row 1: Title & Location */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <form.Field
@@ -215,22 +221,24 @@ export const EzEventModal: React.FC<EzEventModalProps> = ({
                                     </div>
                                 )}
                             />
-                            <form.Field
-                                name="location"
-                                children={(field) => (
-                                    <div className="space-y-2">
-                                        <Label htmlFor="location" className="text-[13px] font-semibold text-foreground/70">Location</Label>
-                                        <Input
-                                            id="location"
-                                            placeholder="Add location"
-                                            value={field.state.value}
-                                            onChange={(e) => field.handleChange(e.target.value)}
-                                            disabled={isReadOnly}
-                                            className="h-10 rounded-md border-border focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20 bg-background transition-all"
-                                        />
-                                    </div>
-                                )}
-                            />
+                            {!hiddenFields.includes('location') && (
+                                <form.Field
+                                    name="location"
+                                    children={(field) => (
+                                        <div className="space-y-2">
+                                            <Label htmlFor="location" className="text-[13px] font-semibold text-foreground/70">Location</Label>
+                                            <Input
+                                                id="location"
+                                                placeholder="Add location"
+                                                value={field.state.value}
+                                                onChange={(e) => field.handleChange(e.target.value)}
+                                                disabled={isReadOnly}
+                                                className="h-10 rounded-md border-border focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20 bg-background transition-all"
+                                            />
+                                        </div>
+                                    )}
+                                />
+                            )}
                         </div>
 
                         {/* Row 2: Date/Time */}
@@ -650,7 +658,7 @@ export const EzEventModal: React.FC<EzEventModalProps> = ({
 
                 {/* Footer */}
                 {footerTemplate ? (
-                    footerTemplate(event || {}, mode, () => handleSubmit({} as React.FormEvent), onClose)
+                    footerTemplate(event || {}, mode, () => handleSubmit(), onClose)
                 ) : (
                     <div style={{
                         display: 'flex',

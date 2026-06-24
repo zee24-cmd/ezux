@@ -1,4 +1,4 @@
-import React, { useState, forwardRef, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { addMinutes, areIntervalsOverlapping } from 'date-fns';
 import { EzSchedulerProps, View, ViewType, SchedulerEvent, EzSchedulerRef, EditorMode, Resource } from './EzScheduler.types';
 import { cn } from '../../lib/utils';
@@ -63,7 +63,7 @@ const queryClient = new QueryClient();
  * 
  * @group Core Components
  */
-export const EzScheduler = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, ref) => {
+export function EzScheduler({ ref, ...props }: EzSchedulerProps & { ref?: React.Ref<EzSchedulerRef> }) {
     // Initialize core services (I18n, Notifications, etc.)
     useInitCoreServices();
 
@@ -72,11 +72,9 @@ export const EzScheduler = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, 
             <EzSchedulerInner {...props} ref={ref} />
         </QueryClientProvider>
     );
-});
+}
 
-EzScheduler.displayName = 'EzScheduler';
-
-const EzSchedulerInner = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, ref) => {
+function EzSchedulerInner({ ref, ...props }: EzSchedulerProps & { ref?: React.Ref<EzSchedulerRef> }) {
     // 1. Hook Orchestrator
     const scheduler = useEzScheduler({
         ...props,
@@ -569,6 +567,11 @@ const EzSchedulerInner = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, re
                                         onDelete={handleDeleteEvent}
                                         resources={internalResources}
                                         locale={props.locale}
+                                        editorTemplate={typeof props.editorTemplate === 'function' ? props.editorTemplate as any : undefined}
+                                        headerTemplate={typeof props.editorHeaderTemplate === 'function' ? props.editorHeaderTemplate as any : undefined}
+                                        footerTemplate={typeof props.editorFooterTemplate === 'function' ? props.editorFooterTemplate as any : undefined}
+                                        headerFieldsTemplate={typeof props.editorHeaderFieldsTemplate === 'function' ? props.editorHeaderFieldsTemplate as any : undefined}
+                                        hiddenFields={props.editorHiddenFields}
                                         {...props.slotProps?.eventModal}
                                     />
                                 </React.Suspense>
@@ -585,6 +588,11 @@ const EzSchedulerInner = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, re
                                     onDelete={handleDeleteEvent}
                                     resources={internalResources}
                                     locale={props.locale}
+                                    editorTemplate={typeof props.editorTemplate === 'function' ? props.editorTemplate as any : undefined}
+                                    headerTemplate={typeof props.editorHeaderTemplate === 'function' ? props.editorHeaderTemplate as any : undefined}
+                                    footerTemplate={typeof props.editorFooterTemplate === 'function' ? props.editorFooterTemplate as any : undefined}
+                                    headerFieldsTemplate={typeof props.editorHeaderFieldsTemplate === 'function' ? props.editorHeaderFieldsTemplate as any : undefined}
+                                    hiddenFields={props.editorHiddenFields}
                                 />
                             </React.Suspense>
                         );
@@ -607,6 +615,4 @@ const EzSchedulerInner = forwardRef<EzSchedulerRef, EzSchedulerProps>((props, re
             </div>
         </EzErrorBoundary>
     );
-});
-
-EzSchedulerInner.displayName = 'EzSchedulerInner';
+}

@@ -78,6 +78,8 @@ const formatHeaders = (headers: unknown) =>
     ? Object.entries(headers as Record<string, string>).map(([key, value]) => `${key}: ${value}`).join('\n')
     : '';
 
+import { DeleteConfirmationModal } from '../../shared/components/DeleteConfirmationModal';
+
 const NodeInspector = ({
   node,
   registry,
@@ -97,6 +99,8 @@ const NodeInspector = ({
   onClose: () => void;
   className?: string;
 }) => {
+  const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
+
   if (!node) {
     return (
       <aside className={cn('w-80 border-l border-border bg-card/35 p-4', className)} aria-label="Workflow inspector">
@@ -262,10 +266,23 @@ const NodeInspector = ({
         </div>
       )}
       {!readOnly && (
-        <Button variant="destructive" className="mt-4 w-full gap-2" onClick={onDelete}>
-          <Trash2 size={14} />
-          Delete node
-        </Button>
+        <>
+          <Button variant="destructive" className="mt-4 w-full gap-2" onClick={() => setIsDeleteOpen(true)}>
+            <Trash2 size={14} />
+            Delete node
+          </Button>
+          <DeleteConfirmationModal
+            isOpen={isDeleteOpen}
+            onClose={() => setIsDeleteOpen(false)}
+            onConfirm={() => {
+              onDelete();
+              setIsDeleteOpen(false);
+            }}
+            title="Delete Node"
+            message="Are you sure you want to delete this node?"
+            description="This action cannot be undone."
+          />
+        </>
       )}
     </aside>
   );
