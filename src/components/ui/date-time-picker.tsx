@@ -9,6 +9,13 @@ import {
     PopoverTrigger,
 } from "./popover";
 
+export interface DateTimePickerTimeOption {
+    label: string;
+    value?: Date | string;
+    hh?: number;
+    mm?: number;
+}
+
 interface DateTimePickerProps {
     date: Date | undefined;
     setDate: (date: Date | undefined) => void;
@@ -19,9 +26,11 @@ interface DateTimePickerProps {
     className?: string;
     mode?: 'date' | 'datetime';
     minDate?: Date;
+    slotDuration?: number;
+    timeOptions?: DateTimePickerTimeOption[];
 }
 
-export function DateTimePicker({ date, setDate, disabled, id, locale, className, mode = 'datetime', minDate }: DateTimePickerProps) {
+export function DateTimePicker({ date, setDate, disabled, id, locale, className, mode = 'datetime', minDate, slotDuration = 30, timeOptions: providedTimeOptions }: DateTimePickerProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [pickerView, setPickerView] = useState<'date' | 'time'>('date');
     const [inputValue, setInputValue] = useState("");
@@ -88,14 +97,30 @@ export function DateTimePicker({ date, setDate, disabled, id, locale, className,
 
     const timeOptions = useMemo(() => {
         const options: Array<{ label: string; hh: number; mm: number; }> = [];
-        let curr = startOfDay(new Date());
-        for (let i = 0; i < 48; i++) {
-            options.push({
-                label: formatDateFns(curr, "h:mm a"),
-                hh: curr.getHours(),
-                mm: curr.getMinutes()
-            });
-            curr = addMinutes(curr, 30);
+        if (providedTimeOptions?.length) {
+            for (const option of providedTimeOptions) {
+                const value = option.value instanceof Date
+                    ? option.value
+                    : typeof option.value === 'string'
+                        ? parse(option.value, "h:mm a", new Date())
+                        : undefined;
+                const hh = option.hh ?? (value && isValid(value) ? value.getHours() : undefined);
+                const mm = option.mm ?? (value && isValid(value) ? value.getMinutes() : undefined);
+                if (hh !== undefined && mm !== undefined) {
+                    options.push({ label: option.label, hh, mm });
+                }
+            }
+        } else {
+            let curr = startOfDay(new Date());
+            const steps = Math.ceil((24 * 60) / slotDuration);
+            for (let i = 0; i < steps; i++) {
+                options.push({
+                    label: formatDateFns(curr, "h:mm a"),
+                    hh: curr.getHours(),
+                    mm: curr.getMinutes()
+                });
+                curr = addMinutes(curr, slotDuration);
+            }
         }
 
         if (minDate && date && isSameDay(date, minDate)) {
@@ -107,11 +132,11 @@ export function DateTimePicker({ date, setDate, disabled, id, locale, className,
         }
 
         return options;
-    }, [date, minDate]);
+    }, [date, minDate, providedTimeOptions, slotDuration]);
 
     useEffect(() => {
         if (isOpen && pickerView === 'time' && timeListRef.current && date) {
-            const index = timeOptions.findIndex(t => t.hh === date.getHours() && t.mm === (date.getMinutes() >= 30 ? 30 : 0));
+            const index = timeOptions.findIndex(t => t.hh === date.getHours() && t.mm === date.getMinutes());
             if (index !== -1) {
                 const item = timeListRef.current.children[index] as HTMLElement;
                 if (item) {
@@ -212,7 +237,7 @@ export function DateTimePicker({ date, setDate, disabled, id, locale, className,
                             const isSelected = date && date.getHours() === option.hh && date.getMinutes() === option.mm;
                             return (
                                 <button
-                                    key={option.label}
+                                    key={`${option.hh}:${option.mm}:${option.label}`}
                                     type="button"
                                     onClick={() => handleSelectTime(option.hh, option.mm)}
                                     className={cn(

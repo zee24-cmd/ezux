@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [1.1.19] - 2026-06-24
+
+### Added
+- **EzScheduler**: Added `timeOptions` support for scheduler event editors so consumers can provide valid appointment slots from location operating schedules.
+- **EzScheduler**: Added `slotDurationOptions` for configurable toolbar interval choices.
+
+### Changed
+- **EzScheduler**: Plumbed `slotDuration` through `EzScheduler -> EzEventModal -> DateTimePicker`, including default event duration, imperative scroll methods, drag/resize preview snapping, and DateTimePicker-generated time slots.
+
 ## [1.1.18] - 2026-06-24
 
 ### Changed

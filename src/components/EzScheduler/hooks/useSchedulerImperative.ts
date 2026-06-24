@@ -39,7 +39,8 @@ export const useSchedulerImperative = (
         today: () => void;
     },
     ref: React.Ref<EzSchedulerRef> | undefined,
-    extraApi: Partial<EzSchedulerRef> = {}
+    extraApi: Partial<EzSchedulerRef> = {},
+    slotDuration = 30
 ) => {
 
     const api = useMemo(() => {
@@ -76,13 +77,11 @@ export const useSchedulerImperative = (
             scrollTo: (hour: string, minute: number = 0) => {
                 const h = parseInt(hour.split(':')[0]);
                 const totalMinutes = h * 60 + minute;
-                const slotDuration = 30; // Assuming 30 for now, should get from config if possible
                 const index = Math.floor(totalMinutes / slotDuration);
                 methods.scrollToIndex(index);
             },
             scrollToTime: (hour: number, minute: number) => {
                 const totalMinutes = hour * 60 + minute;
-                const slotDuration = 30;
                 const index = Math.floor(totalMinutes / slotDuration);
                 methods.scrollToIndex(index);
             },
@@ -105,7 +104,7 @@ export const useSchedulerImperative = (
                 const event = visibleEvents.find(e => e.id === eventId);
                 if (!event) return;
                 const totalMinutes = event.start.getHours() * 60 + event.start.getMinutes();
-                methods.scrollToIndex(Math.floor(totalMinutes / 30));
+                methods.scrollToIndex(Math.floor(totalMinutes / slotDuration));
             },
             selectEvent: () => {
                 // Selection state is owned by interactive views; this method is reserved for view adapters.
@@ -152,7 +151,7 @@ export const useSchedulerImperative = (
             // Extra
             ...extraApi
         } as EzSchedulerRef;
-    }, [view, currentDate, visibleEvents, methods, schedulerService, extraApi]);
+    }, [view, currentDate, visibleEvents, methods, schedulerService, extraApi, slotDuration]);
 
     useComponentImperativeAPI(ref as any, api);
 };

@@ -1,5 +1,6 @@
 import { SharedBaseProps } from '../../shared/types/BaseProps';
 import type { IService } from '../../shared/services/ServiceRegistry';
+import type { DateTimePickerTimeOption } from '../ui/date-time-picker';
 
 // --- Enums & Special Types ---
 /**
@@ -886,6 +887,8 @@ export interface EzSchedulerProps extends SharedBaseProps {
     weekRule?: WeekRule;
     recurrenceEngine?: unknown;
     slotDuration?: number;
+    slotDurationOptions?: number[];
+    timeOptions?: DateTimePickerTimeOption[];
     slotHeight?: number;
     isLoading?: boolean;
     allowPastEvents?: boolean;

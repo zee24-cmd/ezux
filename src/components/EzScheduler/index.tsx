@@ -237,7 +237,8 @@ function EzSchedulerInner({ ref, ...props }: EzSchedulerProps & { ref?: React.Re
             today: actions.today
         },
         ref,
-        api
+        api,
+        slotDuration
     );
 
     // 4. Handlers
@@ -245,7 +246,7 @@ function EzSchedulerInner({ ref, ...props }: EzSchedulerProps & { ref?: React.Re
         if (props.onCellDoubleClick) props.onCellDoubleClick(date, resourceId);
         else setEditorState({
             isOpen: true, mode: 'create',
-            event: { start: date, end: addMinutes(date, 30), resourceId, resourceIds: resourceId ? [resourceId] : [] }
+            event: { start: date, end: addMinutes(date, slotDuration), resourceId, resourceIds: resourceId ? [resourceId] : [] }
         });
     };
 
@@ -381,6 +382,7 @@ function EzSchedulerInner({ ref, ...props }: EzSchedulerProps & { ref?: React.Re
                                         today={actions.today}
                                         onAddClick={useCallback(() => setEditorState({ isOpen: true, mode: 'create', event: {} }), [])}
                                         slotDuration={slotDuration}
+                                        slotDurationOptions={props.slotDurationOptions}
                                         setSlotDuration={actions.setSlotDuration}
                                         setCurrentDate={setCurrentDate}
                                         onPrev={actions.prevPeriod}
@@ -423,6 +425,7 @@ function EzSchedulerInner({ ref, ...props }: EzSchedulerProps & { ref?: React.Re
                                     today={actions.today}
                                     onAddClick={useCallback(() => setEditorState({ isOpen: true, mode: 'create', event: {} }), [])}
                                     slotDuration={slotDuration}
+                                    slotDurationOptions={props.slotDurationOptions}
                                     setSlotDuration={actions.setSlotDuration}
                                     setCurrentDate={setCurrentDate}
                                     onPrev={actions.prevPeriod}
@@ -567,6 +570,8 @@ function EzSchedulerInner({ ref, ...props }: EzSchedulerProps & { ref?: React.Re
                                         onDelete={handleDeleteEvent}
                                         resources={internalResources}
                                         locale={props.locale}
+                                        slotDuration={slotDuration}
+                                        timeOptions={props.timeOptions}
                                         editorTemplate={typeof props.editorTemplate === 'function' ? props.editorTemplate as any : undefined}
                                         headerTemplate={typeof props.editorHeaderTemplate === 'function' ? props.editorHeaderTemplate as any : undefined}
                                         footerTemplate={typeof props.editorFooterTemplate === 'function' ? props.editorFooterTemplate as any : undefined}
@@ -588,6 +593,8 @@ function EzSchedulerInner({ ref, ...props }: EzSchedulerProps & { ref?: React.Re
                                     onDelete={handleDeleteEvent}
                                     resources={internalResources}
                                     locale={props.locale}
+                                    slotDuration={slotDuration}
+                                    timeOptions={props.timeOptions}
                                     editorTemplate={typeof props.editorTemplate === 'function' ? props.editorTemplate as any : undefined}
                                     headerTemplate={typeof props.editorHeaderTemplate === 'function' ? props.editorHeaderTemplate as any : undefined}
                                     footerTemplate={typeof props.editorFooterTemplate === 'function' ? props.editorFooterTemplate as any : undefined}

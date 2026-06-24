@@ -71,6 +71,7 @@ interface EzSchedulerToolbarProps {
      * @group Properties 
      */
     slotDuration: number;
+    slotDurationOptions?: number[];
     /** 
      * Sets the duration of each time slot.
      * @group Methods 
@@ -148,6 +149,7 @@ export const EzSchedulerToolbar = memo(({
     prev,
     today,
     slotDuration,
+    slotDurationOptions,
     setSlotDuration,
     setCurrentDate,
     // view, // Unused in this component logic currently, kept in interface for compatibility
@@ -164,6 +166,7 @@ export const EzSchedulerToolbar = memo(({
     dir
 }: EzSchedulerToolbarProps) => {
     const isRtl = dir === 'rtl';
+    const intervalOptions = Array.from(new Set([...(slotDurationOptions || [5, 10, 15, 30, 45, 60]), slotDuration])).sort((a, b) => a - b);
 
     // Define renderCustomItem function inside the component
     const renderCustomItem = (item: ToolbarItemModel | string, index: number) => {
@@ -318,12 +321,11 @@ export const EzSchedulerToolbar = memo(({
                             <SelectValue placeholder="Interval" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="5">5 minutes</SelectItem>
-                            <SelectItem value="10">10 minutes</SelectItem>
-                            <SelectItem value="15">15 minutes</SelectItem>
-                            <SelectItem value="30">30 minutes</SelectItem>
-                            <SelectItem value="45">45 minutes</SelectItem>
-                            <SelectItem value="60">1 hour</SelectItem>
+                            {intervalOptions.map((duration) => (
+                                <SelectItem key={duration} value={String(duration)}>
+                                    {duration === 60 ? '1 hour' : `${duration} minutes`}
+                                </SelectItem>
+                            ))}
                         </SelectContent>
                     </Select>
                 </div>

@@ -97,16 +97,16 @@ export const DraggableEvent = ({
 
     if (isDragging && transform) {
         const dVal = orientation === 'vertical' ? transform.y : transform.x;
-        const deltaMinutes = Math.round(dVal / pixelsPerMinute / 15) * 15;
+        const deltaMinutes = Math.round(dVal / pixelsPerMinute / slotDuration) * slotDuration;
         displayStart = addMinutes(displayStart, deltaMinutes);
         displayEnd = addMinutes(displayEnd, deltaMinutes);
     } else if (isResizingTop && resizeTopTransform) {
         const dVal = orientation === 'vertical' ? resizeTopTransform.y : resizeTopTransform.x;
-        const deltaMinutes = Math.round(dVal / pixelsPerMinute / 15) * 15;
+        const deltaMinutes = Math.round(dVal / pixelsPerMinute / slotDuration) * slotDuration;
         displayStart = addMinutes(displayStart, deltaMinutes);
     } else if (isResizingBottom && resizeBottomTransform) {
         const dVal = orientation === 'vertical' ? resizeBottomTransform.y : resizeBottomTransform.x;
-        const deltaMinutes = Math.round(dVal / pixelsPerMinute / 15) * 15;
+        const deltaMinutes = Math.round(dVal / pixelsPerMinute / slotDuration) * slotDuration;
         displayEnd = addMinutes(displayEnd, deltaMinutes);
     }
 

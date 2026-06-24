@@ -7,7 +7,7 @@ import { Input } from '../../ui/input';
 import { Label } from '../../ui/label';
 import { X, Paperclip, Trash2 } from 'lucide-react';
 import { cn } from '../../../lib/utils';
-import { DateTimePicker } from '../../ui/date-time-picker';
+import { DateTimePicker, type DateTimePickerTimeOption } from '../../ui/date-time-picker';
 
 interface EzEventModalProps {
     isOpen: boolean;
@@ -18,6 +18,8 @@ interface EzEventModalProps {
     onDelete?: (eventId: string) => void;
     resources?: Resource[];
     locale?: string;
+    slotDuration?: number;
+    timeOptions?: DateTimePickerTimeOption[];
     // Template properties
     editorTemplate?: (event: Partial<SchedulerEvent>) => React.ReactNode;
     headerTemplate?: (event: Partial<SchedulerEvent>, mode: string) => React.ReactNode;
@@ -44,6 +46,8 @@ export const EzEventModal: React.FC<EzEventModalProps> = ({
     onSave,
     onDelete,
     locale,
+    slotDuration,
+    timeOptions,
     editorTemplate,
     headerTemplate,
     footerTemplate,
@@ -258,6 +262,8 @@ export const EzEventModal: React.FC<EzEventModalProps> = ({
                                             required
                                             locale={locale}
                                             mode={form.getFieldValue('isAllDay') ? 'date' : 'datetime'}
+                                            slotDuration={slotDuration}
+                                            timeOptions={timeOptions}
                                             className="border-border focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20"
                                         />
                                         {field.state.meta.errors.length > 0 && (
@@ -289,6 +295,8 @@ export const EzEventModal: React.FC<EzEventModalProps> = ({
                                             locale={locale}
                                             mode={form.getFieldValue('isAllDay') ? 'date' : 'datetime'}
                                             minDate={form.getFieldValue('start')}
+                                            slotDuration={slotDuration}
+                                            timeOptions={timeOptions}
                                             className={cn(
                                                 "border-border focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20",
                                                 field.state.meta.errors.length > 0 && "border-destructive focus-visible:border-destructive ring-destructive/20"
@@ -472,6 +480,8 @@ export const EzEventModal: React.FC<EzEventModalProps> = ({
                                                         locale={locale}
                                                         mode="date"
                                                         minDate={form.getFieldValue('start')}
+                                                        slotDuration={slotDuration}
+                                                        timeOptions={timeOptions}
                                                         className="border-border focus:border-primary"
                                                     />
                                                 </div>
