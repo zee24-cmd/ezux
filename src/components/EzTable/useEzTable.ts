@@ -299,8 +299,10 @@ export const useEzTable = <TData extends object>(
     const focusEditableCell = useCallback((rowIndex: number) => {
         const columnIndex = getFirstEditableColumnIndex(rowIndex);
         setFocusedCell({ r: rowIndex, c: columnIndex });
+        rowVirtualizer.scrollToIndex(rowIndex, { align: 'center' });
+        columnVirtualizer?.scrollToIndex(columnIndex, { align: 'start' });
 
-        const timer = window.setTimeout(() => {
+        const timer = window.setTimeout(() => requestAnimationFrame(() => {
             const cell = document.querySelector<HTMLElement>(
                 `[role="cell"][data-row-index="${rowIndex}"][data-cell-index="${columnIndex}"]`
             );
@@ -310,10 +312,10 @@ export const useEzTable = <TData extends object>(
             const editor = cell?.querySelector<HTMLElement>('input, textarea, button, [tabindex]:not([tabindex="-1"])');
             editor?.focus({ preventScroll: true });
             editor?.click();
-        }, 0);
+        }), 50);
 
         return () => window.clearTimeout(timer);
-    }, [getFirstEditableColumnIndex]);
+    }, [columnVirtualizer, getFirstEditableColumnIndex, rowVirtualizer]);
 
     // 9. Editing State
     const [editingRows, setEditingRows] = useState<Record<string, boolean>>({});
