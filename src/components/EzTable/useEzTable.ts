@@ -286,6 +286,35 @@ export const useEzTable = <TData extends object>(
         });
     }, [table]);
 
+    const getFirstEditableColumnIndex = useCallback((rowIndex: number) => {
+        const columns = table.getVisibleLeafColumns();
+        const row = data[rowIndex];
+        return Math.max(0, columns.findIndex((column: any) => {
+            if (column.id === 'select' || column.id === 'actions') return false;
+            if (column.columnDef?.enableEditing === false) return false;
+            return !isCellEditable || !row || isCellEditable(row, column.id);
+        }));
+    }, [data, isCellEditable, table]);
+
+    const focusEditableCell = useCallback((rowIndex: number) => {
+        const columnIndex = getFirstEditableColumnIndex(rowIndex);
+        setFocusedCell({ r: rowIndex, c: columnIndex });
+
+        const timer = window.setTimeout(() => {
+            const cell = document.querySelector<HTMLElement>(
+                `[role="cell"][data-row-index="${rowIndex}"][data-cell-index="${columnIndex}"]`
+            );
+            cell?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+            cell?.focus({ preventScroll: true });
+            cell?.click();
+            const editor = cell?.querySelector<HTMLElement>('input, textarea, button, [tabindex]:not([tabindex="-1"])');
+            editor?.focus({ preventScroll: true });
+            editor?.click();
+        }, 0);
+
+        return () => window.clearTimeout(timer);
+    }, [getFirstEditableColumnIndex]);
+
     // 9. Editing State
     const [editingRows, setEditingRows] = useState<Record<string, boolean>>({});
     const toggleRowEditing = useCallback((rowIndex: number, editing?: boolean) => {
@@ -309,9 +338,9 @@ export const useEzTable = <TData extends object>(
 
         // Synchronize visual focus when starting an edit
         if (isStartingEdit) {
-            setFocusedCell(prev => ({ r: rowIndex, c: prev?.c ?? 0 }));
+            focusEditableCell(rowIndex);
         }
-    }, [data, editingRows, props.onRowEditStart, props.editSettings?.mode, table]);
+    }, [data, editingRows, focusEditableCell, props.onRowEditStart, props.editSettings?.mode, table]);
 
     const updateData = useCallback((rowIndex: number, columnId: string, value: unknown) => {
         if (!enableEditing) return;

@@ -175,6 +175,9 @@ export const EzTableCell = memo(({
             )}
             style={{ ...cellStyle as React.CSSProperties, ...focusStyle }}
             role="cell"
+            tabIndex={isFocused ? 0 : -1}
+            data-row-index={virtualRowIndex}
+            data-cell-index={cellIndex}
             data-column-id={cell.column.id}
         >
             {(cell.getIsGrouped() || (cell.row.getCanExpand() && isFirstColumn) || (renderDetailPanel && isFirstColumn)) ? (
