@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [1.1.23] - 2026-07-18
+
+### Fixed
+- **EzTable**: Restricted Add New row editor autofocus to the focused editable cell so horizontal scrolling stays on the first editable column.
+
 ## [1.1.22] - 2026-07-18
 
 ### Fixed

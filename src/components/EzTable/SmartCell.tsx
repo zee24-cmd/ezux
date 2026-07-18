@@ -49,6 +49,9 @@ export const SmartCell = ({
     // Memoize commonProps to prevent unnecessary re-renders
     // Extract only specific meta properties needed instead of depending on entire table object
     // This prevents re-renders when table.options.meta changes reference
+    const isFocused = table.options.meta?.focusedCell?.r === row.index &&
+        table.options.meta?.focusedCell?.c === table.getVisibleLeafColumns().findIndex((c: any) => c.id === column.id);
+
     const commonProps = useMemo(() => ({
         getValue,
         row,
@@ -61,9 +64,9 @@ export const SmartCell = ({
         columnType,
 
         meta,
-        isFocused: table.options.meta?.focusedCell?.r === row.index &&
-            table.options.meta?.focusedCell?.c === table.getVisibleLeafColumns().findIndex((c: any) => c.id === column.id)
-    }), [getValue, row, column, value, columnType, meta, onChange, onBlur, table.options.meta?.focusedCell, table.getVisibleLeafColumns]);
+        isFocused,
+        autoFocus: isFocused
+    }), [getValue, row, column, value, columnType, meta, onChange, onBlur, isFocused]);
 
     // 1. Handle Editing Mode
     if (isEditing) {
