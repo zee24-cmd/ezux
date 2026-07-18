@@ -17,8 +17,8 @@ export interface TableAction<TData> {
         rowIndex?: number;
         rowId?: string | number;
         columnId?: string;
-        oldValue?: any;
-        newValue?: any;
+        oldValue?: unknown;
+        newValue?: unknown;
         row?: TData;
     };
     /** Execution timestamp. @group Properties */
@@ -62,7 +62,7 @@ export const useTableHistory = <TData extends object>(initialData: TData[], idFi
         const map = new Map<string | number, TData>();
         if (Array.isArray(initialData)) {
             initialData.forEach((row) => {
-                const id = (row as any)[idField];
+                const id = row[idField as keyof TData] as string | number | undefined;
                 if (id !== undefined) map.set(id, row);
             });
         }
@@ -91,21 +91,21 @@ export const useTableHistory = <TData extends object>(initialData: TData[], idFi
     const setData = useCallback((action: SetStateAction<TData[]>) => {
         setState(prev => ({
             ...prev,
-            data: typeof action === 'function' ? (action as any)(prev.data) : action,
+            data: typeof action === 'function' ? (action as (old: TData[]) => TData[])(prev.data) : action,
             // When setting whole data, we usually want to clear history if it matches initialData
             // but for now we keep it simple as this is used by imperative API too
         }));
     }, []);
 
-    const performEdit = useCallback((rowIndex: number, columnId: string, newValue: any) => {
+    const performEdit = useCallback((rowIndex: number, columnId: string, newValue: unknown) => {
         setState(prev => {
             const row = prev.data[rowIndex];
             if (!row) return prev;
 
-            const oldValue = (row as any)[columnId];
+            const oldValue = row[columnId as keyof TData];
             if (oldValue === newValue) return prev;
 
-            const rowId = (row as any)[idField];
+            const rowId = row[idField as keyof TData] as string | number | undefined;
             if (rowId !== undefined) dirtyRowIds.current.add(rowId);
 
             const action: TableAction<TData> = {
@@ -131,12 +131,12 @@ export const useTableHistory = <TData extends object>(initialData: TData[], idFi
         setState(prev => {
             // Ensure unique ID for new row if not present
             let rowWithId = { ...newRow };
-            if ((rowWithId as any)[idField] === undefined) {
+            if (rowWithId[idField as keyof TData] === undefined) {
                 const tempId = `_temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-                (rowWithId as any)[idField] = tempId;
+                (rowWithId as Record<string, unknown>)[idField] = tempId;
             }
 
-            const rowId = (rowWithId as any)[idField];
+            const rowId = rowWithId[idField as keyof TData] as string | number | undefined;
             if (rowId !== undefined) dirtyRowIds.current.add(rowId);
 
             const action: TableAction<TData> = {
@@ -168,7 +168,7 @@ export const useTableHistory = <TData extends object>(initialData: TData[], idFi
                 const row = prev.data[idx];
                 if (!row) return;
 
-                const rowId = (row as any)[idField];
+                const rowId = row[idField as keyof TData] as string | number | undefined;
                 if (rowId !== undefined) dirtyRowIds.current.add(rowId);
 
                 newPast.push({
@@ -199,13 +199,13 @@ export const useTableHistory = <TData extends object>(initialData: TData[], idFi
 
             if (action.type === 'EDIT_CELL') {
                 const { rowId, columnId, oldValue } = action.payload;
-                const idx = newData.findIndex(r => (r as any)[idField] === rowId);
+                const idx = newData.findIndex(r => r[idField as keyof TData] === rowId);
                 if (idx !== -1 && columnId) {
                     newData[idx] = { ...newData[idx], [columnId]: oldValue };
                 }
             } else if (action.type === 'ADD_ROW') {
                 const { rowId } = action.payload;
-                const idx = newData.findIndex(r => (r as any)[idField] === rowId);
+                const idx = newData.findIndex(r => r[idField as keyof TData] === rowId);
                 if (idx !== -1) newData.splice(idx, 1);
             } else if (action.type === 'DELETE_ROW') {
                 const { rowIndex, row } = action.payload;
@@ -234,7 +234,7 @@ export const useTableHistory = <TData extends object>(initialData: TData[], idFi
 
             if (action.type === 'EDIT_CELL') {
                 const { rowId, columnId, newValue } = action.payload;
-                const idx = newData.findIndex(r => (r as any)[idField] === rowId);
+                const idx = newData.findIndex(r => r[idField as keyof TData] === rowId);
                 if (idx !== -1 && columnId) {
                     newData[idx] = { ...newData[idx], [columnId]: newValue };
                 }
@@ -245,7 +245,7 @@ export const useTableHistory = <TData extends object>(initialData: TData[], idFi
                 }
             } else if (action.type === 'DELETE_ROW') {
                 const { rowId } = action.payload;
-                const idx = newData.findIndex(r => (r as any)[idField] === rowId);
+                const idx = newData.findIndex(r => r[idField as keyof TData] === rowId);
                 if (idx !== -1) newData.splice(idx, 1);
             }
 
@@ -273,7 +273,7 @@ export const useTableHistory = <TData extends object>(initialData: TData[], idFi
         const currentDataMap = new Map<string | number, TData>();
         if (Array.isArray(data)) {
             data.forEach(row => {
-                const id = (row as any)[idField];
+                const id = row[idField as keyof TData] as string | number | undefined;
                 if (id !== undefined) currentDataMap.set(id, row);
             });
         }
@@ -285,7 +285,7 @@ export const useTableHistory = <TData extends object>(initialData: TData[], idFi
         // Count added and edited
         if (Array.isArray(data)) {
             data.forEach(row => {
-                const id = (row as any)[idField];
+                const id = row[idField as keyof TData] as string | number | undefined;
                 if (id === undefined || !initialDataMap.has(id)) {
                     added++;
                 } else {
@@ -297,7 +297,7 @@ export const useTableHistory = <TData extends object>(initialData: TData[], idFi
                     const isEdited = Object.keys(row).some(key => {
                         // Skip internal keys often added by frameworks/hooks
                         if (key.startsWith('_')) return false;
-                        return (row as any)[key] !== (original as any)[key];
+                        return (row as Record<string, unknown>)[key] !== (original as Record<string, unknown>)[key];
                     });
                     if (isEdited) edited++;
                 }
@@ -323,7 +323,7 @@ export const useTableHistory = <TData extends object>(initialData: TData[], idFi
         const currentDataMap = new Map<string | number, TData>();
         if (Array.isArray(data)) {
             data.forEach(row => {
-                const id = (row as any)[idField];
+                const id = row[idField as keyof TData] as string | number | undefined;
                 if (id !== undefined) currentDataMap.set(id, row);
             });
         }
@@ -334,7 +334,7 @@ export const useTableHistory = <TData extends object>(initialData: TData[], idFi
 
         if (Array.isArray(data)) {
             data.forEach(row => {
-                const id = (row as any)[idField];
+                const id = row[idField as keyof TData] as string | number | undefined;
                 if (id === undefined || !initialDataMap.has(id)) {
                     addedRecords.push(row);
                 } else {
@@ -343,7 +343,7 @@ export const useTableHistory = <TData extends object>(initialData: TData[], idFi
 
                     const isEdited = Object.keys(row).some(key => {
                         if (key.startsWith('_')) return false;
-                        return (row as any)[key] !== (original as any)[key];
+                        return (row as Record<string, unknown>)[key] !== (original as Record<string, unknown>)[key];
                     });
                     if (isEdited) changedRecords.push(row);
                 }

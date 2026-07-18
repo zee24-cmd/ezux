@@ -6,6 +6,39 @@
 
 @import "./theme-vars.css";
 
+@layer base {
+  :root {
+    font-family: var(--ez-font-family-sans);
+    color: oklch(var(--foreground));
+    background: oklch(var(--background));
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    line-height: var(--ez-line-height-heading);
+  }
+}
+
+@layer utilities {
+  .ez-text-display { font-size: var(--ez-font-size-display); line-height: var(--ez-line-height-display); }
+  .ez-text-h1 { font-size: var(--ez-font-size-h1); line-height: var(--ez-line-height-heading); }
+  .ez-text-h2 { font-size: var(--ez-font-size-h2); line-height: var(--ez-line-height-heading); }
+  .ez-text-h3 { font-size: var(--ez-font-size-h3); line-height: var(--ez-line-height-heading); }
+  .ez-text-body { font-size: var(--ez-font-size-body); line-height: var(--ez-line-height-body); }
+  .ez-text-label { font-size: var(--ez-font-size-label); line-height: var(--ez-line-height-label); }
+  .ez-text-caption { font-size: var(--ez-font-size-caption); line-height: var(--ez-line-height-caption); }
+  .ez-touch-target { min-width: var(--ez-touch-target); min-height: var(--ez-touch-target); }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --ez-font-size-display: 1.875rem;
+    --ez-font-size-h1: 1.625rem;
+    --ez-font-size-h2: 1.375rem;
+    --ez-font-size-h3: 1.125rem;
+    --ez-font-size-body: 0.9375rem;
+  }
+}
+
 /*
   ---break---
 */

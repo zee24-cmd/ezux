@@ -1,5 +1,5 @@
 /*
-  Initial theme variables (Blue light mode as default).
+  Initial theme variables (Zinc light mode as default).
   These MUST be defined before @theme so Tailwind can reference them.
   They are overridden dynamically by ThemeService.ts based on user preferences.
 */
@@ -51,10 +51,20 @@
   --ez-status-neutral-dot: oklch(0.6 0 0);
 
   --radius: 0.625rem;
+  --ez-font-family-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ez-font-size-display: 2.25rem;
+  --ez-font-size-h1: 1.875rem;
+  --ez-font-size-h2: 1.5rem;
+  --ez-font-size-h3: 1.25rem;
   --ez-font-size-body: 1rem;
-  --ez-font-size-label: 1rem;
-  --ez-font-size-caption: 0.875rem;
+  --ez-font-size-label: 0.875rem;
+  --ez-font-size-caption: 0.75rem;
+  --ez-line-height-display: 1.1;
+  --ez-line-height-heading: 1.25;
   --ez-line-height-body: 1.5;
+  --ez-line-height-label: 1.35;
+  --ez-line-height-caption: 1.35;
+  --ez-touch-target: 2.75rem;
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -131,10 +141,20 @@
   --ez-status-neutral-dot: oklch(0.7 0 0);
 
   --radius: 0.5rem;
+  --ez-font-family-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ez-font-size-display: 2rem;
+  --ez-font-size-h1: 1.75rem;
+  --ez-font-size-h2: 1.375rem;
+  --ez-font-size-h3: 1.125rem;
   --ez-font-size-body: 1rem;
-  --ez-font-size-label: 1rem;
-  --ez-font-size-caption: 0.875rem;
+  --ez-font-size-label: 0.875rem;
+  --ez-font-size-caption: 0.75rem;
+  --ez-line-height-display: 1.1;
+  --ez-line-height-heading: 1.25;
   --ez-line-height-body: 1.5;
+  --ez-line-height-label: 1.35;
+  --ez-line-height-caption: 1.35;
+  --ez-touch-target: 2.75rem;
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);

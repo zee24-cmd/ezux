@@ -41,6 +41,7 @@ pnpm-debug.log*
 
 # Workspace artifacts (system generated)
 .system_generated/
+tmp/
 coverage/
 .nyc_output/
 *.pid

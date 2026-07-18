@@ -126,7 +126,7 @@ export const KanbanBoardComponent: React.FC<KanbanBoardProps> = ({
         return (
             <div className={cn('flex flex-col p-4 overflow-y-auto h-full', className)}>
                 <SortableContext items={cards.map(c => c.id)}>
-                    {board.swimlanes
+                    {[...board.swimlanes]
                         .sort((a, b) => a.position - b.position)
                         .map((swimlane) => {
                             const swimlaneCards = cards.filter((card) => card.swimlaneId === swimlane.id);
@@ -134,7 +134,7 @@ export const KanbanBoardComponent: React.FC<KanbanBoardProps> = ({
                                 <KanbanSwimlane
                                     key={swimlane.id}
                                     swimlane={swimlane}
-                                    columns={board.columns.sort((a, b) => a.position - b.position)}
+                                    columns={[...board.columns].sort((a, b) => a.position - b.position)}
                                     cards={swimlaneCards}
                                     onCardClick={onCardClick}
                                     onCardDoubleClick={onCardDoubleClick}
@@ -160,7 +160,7 @@ export const KanbanBoardComponent: React.FC<KanbanBoardProps> = ({
                                 position: 9999,
                                 isCollapsed: false
                             }}
-                            columns={board.columns.sort((a, b) => a.position - b.position)}
+                            columns={[...board.columns].sort((a, b) => a.position - b.position)}
                             cards={cards.filter(c => !c.swimlaneId)}
                             onCardClick={onCardClick}
                             onCardDoubleClick={onCardDoubleClick}
@@ -280,7 +280,7 @@ export const KanbanBoardComponent: React.FC<KanbanBoardProps> = ({
                         items={board.columns.map(col => col.id)}
                         strategy={horizontalListSortingStrategy}
                     >
-                        {board.columns
+                        {[...board.columns]
                             .sort((a, b) => a.position - b.position)
                             .map((column) => {
                                 const columnCards = cards.filter((card) => card.columnId === column.id);

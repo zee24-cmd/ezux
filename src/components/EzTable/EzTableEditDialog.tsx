@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useActionState, useOptimistic, startTransition } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -7,7 +7,7 @@ import { Label } from '../ui/label';
 interface EzTableEditDialogProps<TData> {
     open: boolean;
     onClose: () => void;
-    onSave: (data: TData) => void;
+    onSave: (data: TData) => void | Promise<void>;
     columns: ColumnDef<TData, any>[];
     initialData?: Partial<TData>;
     isNew?: boolean;
@@ -28,7 +28,6 @@ export const EzTableEditDialog = <TData extends object>({
     useEffect(() => {
         if (open) {
             setFormData(initialData || {});
-            // Fire onFormRender when dialog opens
             onFormRender?.({
                 form: { data: initialData || {}, columns },
                 mode: isNew ? 'Add' : 'Edit'
@@ -36,26 +35,47 @@ export const EzTableEditDialog = <TData extends object>({
         }
     }, [open, initialData, columns, isNew, onFormRender]);
 
-    if (!open) return null;
+    const [optimisticData, setOptimisticData] = useOptimistic(
+        formData,
+        (current, update: Partial<TData>) => ({ ...current, ...update })
+    );
 
-    const handleSave = () => {
-        onSave(formData as TData);
-        onClose();
-    };
+    const [_, formAction, isPending] = useActionState(
+        async (_prevState: Partial<TData>, formPayload: FormData) => {
+            const updated: Partial<TData> = { ...formData };
+            editableColumns.forEach(col => {
+                const field = (col as any).accessorKey;
+                const value = formPayload.get(field);
+                if (value !== null) {
+                    (updated as any)[field] = value;
+                }
+            });
+
+            startTransition(() => {
+                setOptimisticData(updated);
+            });
+
+            await onSave(updated as TData);
+            onClose();
+            return updated;
+        },
+        initialData || {}
+    );
+
+    if (!open) return null;
 
     const handleChange = (field: string, value: any) => {
         setFormData(prev => ({ ...prev, [field]: value }));
     };
 
-    // Filter columns that are editable and have accessors
     const editableColumns = columns.filter(col => {
-        // @ts-ignore - accessorKey exists on most column defs we care about
-        return col.accessorKey && col.meta?.isEditable !== false && col.id !== 'actions' && col.id !== 'select';
+        return (col as any).accessorKey && (col as any).meta?.isEditable !== false && col.id !== 'actions' && col.id !== 'select';
     });
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in-0">
-            <div
+            <form
+                action={formAction}
                 className="bg-background w-full max-w-lg rounded-lg border shadow-lg p-6 space-y-6 animate-in zoom-in-95 slide-in-from-bottom-2"
                 role="dialog"
                 aria-modal="true"
@@ -72,8 +92,7 @@ export const EzTableEditDialog = <TData extends object>({
                 <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto pr-2">
                     {editableColumns.map((col: any) => {
                         const field = col.accessorKey;
-                        // Helper to get nested value or fallback
-                        const value = formData[field as keyof TData] ?? '';
+                        const value = optimisticData[field as keyof TData] ?? '';
 
                         return (
                             <div key={field} className="grid grid-cols-4 items-center gap-4">
@@ -82,6 +101,7 @@ export const EzTableEditDialog = <TData extends object>({
                                 </Label>
                                 <Input
                                     id={field}
+                                    name={field}
                                     value={value as string}
                                     onChange={(e) => handleChange(field, e.target.value)}
                                     className="col-span-3"
@@ -92,14 +112,14 @@ export const EzTableEditDialog = <TData extends object>({
                 </div>
 
                 <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
-                    <Button variant="outline" onClick={onClose}>
+                    <Button variant="outline" type="button" onClick={onClose} disabled={isPending}>
                         Cancel
                     </Button>
-                    <Button onClick={handleSave}>
-                        Save Changes
+                    <Button type="submit" disabled={isPending}>
+                        {isPending ? 'Saving...' : 'Save Changes'}
                     </Button>
                 </div>
-            </div>
+            </form>
         </div>
     );
 };

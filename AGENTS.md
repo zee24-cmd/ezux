@@ -6,7 +6,12 @@ EzUX is a TypeScript React component library for enterprise dashboards. Keep cha
 - Use `npm` and keep `package-lock.json` synchronized.
 - Prefer existing patterns in `src/components`, `src/shared`, and `src/lib`.
 - Treat `react`, `react-dom`, TanStack packages, and `rrule` as peer-facing API constraints.
+- Use TypeScript 7 as the project compiler baseline. Preserve `strict: true`, `module: "ESNext"`, `moduleResolution: "bundler"`, explicit `types`, and an explicit `rootDir` where required.
+- Use the official TypeScript 6 compatibility package/alias for dependencies that still require the TypeScript compiler API. This bridge must not replace the TypeScript 7 compiler used for EzUX source code.
+- Keep published declarations compatible with the supported TypeScript 6 consumer range; do not expose TS7-only declaration syntax without an explicit support-policy change.
+- Before upgrading TypeScript or related tooling, check compiler API compatibility for Vite, `vite-plugin-dts`, Vitest, and declaration rollup tools.
 - Keep runtime dependencies in `dependencies`; keep build, test, and release tools in `devDependencies`.
+- Validate emitted declarations, package subpath exports, peer dependency ranges, and `npm pack` contents after dependency or compiler changes.
 - Do not edit generated `dist` unless explicitly preparing a release artifact.
 
 ## Required Verification
@@ -21,4 +26,3 @@ EzUX is a TypeScript React component library for enterprise dashboards. Keep cha
 - Testing and Quality: `agents/skills/testing-quality.md`
 - Release and Public API: `agents/skills/release-public-api.md`
 - Documentation and Examples: `agents/skills/documentation-examples.md`
-

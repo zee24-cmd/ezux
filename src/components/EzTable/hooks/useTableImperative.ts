@@ -1,8 +1,7 @@
-
-import { useMemo } from 'react';
+import { useMemo, useRef, useEffect } from 'react';
 import { useComponentImperativeAPI } from '../../../shared/hooks/useComponentImperativeAPI';
 import { Table } from '@tanstack/react-table';
-import { EzTableProps } from '../EzTable.types';
+import { EzTableProps, ITableService } from '../EzTable.types';
 import {
     createSpinnerMethods,
     createRefreshMethods,
@@ -43,16 +42,23 @@ export const useTableImperative = <TData extends object>(
         autoFitColumn: (columnId: string, options?: { onlyVisible?: boolean; maxWidth?: number }) => void;
 
         // Service Integration
-        addMutation?: any;
-        updateMutation?: any;
-        deleteMutation?: any;
-        service?: any;
+        addMutation?: import('@tanstack/react-query').UseMutationResult<TData, Error, Partial<TData>, unknown>;
+        updateMutation?: import('@tanstack/react-query').UseMutationResult<TData, Error, { id: string | number; updates: Partial<TData> }, unknown>;
+        deleteMutation?: import('@tanstack/react-query').UseMutationResult<void, Error, string | number, unknown>;
+        service?: ITableService<TData> | null;
     },
     ref: React.Ref<EzTableRef<TData>>,
-    extraApi: any = {}
+    extraApi: Record<string, unknown> = {}
 ) => {
     const registry = useEzServiceRegistry();
     const { rows } = table.getRowModel();
+
+    const activeTimeouts = useRef<NodeJS.Timeout[]>([]);
+    useEffect(() => {
+        return () => {
+            activeTimeouts.current.forEach(t => clearTimeout(t));
+        };
+    }, []);
 
     const api = useMemo<EzTableRef<TData>>(() => { // Force type to ensure adherence to EzTableRef
         // ... (existing helper methods)
@@ -97,12 +103,27 @@ export const useTableImperative = <TData extends object>(
             getData: () => data,
 
             /** Sets a specific cell value. @group Methods */
-            setCellValue: (key: string, field: string, value: any) => {
+            getState: () => table.getState(),
+            getSelectedRows: () => table.getSelectedRowModel().rows.map(r => r.original),
+            saveChanges: async () => {
+                props.onDataChangeComplete?.({ action: 'edit', data: methods.batchChanges.changedRecords });
+                const service = registry.get<NotificationService>('NotificationService');
+                service?.show({ type: 'success', message: 'Changes Saved Successfully!', duration: 3000 });
+            },
+            cancelChanges: () => {
+                methods.resetData();
+                props.onDataChangeCancel?.({ action: 'edit' });
+                const service = registry.get<NotificationService>('NotificationService');
+                service?.show({ type: 'info', message: 'Changes Discarded', duration: 3000 });
+            },
+            validateField: (_field: string) => true,
+
+            setCellValue: (key: string, field: string, value: unknown) => {
                 const idx = parseInt(key);
                 if (!isNaN(idx)) methods.performEdit(idx, field, value);
             },
             /** Updates entire row data. @group Methods */
-            setRowData: (key: string, newData: any) => {
+            setRowData: (key: string, newData: Partial<TData>) => {
                 const idx = parseInt(key);
                 if (!isNaN(idx)) methods.setData((old: TData[]) => {
                     const next = [...old];
@@ -111,33 +132,35 @@ export const useTableImperative = <TData extends object>(
                 });
             },
             /** Adds a new record. @group Methods */
-            addRecord: async (record?: any) => {
+            addRecord: async (record?: Partial<TData>) => {
                 const newRecord = record || {};
                 const pk = props.editSettings?.primaryKey;
                 const idField = pk ? (Array.isArray(pk) ? pk[0] : pk) : 'id';
-                let tempId = (newRecord as any)[idField];
+                let tempId = (newRecord as Record<string, unknown>)[idField];
 
                 if (tempId === undefined) {
                     tempId = `_temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-                    (newRecord as any)[idField] = tempId;
+                    (newRecord as Record<string, unknown>)[idField] = tempId;
                 }
 
                 if (methods.service) {
                     try {
-                        const result = await methods.addMutation.mutateAsync(newRecord);
+                        const result = await methods.addMutation!.mutateAsync(newRecord);
                         const service = registry.get<NotificationService>('NotificationService');
                         service?.show({ type: 'success', message: 'Row Added Successfully!', duration: 3000 });
 
                         // Select and edit the new row
-                        setTimeout(() => {
-                            const rowId = (result as any)[idField] || tempId;
+                        const timer = setTimeout(() => {
+                            activeTimeouts.current = activeTimeouts.current.filter(t => t !== timer);
+                            const rowId = (((result as Record<string, unknown>)[idField] || tempId) as string | number);
                             table.setRowSelection({ [rowId]: true });
-                            const rowIndex = data.findIndex(r => (r as any)[idField] === rowId);
+                            const rowIndex = data.findIndex(r => (r as Record<string, unknown>)[idField] === rowId);
                             if (rowIndex !== -1) {
                                 methods.toggleRowEditing(rowIndex, true);
                                 methods.scrollToIndex(rowIndex);
                             }
                         }, 100);
+                        activeTimeouts.current.push(timer);
                         return;
                     } catch (e) {
                         const service = registry.get<NotificationService>('NotificationService');
@@ -146,31 +169,33 @@ export const useTableImperative = <TData extends object>(
                     }
                 }
 
-                props.onDataChangeStart?.({ action: 'add', data: newRecord });
-                props.onRowAddStart?.({ data: newRecord });
-                methods.addRow(newRecord, 0);
-                props.onDataChangeComplete?.({ action: 'add', data: newRecord });
+                props.onDataChangeStart?.({ action: 'add', data: newRecord as TData });
+                props.onRowAddStart?.({ data: newRecord as TData });
+                methods.addRow(newRecord as TData, 0);
+                props.onDataChangeComplete?.({ action: 'add', data: newRecord as TData });
 
                 const service = registry.get<NotificationService>('NotificationService');
                 service?.show({ type: 'success', message: 'Row Added Successfully!', duration: 3000 });
 
-                setTimeout(() => {
+                const timer = setTimeout(() => {
+                    activeTimeouts.current = activeTimeouts.current.filter(t => t !== timer);
                     table.resetRowSelection();
-                    table.setRowSelection({ [tempId]: true });
+                    table.setRowSelection({ [tempId as string | number]: true });
                     methods.toggleRowEditing(0, true);
                     methods.scrollToIndex(0);
                 }, 50);
+                activeTimeouts.current.push(timer);
             },
             /** Updates an existing record. @group Methods */
-            updateRecord: async (key: string | number, newData: any) => {
+            updateRecord: async (key: string | number, newData: Partial<TData>) => {
                 const idx = typeof key === 'number' ? key : parseInt(key);
                 const pk = props.editSettings?.primaryKey;
                 const idField = pk ? (Array.isArray(pk) ? pk[0] : pk) : 'id';
-                const rowId = (data[idx] as any)?.[idField];
+                const rowId = (data[idx] as Record<string, unknown>)?.[idField] as string | number | undefined;
 
                 if (methods.service && rowId) {
                     try {
-                        await methods.updateMutation.mutateAsync({ id: rowId, updates: newData });
+                        await methods.updateMutation!.mutateAsync({ id: rowId, updates: newData });
                         const service = registry.get<NotificationService>('NotificationService');
                         service?.show({ type: 'success', message: 'Row Updated Successfully!', duration: 3000 });
                         return;
@@ -181,7 +206,7 @@ export const useTableImperative = <TData extends object>(
                     }
                 }
 
-                props.onDataChangeStart?.({ action: 'edit', data: newData });
+                props.onDataChangeStart?.({ action: 'edit', data: newData as TData });
                 methods.setData((old: TData[]) => {
                     const next = [...old];
                     next[idx] = { ...next[idx], ...newData };
@@ -198,11 +223,11 @@ export const useTableImperative = <TData extends object>(
                 const deletedRecord = data[idx];
                 const pk = props.editSettings?.primaryKey;
                 const idField = pk ? (Array.isArray(pk) ? pk[0] : pk) : 'id';
-                const rowId = (deletedRecord as any)?.[idField];
+                const rowId = (deletedRecord as Record<string, unknown>)?.[idField] as string | number | undefined;
 
                 if (methods.service && rowId) {
                     try {
-                        await methods.deleteMutation.mutateAsync(rowId);
+                        await methods.deleteMutation!.mutateAsync(rowId);
                         const service = registry.get<NotificationService>('NotificationService');
                         service?.show({ type: 'success', message: 'Row Deleted Successfully!', duration: 3000 });
                         return;
@@ -227,8 +252,8 @@ export const useTableImperative = <TData extends object>(
 
                     try {
                         for (const idx of indices) {
-                            const rowId = (data[idx] as any)?.[idField];
-                            if (rowId) await methods.deleteMutation.mutateAsync(rowId);
+                            const rowId = (data[idx] as Record<string, unknown>)?.[idField] as string | number | undefined;
+                            if (rowId) await methods.deleteMutation!.mutateAsync(rowId);
                         }
                         const service = registry.get<NotificationService>('NotificationService');
                         service?.show({ type: 'success', message: `${indices.length} Rows Deleted Successfully!`, duration: 3000 });
@@ -295,7 +320,7 @@ export const useTableImperative = <TData extends object>(
             /** Performs global search. @group Methods */
             search: (val: string) => table.setGlobalFilter(val),
             /** Filters by specific column. @group Methods */
-            filterByColumn: (field: string, op: string, val: any) => table.getColumn(field)?.setFilterValue({ operator: op, value: val }),
+            filterByColumn: (field: string, op: string, val: unknown) => table.getColumn(field)?.setFilterValue({ operator: op, value: val }),
             /** Clears specific or all filters. @group Methods */
             clearFilter: (field?: string) => field ? table.getColumn(field)?.setFilterValue(undefined) : table.resetColumnFilters(),
             /** Sorts by specific column. @group Methods */

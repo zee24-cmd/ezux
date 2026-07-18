@@ -726,12 +726,20 @@ export interface EzTableBaseRef<TData extends object> {
     getChanges: () => EzTableChanges<TData>;
     validateField: (field: string) => boolean;
     validateEditForm: () => boolean;
+    addRecord: (record?: Partial<TData>) => Promise<void>;
+    deleteRecord: (key: string | number) => Promise<void>;
+    deleteRecords: (indices: number[]) => Promise<void>;
+    updateRecord: (key: string | number, newData: Partial<TData>) => Promise<void>;
 }
 
-export type EzTableRef<TData extends object, TExtraApi extends object = Record<string, never>> =
+export type EzTableRef<TData extends object, TExtraApi extends object = {}> =
     EzTableBaseRef<TData> & TExtraApi;
 
 export interface ITableService<TData extends object> {
+    resourceKey?: string;
+    serviceKey?: string;
+    name?: string;
+    id?: string;
     fetchData: (query: unknown) => Promise<{ data: TData[], rowCount?: number }>;
     getData: (params: TableParams<TData>) => Promise<{ data: TData[], rowCount?: number } | { data: TData[], totalCount: number }>;
     createRow: (row: Partial<TData>) => Promise<TData>;

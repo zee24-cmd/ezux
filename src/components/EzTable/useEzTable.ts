@@ -18,6 +18,17 @@ import { ITableService } from './EzTable.types';
 
 const EMPTY_ARRAY: any[] = [];
 
+const serviceIdMap = new WeakMap<object, string>();
+let nextServiceId = 1;
+function getServiceId(service: object): string {
+    let id = serviceIdMap.get(service);
+    if (!id) {
+        id = `inline-service-${nextServiceId++}`;
+        serviceIdMap.set(service, id);
+    }
+    return id;
+}
+
 /**
  * Main hook for EzTable that coordinates specialized sub-hooks.
  * Centrally managed via useBaseComponent and modular sub-hooks.
@@ -110,17 +121,26 @@ export const useEzTable = <TData extends object>(
     const columnFiltersState = table.getState().columnFilters;
     const globalFilterState = table.getState().globalFilter;
 
+    const serviceIdentity = useMemo(() => {
+        if (props.serviceName) return props.serviceName;
+        if (props.service) {
+            const s = props.service as any;
+            return s.resourceKey || s.serviceKey || s.name || s.id || getServiceId(props.service);
+        }
+        return 'local';
+    }, [props.serviceName, props.service]);
+
     const queryKey = useMemo(() => [
         'table-data',
-        props.serviceName || 'local',
+        serviceIdentity,
         paginationState.pageIndex,
         paginationState.pageSize,
         sortingState,
         columnFiltersState,
         globalFilterState
-    ], [props.serviceName, paginationState, sortingState, columnFiltersState, globalFilterState]);
+    ], [serviceIdentity, paginationState, sortingState, columnFiltersState, globalFilterState]);
 
-    const { data: fetchedData, isLoading: queryLoading, error: queryError } = useQuery({
+    const { data: fetchedData, isLoading: queryLoading, error: queryError } = useQuery<{ data: TData[], totalCount: number }>({
         queryKey,
         queryFn: async () => {
             if (!service) return { data: initialData, totalCount: initialData.length };
@@ -128,19 +148,19 @@ export const useEzTable = <TData extends object>(
             const response = await service.getData({
                 ...serviceProps,
                 state: table.getState(),
-                data: [], // Required by interface
-                columns: [], // Required by interface
+                data: [],
+                columns: [],
             });
-            return response;
+            const dataList = response.data;
+            const totalCount = ('totalCount' in response ? response.totalCount : (response as any).rowCount) ?? dataList.length;
+            return { data: dataList, totalCount };
         },
-        // Enable query only if service is present
         enabled: !!service,
-        // Provide initial data as placeholder to avoid layout shift
-        placeholderData: { data: initialData, totalCount: initialData.length } as any
+        placeholderData: { data: initialData, totalCount: initialData.length }
     });
 
-    const serverData = (fetchedData as any)?.data || initialData;
-    const serverTotalCount = (fetchedData as any)?.totalCount ?? initialData.length;
+    const serverData = fetchedData?.data || initialData;
+    const serverTotalCount = fetchedData?.totalCount ?? initialData.length;
 
     // Sync server data to local state if not dirty
     useEffect(() => {
@@ -149,20 +169,77 @@ export const useEzTable = <TData extends object>(
         }
     }, [serverData, service, setData, changes.added, changes.edited, changes.deleted]);
 
-    // 6. Mutations
+    // 6. Mutations with Optimistic UI & Rollback
     const addMutation = useMutation({
         mutationFn: (row: Partial<TData>) => service!.createRow(row),
+        onMutate: async (newRow) => {
+            await queryClient.cancelQueries({ queryKey });
+            const previousData = queryClient.getQueryData<{ data: TData[], totalCount: number }>(queryKey);
+            queryClient.setQueryData<{ data: TData[], totalCount: number }>(queryKey, (old) => {
+                const oldData = old?.data || [];
+                return {
+                    data: [...oldData, newRow as TData],
+                    totalCount: (old?.totalCount ?? 0) + 1
+                };
+            });
+            return { previousData };
+        },
+        onError: (_err, _newRow, context) => {
+            if (context?.previousData) {
+                queryClient.setQueryData(queryKey, context.previousData);
+            }
+        },
         onSuccess: () => queryClient.invalidateQueries({ queryKey })
     });
 
     const updateMutation = useMutation({
         mutationFn: ({ id, updates }: { id: string | number, updates: Partial<TData> }) =>
             service!.updateRow(id, updates),
+        onMutate: async ({ id, updates }) => {
+            await queryClient.cancelQueries({ queryKey });
+            const previousData = queryClient.getQueryData<{ data: TData[], totalCount: number }>(queryKey);
+            queryClient.setQueryData<{ data: TData[], totalCount: number }>(queryKey, (old) => {
+                const oldData = old?.data || [];
+                return {
+                    data: oldData.map((row: TData) => {
+                        const rowId = props.getRowId ? props.getRowId(row) : ((row as any).id || (row as any)[idField]);
+                        return String(rowId) === String(id) ? { ...row, ...updates } : row;
+                    }),
+                    totalCount: old?.totalCount ?? oldData.length
+                };
+            });
+            return { previousData };
+        },
+        onError: (_err, _variables, context) => {
+            if (context?.previousData) {
+                queryClient.setQueryData(queryKey, context.previousData);
+            }
+        },
         onSuccess: () => queryClient.invalidateQueries({ queryKey })
     });
 
     const deleteMutation = useMutation({
         mutationFn: (id: string | number) => service!.deleteRow(id),
+        onMutate: async (id) => {
+            await queryClient.cancelQueries({ queryKey });
+            const previousData = queryClient.getQueryData<{ data: TData[], totalCount: number }>(queryKey);
+            queryClient.setQueryData<{ data: TData[], totalCount: number }>(queryKey, (old) => {
+                const oldData = old?.data || [];
+                return {
+                    data: oldData.filter((row: TData) => {
+                        const rowId = props.getRowId ? props.getRowId(row) : ((row as any).id || (row as any)[idField]);
+                        return String(rowId) !== String(id);
+                    }),
+                    totalCount: Math.max(0, (old?.totalCount ?? oldData.length) - 1)
+                };
+            });
+            return { previousData };
+        },
+        onError: (_err, _id, context) => {
+            if (context?.previousData) {
+                queryClient.setQueryData(queryKey, context.previousData);
+            }
+        },
         onSuccess: () => queryClient.invalidateQueries({ queryKey })
     });
 

@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [1.1.20] - 2026-07-18
+
+### Added
+- **EzTable**: Added query cache isolation test and concurrent callback emission regression tests to [useEzTable.test.tsx](file:///Users/zed/Documents/ezux/src/components/EzTable/__tests__/useEzTable.test.tsx).
+- **TypeScript**: Added TypeScript 6 typecheck script validation to verify public API declaration file compatibility for consumer projects.
+
+### Changed
+- **Themes & Typography**: Added shared semantic typography tokens for display text, headings, body text, labels, captions, line heights, and touch targets across Zinc, Orange, Blue, Green, and Rose themes.
+- **Responsive Design**: Added mobile typography adjustments and shared responsive text utilities to improve readability from mobile devices through wide desktop layouts.
+- **Theming**: Updated shared inputs, textareas, and breadcrumbs to use semantic theme tokens instead of hardcoded zinc, white, and black colors, preserving custom theme behavior.
+- **EzTable**: Refactored `queryKey` in [useEzTable.ts](file:///Users/zed/Documents/ezux/src/components/EzTable/useEzTable.ts) to utilize a `WeakMap` based service identity resolver for inline services, preventing cache collisions across different tables on the page.
+- **EzTable**: Removed `setTimeout` event side-effects from updaters in [useTableState.ts](file:///Users/zed/Documents/ezux/src/components/EzTable/hooks/useTableState.ts) and [useTableFiltering.ts](file:///Users/zed/Documents/ezux/src/components/EzTable/hooks/useTableFiltering.ts), moving callback emissions to React-safe `useEffect` hooks.
+- **EzTable**: Modernized [EzTableEditDialog.tsx](file:///Users/zed/Documents/ezux/src/components/EzTable/EzTableEditDialog.tsx) by implementing React 19 `useActionState` and `useOptimistic` form actions.
+- **EzTable**: Eliminated remaining `any` type casts across [useTableState.ts](file:///Users/zed/Documents/ezux/src/components/EzTable/hooks/useTableState.ts), [useTableFiltering.ts](file:///Users/zed/Documents/ezux/src/components/EzTable/hooks/useTableFiltering.ts), [useEzTable.ts](file:///Users/zed/Documents/ezux/src/components/EzTable/useEzTable.ts), [useTableHistory.ts](file:///Users/zed/Documents/ezux/src/components/EzTable/hooks/useTableHistory.ts), and [useTableImperative.ts](file:///Users/zed/Documents/ezux/src/components/EzTable/hooks/useTableImperative.ts) in favor of strictly typed generics, index types, and safe object types.
+- **EzTable**: Wrapped all asynchronous timeouts in [useTableImperative.ts](file:///Users/zed/Documents/ezux/src/components/EzTable/hooks/useTableImperative.ts) inside an unmount cleanup hook to prevent post-unmount state update errors.
+- **EzKanban**: Fixed columns and swimlanes array mutation inside [KanbanBoard.tsx](file:///Users/zed/Documents/ezux/src/components/EzKanban/components/KanbanBoard.tsx) by copying arrays with the spread operator before invoking `.sort()`.
+- **TypeScript**: Upgraded compilation framework to TypeScript 7 natively utilizing the Go-based typechecker binary. Added a TypeScript 6 compatibility bridge to support rollup declarations.
+- **Security**: Upgraded dependency chain overrides (`fast-xml-parser` to `5.7.0`) to resolve 14 npm vulnerabilities.
+
 ## [1.1.19] - 2026-06-24
 
 ### Added

@@ -295,4 +295,62 @@ describe('useEzTable', () => {
             expect(typeof result.current.state.isPending).toBe('boolean');
         });
     });
+
+    describe('Regression Tests - Service Caching and Concurrency', () => {
+        it('should isolate query caches for different inline services', () => {
+            const serviceA = {
+                getData: vi.fn().mockResolvedValue({ data: [{ id: '1', name: 'A', age: 20, status: 'Active' }] }),
+                createRow: vi.fn(),
+                updateRow: vi.fn(),
+                deleteRow: vi.fn(),
+                fetchData: vi.fn()
+            };
+            const serviceB = {
+                getData: vi.fn().mockResolvedValue({ data: [{ id: '2', name: 'B', age: 30, status: 'Inactive' }] }),
+                createRow: vi.fn(),
+                updateRow: vi.fn(),
+                deleteRow: vi.fn(),
+                fetchData: vi.fn()
+            };
+
+            const wrapper = createWrapper();
+
+            renderHook(() =>
+                useEzTable({
+                    service: serviceA,
+                    columns: mockColumns,
+                }),
+                { wrapper }
+            );
+
+            renderHook(() =>
+                useEzTable({
+                    service: serviceB,
+                    columns: mockColumns,
+                }),
+                { wrapper }
+            );
+
+            expect(serviceA.getData).toHaveBeenCalled();
+            expect(serviceB.getData).toHaveBeenCalled();
+        });
+
+        it('should emit callbacks synchronously in response to state transitions without setTimeouts', () => {
+            const onSortingChange = vi.fn();
+            const { result } = renderHook(() =>
+                useEzTable({
+                    data: mockData,
+                    columns: mockColumns,
+                    onSortingChange
+                }),
+                { wrapper: createWrapper() }
+            );
+
+            act(() => {
+                result.current.table.setSorting([{ id: 'name', desc: true }]);
+            });
+
+            expect(onSortingChange).toHaveBeenCalledWith([{ id: 'name', desc: true }]);
+        });
+    });
 });
