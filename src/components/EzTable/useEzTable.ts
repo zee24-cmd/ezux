@@ -306,7 +306,6 @@ export const useEzTable = <TData extends object>(
             const cell = document.querySelector<HTMLElement>(
                 `[role="cell"][data-row-index="${rowIndex}"][data-cell-index="${columnIndex}"]`
             );
-            cell?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
             cell?.focus({ preventScroll: true });
             cell?.click();
             const editor = cell?.querySelector<HTMLElement>('input, textarea, button, [tabindex]:not([tabindex="-1"])');

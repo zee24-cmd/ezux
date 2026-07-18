@@ -177,10 +177,10 @@ export const PrimitiveEditor: React.FC<PrimitiveEditorProps> = ({
     const inputRef = React.useRef<HTMLInputElement>(null);
 
     React.useEffect(() => {
-        if (isFocused && inputRef.current) {
-            inputRef.current.focus();
+        if ((isFocused || autoFocus) && inputRef.current) {
+            inputRef.current.focus({ preventScroll: true });
         }
-    }, [isFocused]);
+    }, [autoFocus, isFocused]);
 
     const [inputValue, setInputValue] = React.useState<string>(() => {
         if (value === null || value === undefined) return '';
@@ -236,7 +236,6 @@ export const PrimitiveEditor: React.FC<PrimitiveEditorProps> = ({
             value={inputValue}
             onChange={handleChange}
             onBlur={handleBlur}
-            autoFocus={autoFocus}
             className={cn(
                 "h-7 px-2 w-full border-0 shadow-none bg-transparent focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0",
                 align === 'right' && "text-right",
