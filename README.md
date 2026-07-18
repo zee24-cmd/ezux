@@ -1,5 +1,7 @@
 # ezUX | Premium React UI Kit for Enterprise Dashboards
 
+> **Current release: 1.1.20**
+
 > **High-performance React components** for building modern enterprise applications. Powered by **TanStack** (Table, Query, Virtual) and built with **TypeScript**.
 >
 > 🔗 **[View ezux-showcase on GitHub](https://github.com/zee24-cmd/ezux-showcase)** | 🌐 **[Live Showcase](https://ezux-showcase.vercel.app)**
@@ -19,6 +21,7 @@ ezUX is a comprehensive **component library** designed for developers who need t
 - **Full TypeScript Support**: 100% type-safe components with exported types for a seamless developer experience.
 - **High-Performance Data Grid**: Handle 100k+ rows with ease using integrated row and column virtualization.
 - **Modern Styling**: Styled with **Tailwind CSS v4** and CSS variables for easy theming and dark mode support.
+- **Responsive Typography**: Semantic typography tokens, mobile scaling, and touch-friendly controls from mobile to desktop.
 - **Accessibility (A11Y)**: Built with WAI-ARIA patterns to ensure your **dashboard** is accessible to everyone.
 
 ## Core Components
@@ -36,6 +39,8 @@ ezUX is a comprehensive **component library** designed for developers who need t
 `ezux` is styled using **Tailwind CSS v4**. The library deliberately does **not** bundle Tailwind to avoid bloating your application or causing version conflicts. 
 
 You must have [Tailwind CSS v4](https://tailwindcss.com/docs/installation) installed and configured in your consumer application to use `ezux` components.
+
+EzUX is developed and typechecked with **TypeScript 7**. Published declarations are validated with a clean **TypeScript 6.0.3** compiler for consumers whose toolchains have not migrated yet. The runtime peer requirements are React 19.2 and React DOM 19.2.
 
 ## Installation
 
@@ -95,6 +100,8 @@ function UserDashboard() {
 
 Visit the [Live Showcase](https://ezux-showcase.vercel.app) for full documentation and interactive examples.
 
+Theme colors use semantic CSS variables. **Zinc** is the default theme, with Orange, Blue, Green, and Rose alternatives. Components expose responsive typography utilities such as `ez-text-body`, `ez-text-label`, and `ez-text-caption`; prefer semantic tokens over hardcoded color classes when extending components.
+
 ## License
 
 MIT © [Zeeshan Sayed](https://github.com/ezux)
@@ -103,4 +110,3 @@ MIT © [Zeeshan Sayed](https://github.com/ezux)
 
 ### Tags & Keywords
 `react`, `components`, `table`, `scheduler`, `kanban`, `dashboard`, `enterprise`, `ui-kit`, `tanstack`, `typescript`, `react-components`, `data-grid`, `workflow-builder`, `scheduler-component`, `kanban-board`
-

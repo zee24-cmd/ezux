@@ -1,6 +1,6 @@
 ---
 name: tanstack-stack-authority
-description: Provides directives for building with TypeScript 5.9, React 19.2, and the full TanStack ecosystem (Start, Router, Query, Form, Table, DB). Use this when scaffolding new modules or enforcing architectural standards.
+description: Provides directives for building with TypeScript 7, React 19.2, and the full TanStack ecosystem used by EzUX. Use this when scaffolding new modules or enforcing architectural standards.
 ---
 
 # TanStack & React 19 Skill
@@ -15,7 +15,8 @@ Use this skill to ensure all code adheres to the "TanStack-First" architecture a
 ## Core Architecture & Guidelines
 
 ### 🛠 Languages & Tooling
-- **TypeScript 5.9**: Always use Strict Mode. Utilize `satisfies`, `const` type parameters, and Explicit Resource Management (`using` keyword).
+- **TypeScript 7**: Always use Strict Mode. Use modern type features such as `satisfies` and const type parameters. Keep generated declarations compatible with the supported TypeScript 6 consumer range.
+- **Compiler API bridge**: Use `@typescript/typescript6` only for tools that still depend on the TypeScript 6 compiler API; it does not replace TypeScript 7 for EzUX source.
 - **Vite**: Use for build tooling, HMR optimization, and Vitest integration.
 
 ### ⚛️ Frontend Framework (React 19.2)
@@ -36,7 +37,7 @@ Use this skill to ensure all code adheres to the "TanStack-First" architecture a
 - **Testing**: Use **Vitest** for unit testing and **Playwright** for E2E flows. (Note: Avoid Jest unless specifically required for legacy isolation).
 - **Components**: Use **Shadcn UI** components.
 - **Icons**: Use **Lucide Icons**.
-- **Typography**: Standardize on **Roboto**.
+- **Typography**: Use the shared semantic typography tokens and system font stack from `theme-vars.css`; keep user-facing text at least `0.75rem`.
 
 ### 🔌 Inversion of Control (IoC)
 - **Service Locator**: Use `EzServiceRegistry` (Shared Registry) to decouple business logic from UI components.
